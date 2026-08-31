@@ -1,0 +1,44 @@
+{% load fitness_units l10n %}
+<div id="overview-results">
+{% if overview %}
+    {% if period_form.errors %}<div class="mt-4 rounded-2xl border border-negative/30 bg-negative/10 p-4 text-sm text-negative dark:text-negative-light" role="alert">Revise o período informado. As datas precisam ser válidas e o início não pode ser posterior ao fim.</div>{% endif %}
+    <p class="mt-3 text-sm text-forest/60 dark:text-cream/60">{{ period.start|date:"d/m/Y" }} a {{ period.end|date:"d/m/Y" }} · {{ period.timezone_name }}</p>
+    {% if comparison %}<p class="mt-2 text-sm text-forest/60 dark:text-cream/60">Comparação: {{ comparison.absolute }} treino(s) · {% if comparison.percent is not None %}{{ comparison.percent }}%{% else %}não comparável{% endif %}</p>{% endif %}
+
+    <section class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Indicadores principais">
+        {% with metric=overview.metrics.workouts %}<article class="rounded-3xl border border-forest/10 bg-white p-5 dark:border-cream/10 dark:bg-forest"><p class="text-sm text-forest/60 dark:text-cream/60">Treinos</p><p class="mt-2 text-3xl font-semibold">{{ metric.value }}</p></article>{% endwith %}
+        {% with metric=overview.metrics.training_days %}<article class="rounded-3xl border border-forest/10 bg-white p-5 dark:border-cream/10 dark:bg-forest"><p class="text-sm text-forest/60 dark:text-cream/60">Dias ativos</p><p class="mt-2 text-3xl font-semibold">{{ metric.value }}</p></article>{% endwith %}
+        {% with metric=overview.metrics.working_sets %}<article class="rounded-3xl border border-forest/10 bg-white p-5 dark:border-cream/10 dark:bg-forest"><p class="text-sm text-forest/60 dark:text-cream/60">Sets de trabalho</p><p class="mt-2 text-3xl font-semibold">{{ metric.value }}</p></article>{% endwith %}
+        {% with metric=overview.metrics.average_frequency %}<article class="rounded-3xl border border-forest/10 bg-white p-5 dark:border-cream/10 dark:bg-forest"><p class="text-sm text-forest/60 dark:text-cream/60">Frequência média</p><p class="mt-2 text-3xl font-semibold">{{ metric.value }}</p><p class="text-xs text-forest/60 dark:text-cream/60">sessões/semana</p></article>{% endwith %}
+    </section>
+
+    <section class="mt-6 grid gap-5" aria-label="Visualizações e resumo">
+        {% for chart in presentation.charts %}
+            <article class="min-w-0 rounded-3xl border border-forest/10 bg-white p-5 dark:border-cream/10 dark:bg-forest sm:p-6" aria-labelledby="{{ chart.dom_id }}-title">
+                <h2 id="{{ chart.dom_id }}-title" class="text-xl font-semibold">{{ chart.title }}</h2>
+                <p id="{{ chart.dom_id }}-summary" class="mt-2 text-sm text-forest/70 dark:text-cream/70">{{ chart.summary }}</p>
+                {% if chart.has_data %}
+                    <div class="mt-4 min-h-[280px] w-full overflow-x-auto">
+                        <svg class="h-auto min-w-[40rem] w-full" viewBox="{{ chart.view_box }}" role="img" aria-labelledby="{{ chart.dom_id }}-svg-title {{ chart.dom_id }}-svg-desc">
+                            <title id="{{ chart.dom_id }}-svg-title">{{ chart.title }}</title>
+                            <desc id="{{ chart.dom_id }}-svg-desc">{{ chart.summary }}</desc>
+                            {% for tick in chart.axis_ticks %}<line x1="48" y1="{{ tick.y|unlocalize }}" x2="704" y2="{{ tick.y|unlocalize }}" class="stroke-forest/10 dark:stroke-cream/10" /><text x="40" y="{{ tick.y|unlocalize }}" text-anchor="end" dominant-baseline="middle" class="fill-forest/60 text-[11px] dark:fill-cream/60">{{ tick.label }}</text>{% endfor %}
+                            {% for bar in chart.bars %}<g tabindex="0" role="img" aria-label="{{ bar.label }}: {{ bar.value }} treino(s)" class="group outline-none"><title>{{ bar.label }}: {{ bar.value }} treino(s)</title><rect x="{{ bar.x|unlocalize }}" y="{{ bar.y|unlocalize }}" width="{{ bar.width|unlocalize }}" height="{{ bar.height|unlocalize }}" rx="3" class="fill-caramel group-focus-visible:fill-caramel-light" />{% if bar.show_label %}<text x="{{ bar.x|unlocalize }}" y="252" class="fill-forest/60 text-[11px] dark:fill-cream/60">{{ bar.label }}</text>{% endif %}</g>{% endfor %}
+                            <line x1="48" y1="226" x2="704" y2="226" class="stroke-forest/40 dark:stroke-cream/40" />
+                        </svg>
+                    </div>
+                {% else %}<p class="mt-5 rounded-2xl border border-dashed border-forest/20 p-5 text-sm text-forest/70 dark:border-cream/20 dark:text-cream/70">O gráfico será exibido quando houver treinos confirmados neste período.</p>{% endif %}
+                <div class="mt-5 overflow-x-auto"><table class="w-full min-w-[16rem] text-left text-sm"><caption class="sr-only">{{ chart.title }} — tabela equivalente</caption><thead><tr class="border-b border-forest/10 dark:border-cream/10"><th class="px-3 py-2 font-semibold" scope="col">{{ chart.table_headers.0 }}</th><th class="px-3 py-2 text-right font-semibold" scope="col">{{ chart.table_headers.1 }}</th></tr></thead><tbody>{% for row in chart.table_rows %}<tr class="border-b border-forest/10 last:border-0 dark:border-cream/10"><th class="px-3 py-2 font-normal" scope="row">{{ row.label }}</th><td class="px-3 py-2 text-right">{{ row.value|default:"—" }}</td></tr>{% empty %}<tr><td class="px-3 py-2 text-forest/60 dark:text-cream/60" colspan="2">Sem dados no período.</td></tr>{% endfor %}</tbody></table></div>
+            </article>
+        {% endfor %}
+    </section>
+
+    <section class="mt-6 grid gap-5 lg:grid-cols-2">
+        <article class="rounded-3xl border border-forest/10 bg-white p-6 dark:border-cream/10 dark:bg-forest"><h2 class="text-xl font-semibold">Duração e volume</h2><dl class="mt-5 grid gap-4 sm:grid-cols-2"><div><dt class="text-sm text-forest/60 dark:text-cream/60">Tempo total</dt><dd class="mt-1 text-lg font-semibold">{{ overview.metrics.duration.value.total_seconds }} s</dd></div><div><dt class="text-sm text-forest/60 dark:text-cream/60">Volume compatível</dt><dd class="mt-1 text-lg font-semibold">{% if overview.metrics.external_load_volume.is_valid %}{{ overview.metrics.external_load_volume.value|display_volume:presentation_mass_unit }}{% else %}Dados insuficientes{% endif %}</dd></div></dl><p class="mt-5 text-sm text-forest/60 dark:text-cream/60">Volume não combina modalidades incompatíveis.</p></article>
+        <article class="rounded-3xl border border-forest/10 bg-white p-6 dark:border-cream/10 dark:bg-forest"><h2 class="text-xl font-semibold">Esforço registrado</h2><dl class="mt-5 grid gap-4 sm:grid-cols-2"><div><dt class="text-sm text-forest/60 dark:text-cream/60">RPE médio</dt><dd class="mt-1 text-lg font-semibold">{% if overview.metrics.rpe.mean.is_valid %}{{ overview.metrics.rpe.mean.value }}{% else %}Dados insuficientes{% endif %}</dd></div><div><dt class="text-sm text-forest/60 dark:text-cream/60">RPE ausente</dt><dd class="mt-1 text-lg font-semibold">{{ overview.metrics.rpe.missing.value.count }}</dd></div></dl><p class="mt-5 text-sm text-forest/60 dark:text-cream/60">Valores ausentes permanecem ausentes.</p></article>
+    </section>
+    {% if freshness and freshness.last_success_at %}<p class="mt-6 text-sm text-forest/60 dark:text-cream/60">Última sincronização confirmada: {{ freshness.last_success_at|date:"d/m/Y H:i" }}.</p>{% endif %}
+{% else %}
+    <section class="mt-8 rounded-3xl border border-dashed border-forest/20 bg-white/60 p-8 dark:border-cream/20 dark:bg-forest/60"><h2 class="text-xl font-semibold">Ainda não há uma conta Hevy conectada</h2><p class="mt-3 max-w-2xl text-forest/70 dark:text-cream/70">Depois de uma importação válida, esta página mostrará somente dados confirmados no SQLite.</p></section>
+{% endif %}
+</div>

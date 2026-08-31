@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Application quality gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: |
+          uv sync --locked
+          npm ci
+
+      - name: Validate versions and lockfile
+        run: |
+          uv lock --check
+          uv run python scripts/check_version.py
+
+      - name: Validate repository and Django
+        env:
+          SECRET_KEY: synthetic-ci-secret-key
+        run: |
+          uv run python scripts/security/scan_secrets.py --history
+          uv run python manage.py check
+          uv run python manage.py makemigrations --check --dry-run
+          uv run ruff check .
+
+      - name: Verify generated frontend assets
+        run: |
+          npm run build
+          git diff --exit-code -- static/css/app.css static/fonts/
+          node --check static/js/navigation.js
+          node --check static/js/mobile-menu.js
+          node --check static/js/sync-actions.js
+          node --check static/js/theme.js
+
+      - name: Run Python tests and coverage gates
+        env:
+          SECRET_KEY: synthetic-ci-secret-key
+        run: |
+          uv run coverage run manage.py test
+          uv run coverage report --fail-under=80
+          uv run coverage report --include='integrations/*' --fail-under=90
+          uv run coverage report --include='analytics/*' --fail-under=90
+
+      - name: Audit dependencies
+        run: |
+          uv export --locked --no-dev --format requirements-txt > "$RUNNER_TEMP/requirements.txt"
+          uvx --from 'pip-audit>=2.7,<3' pip-audit --strict -r "$RUNNER_TEMP/requirements.txt"
+          npm audit --audit-level=high
+
+      - name: Install browser
+        run: npx playwright install --with-deps chrome
+
+      - name: Run browser tests
+        env:
+          TUXEDO_FITNESS_DB: ${{ runner.temp }}/tuxedo-fitness-e2e.sqlite3
+        run: npm run test:e2e
+
+      - name: Upload browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-artifacts
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore

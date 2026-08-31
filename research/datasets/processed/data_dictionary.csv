@@ -1,0 +1,95 @@
+dataset,column,description_pt,unit,source_variable,caveat
+body_composition_2017_2018.csv,age_years,Idade na entrevista de triagem,anos,RIDAGEYR,CSV curado contém somente adultos de 18 anos ou mais; idades mais altas podem ser agrupadas pelo CDC
+body_composition_2017_2018.csv,bmi_kg_m2,bmi kg m2,kg/m2,BMXBMI,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,dxa_exam_status,dxa exam status,,DXAEXSTS,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,exam_sample_weight,Peso amostral do exame MEC,,WTMEC2YR,Use quando a análise contém medidas do exame
+body_composition_2017_2018.csv,height_cm,height cm,cm,BMXHT,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,interview_sample_weight,Peso amostral da entrevista,,WTINT2YR,Necessário para estimativas populacionais baseadas somente em entrevista
+body_composition_2017_2018.csv,left_arm_fat_mass_g,left arm fat mass g,g,DXXLAFAT,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,left_arm_lean_mass_excluding_bone_g,left arm lean mass excluding bone g,g,DXDLALE,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,left_leg_fat_mass_g,left leg fat mass g,g,DXXLLFAT,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,left_leg_lean_mass_excluding_bone_g,left leg lean mass excluding bone g,g,DXDLLLE,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,participant_id,Identificador público anonimizado do participante na coleta,,SEQN,Válido somente dentro da mesma coleta NHANES
+body_composition_2017_2018.csv,right_arm_fat_mass_g,right arm fat mass g,g,DXXRAFAT,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,right_arm_lean_mass_excluding_bone_g,right arm lean mass excluding bone g,g,DXDRALE,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,right_leg_fat_mass_g,right leg fat mass g,g,DXXRLFAT,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,right_leg_lean_mass_excluding_bone_g,right leg lean mass excluding bone g,g,DXDRLLE,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,sex,Sexo registrado na pesquisa,,RIAGENDR,Valores decodificados como male/female
+body_composition_2017_2018.csv,survey_psu,Unidade primária mascarada do desenho amostral,,SDMVPSU,Use com peso e estrato para estimar variância
+body_composition_2017_2018.csv,survey_stratum,Estrato mascarado do desenho amostral,,SDMVSTRA,Use com peso e PSU para estimar variância
+body_composition_2017_2018.csv,total_body_fat_percent,total body fat percent,percent,DXDTOPF,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,total_bone_mineral_content_g,total bone mineral content g,g,DXDTOBMC,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,total_bone_mineral_density_g_cm2,total bone mineral density g cm2,g/cm2,DXDTOBMD,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,total_fat_mass_g,total fat mass g,g,DXDTOFAT,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,total_lean_mass_excluding_bone_g,total lean mass excluding bone g,g,DXDTOLE,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,total_mass_g,total mass g,g,DXDTOTOT,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,trunk_fat_mass_g,trunk fat mass g,g,DXXTRFAT,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,trunk_lean_mass_excluding_bone_g,trunk lean mass excluding bone g,g,DXDTRLE,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,waist_circumference_cm,waist circumference cm,cm,BMXWAIST,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+body_composition_2017_2018.csv,weight_kg,weight kg,kg,BMXWT,Coleta histórica 2017-2018; DXA elegível principalmente para 8-59 anos
+grip_strength_2013_2014.csv,age_years,Idade na entrevista de triagem,anos,RIDAGEYR,CSV curado contém somente adultos de 18 anos ou mais; idades mais altas podem ser agrupadas pelo CDC
+grip_strength_2013_2014.csv,arm_circumference_cm,arm circumference cm,cm,BMXARMC,Coleta histórica 2013-2014
+grip_strength_2013_2014.csv,bmi_kg_m2,bmi kg m2,kg/m2,BMXBMI,Coleta histórica 2013-2014
+grip_strength_2013_2014.csv,combined_grip_strength_kg,Soma da maior leitura de cada mão,kg,MGDCGSZ,"Não é média, 1RM ou medida de força corporal total"
+grip_strength_2013_2014.csv,exam_sample_weight,Peso amostral do exame MEC,,WTMEC2YR,Use quando a análise contém medidas do exame
+grip_strength_2013_2014.csv,grip_test_status,Situação de conclusão do teste de preensão,,MGDEXSTS,
+grip_strength_2013_2014.csv,hand_1_trial_1_effort,Avaliação do técnico sobre o esforço,maximal/questionable,MGXH1T1E,
+grip_strength_2013_2014.csv,hand_1_trial_1_kg,Leitura individual do dinamômetro,kg,MGXH1T1,"Hand 1/2 segue a identificação do protocolo, não uma inferência de dominância"
+grip_strength_2013_2014.csv,hand_1_trial_2_effort,Avaliação do técnico sobre o esforço,maximal/questionable,MGXH1T2E,
+grip_strength_2013_2014.csv,hand_1_trial_2_kg,Leitura individual do dinamômetro,kg,MGXH1T2,"Hand 1/2 segue a identificação do protocolo, não uma inferência de dominância"
+grip_strength_2013_2014.csv,hand_1_trial_3_effort,Avaliação do técnico sobre o esforço,maximal/questionable,MGXH1T3E,
+grip_strength_2013_2014.csv,hand_1_trial_3_kg,Leitura individual do dinamômetro,kg,MGXH1T3,"Hand 1/2 segue a identificação do protocolo, não uma inferência de dominância"
+grip_strength_2013_2014.csv,hand_2_trial_1_effort,Avaliação do técnico sobre o esforço,maximal/questionable,MGXH2T1E,
+grip_strength_2013_2014.csv,hand_2_trial_1_kg,Leitura individual do dinamômetro,kg,MGXH2T1,"Hand 1/2 segue a identificação do protocolo, não uma inferência de dominância"
+grip_strength_2013_2014.csv,hand_2_trial_2_effort,Avaliação do técnico sobre o esforço,maximal/questionable,MGXH2T2E,
+grip_strength_2013_2014.csv,hand_2_trial_2_kg,Leitura individual do dinamômetro,kg,MGXH2T2,"Hand 1/2 segue a identificação do protocolo, não uma inferência de dominância"
+grip_strength_2013_2014.csv,hand_2_trial_3_effort,Avaliação do técnico sobre o esforço,maximal/questionable,MGXH2T3E,
+grip_strength_2013_2014.csv,hand_2_trial_3_kg,Leitura individual do dinamômetro,kg,MGXH2T3,"Hand 1/2 segue a identificação do protocolo, não uma inferência de dominância"
+grip_strength_2013_2014.csv,height_cm,height cm,cm,BMXHT,Coleta histórica 2013-2014
+grip_strength_2013_2014.csv,interview_sample_weight,Peso amostral da entrevista,,WTINT2YR,Necessário para estimativas populacionais baseadas somente em entrevista
+grip_strength_2013_2014.csv,participant_id,Identificador público anonimizado do participante na coleta,,SEQN,Válido somente dentro da mesma coleta NHANES
+grip_strength_2013_2014.csv,sex,Sexo registrado na pesquisa,,RIAGENDR,Valores decodificados como male/female
+grip_strength_2013_2014.csv,survey_psu,Unidade primária mascarada do desenho amostral,,SDMVPSU,Use com peso e estrato para estimar variância
+grip_strength_2013_2014.csv,survey_stratum,Estrato mascarado do desenho amostral,,SDMVSTRA,Use com peso e PSU para estimar variância
+grip_strength_2013_2014.csv,upper_arm_length_cm,upper arm length cm,cm,BMXARML,Coleta histórica 2013-2014
+grip_strength_2013_2014.csv,upper_leg_length_cm,upper leg length cm,cm,BMXLEG,Coleta histórica 2013-2014
+grip_strength_2013_2014.csv,waist_circumference_cm,waist circumference cm,cm,BMXWAIST,Coleta histórica 2013-2014
+grip_strength_2013_2014.csv,weight_kg,weight kg,kg,BMXWT,Coleta histórica 2013-2014
+population_reference_2021_2023.csv,age_years,Idade na entrevista de triagem,anos,RIDAGEYR,CSV curado contém somente adultos de 18 anos ou mais; idades mais altas podem ser agrupadas pelo CDC
+population_reference_2021_2023.csv,arm_circumference_cm,Circunferência do braço,cm,BMXARMC,
+population_reference_2021_2023.csv,bmi_kg_m2,IMC calculado pelo NHANES,kg/m2,BMXBMI,Não é diagnóstico individual
+population_reference_2021_2023.csv,body_measure_status,Situação de completude das medidas corporais,,BMDSTATS,
+population_reference_2021_2023.csv,doctor_diagnosed_angina,Angina informada como diagnosticada,yes/no/refused/dont_know,MCQ160D,Autorrelato ou relato por procurador; Elegível a partir de 20 anos; vazio não significa no
+population_reference_2021_2023.csv,doctor_diagnosed_arthritis,Artrite informada como diagnosticada por profissional,yes/no/refused/dont_know,MCQ160A,Autorrelato ou relato por procurador; Elegível a partir de 20 anos; vazio não significa no
+population_reference_2021_2023.csv,doctor_diagnosed_asthma,Asma informada como diagnosticada por profissional,yes/no/refused/dont_know,MCQ010,Autorrelato ou relato por procurador; Elegível a partir de 1 ano; vazio não significa no
+population_reference_2021_2023.csv,doctor_diagnosed_congestive_heart_failure,Insuficiência cardíaca congestiva informada como diagnosticada,yes/no/refused/dont_know,MCQ160B,Autorrelato ou relato por procurador; Elegível a partir de 20 anos; vazio não significa no
+population_reference_2021_2023.csv,doctor_diagnosed_copd_emphysema_or_chronic_bronchitis,"DPOC, enfisema ou bronquite crônica informados como diagnosticados",yes/no/refused/dont_know,MCQ160P,Autorrelato ou relato por procurador; Elegível a partir de 20 anos; vazio não significa no
+population_reference_2021_2023.csv,doctor_diagnosed_coronary_heart_disease,Doença coronariana informada como diagnosticada,yes/no/refused/dont_know,MCQ160C,Autorrelato ou relato por procurador; Elegível a partir de 20 anos; vazio não significa no
+population_reference_2021_2023.csv,doctor_diagnosed_heart_attack,Infarto informado como diagnosticado,yes/no/refused/dont_know,MCQ160E,Autorrelato ou relato por procurador; Elegível a partir de 20 anos; vazio não significa no
+population_reference_2021_2023.csv,doctor_diagnosed_liver_condition,Condição hepática informada como diagnosticada,yes/no/refused/dont_know,MCQ160L,Autorrelato ou relato por procurador; Elegível a partir de 20 anos; vazio não significa no
+population_reference_2021_2023.csv,doctor_diagnosed_stroke,AVC informado como diagnosticado,yes/no/refused/dont_know,MCQ160F,Autorrelato ou relato por procurador; Elegível a partir de 20 anos; vazio não significa no
+population_reference_2021_2023.csv,exam_sample_weight,Peso amostral do exame MEC,,WTMEC2YR,Use quando a análise contém medidas do exame
+population_reference_2021_2023.csv,exam_status,Situação de participação em entrevista e exame,,RIDSTATR,
+population_reference_2021_2023.csv,height_cm,Altura em pé medida,cm,BMXHT,
+population_reference_2021_2023.csv,hip_circumference_cm,Circunferência do quadril,cm,BMXHIP,Disponível a partir de 12 anos
+population_reference_2021_2023.csv,interview_sample_weight,Peso amostral da entrevista,,WTINT2YR,Necessário para estimativas populacionais baseadas somente em entrevista
+population_reference_2021_2023.csv,moderate_leisure_frequency,Frequência declarada de atividade moderada no lazer,vezes,PAD790Q,Interpretar junto da unidade e do status da resposta
+population_reference_2021_2023.csv,moderate_leisure_frequency_response,Estado da resposta numérica,,derived from source sentinel,answered/refused/dont_know; vazio significa ausente ou fora da elegibilidade
+population_reference_2021_2023.csv,moderate_leisure_frequency_unit,Unidade da frequência moderada,day/week/month/year,PAD790U,
+population_reference_2021_2023.csv,moderate_leisure_minutes_per_session,Duração declarada de cada sessão moderada,minutos,PAD800,Autorrelato; elegível a partir de 18 anos
+population_reference_2021_2023.csv,moderate_leisure_minutes_per_session_response,Estado da resposta numérica,,derived from source sentinel,answered/refused/dont_know; vazio significa ausente ou fora da elegibilidade
+population_reference_2021_2023.csv,participant_id,Identificador público anonimizado do participante na coleta,,SEQN,Válido somente dentro da mesma coleta NHANES
+population_reference_2021_2023.csv,sedentary_minutes_per_day,Tempo sedentário declarado em um dia típico,minutos/dia,PAD680,Não inclui sono; elegível a partir de 18 anos
+population_reference_2021_2023.csv,sedentary_minutes_per_day_response,Estado da resposta numérica,,derived from source sentinel,answered/refused/dont_know; vazio significa ausente ou fora da elegibilidade
+population_reference_2021_2023.csv,sex,Sexo registrado na pesquisa,,RIAGENDR,Valores decodificados como male/female
+population_reference_2021_2023.csv,survey_psu,Unidade primária mascarada do desenho amostral,,SDMVPSU,Use com peso e estrato para estimar variância
+population_reference_2021_2023.csv,survey_stratum,Estrato mascarado do desenho amostral,,SDMVSTRA,Use com peso e PSU para estimar variância
+population_reference_2021_2023.csv,upper_arm_length_cm,Comprimento da parte superior do braço,cm,BMXARML,Normalmente medido no lado direito
+population_reference_2021_2023.csv,upper_leg_length_cm,Comprimento da parte superior da perna,cm,BMXLEG,Normalmente medido no lado direito; pode ser afetado por adiposidade extrema
+population_reference_2021_2023.csv,vigorous_leisure_frequency,Frequência declarada de atividade vigorosa no lazer,vezes,PAD810Q,Interpretar junto da unidade e do status da resposta
+population_reference_2021_2023.csv,vigorous_leisure_frequency_response,Estado da resposta numérica,,derived from source sentinel,answered/refused/dont_know; vazio significa ausente ou fora da elegibilidade
+population_reference_2021_2023.csv,vigorous_leisure_frequency_unit,Unidade da frequência vigorosa,day/week/month/year,PAD810U,
+population_reference_2021_2023.csv,vigorous_leisure_minutes_per_session,Duração declarada de cada sessão vigorosa,minutos,PAD820,Autorrelato; elegível a partir de 18 anos
+population_reference_2021_2023.csv,vigorous_leisure_minutes_per_session_response,Estado da resposta numérica,,derived from source sentinel,answered/refused/dont_know; vazio significa ausente ou fora da elegibilidade
+population_reference_2021_2023.csv,waist_circumference_cm,Circunferência da cintura,cm,BMXWAIST,
+population_reference_2021_2023.csv,weight_kg,Peso corporal medido,kg,BMXWT,

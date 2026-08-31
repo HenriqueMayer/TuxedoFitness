@@ -1,0 +1,32 @@
+[project]
+name = "tuxedo-fitness"
+version = "0.1.0"
+description = "A local-first, self-hosted training analytics application built with Django."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=6.0,<6.1",
+    "gunicorn>=23,<24",
+    "python-dotenv>=1.1,<2",
+]
+
+[dependency-groups]
+dev = [
+    "coverage[toml]>=7.10,<8",
+    "ruff>=0.12,<1",
+]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.coverage.run]
+source = ["accounts", "analytics", "core", "dashboard", "integrations", "pages", "training"]
+omit = ["*/migrations/*", "*/tests.py", "*/tests/*", "*/tests_*.py"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true

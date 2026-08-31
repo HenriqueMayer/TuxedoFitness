@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load fitness_units %}
+{% block title %}{{ workout.title }} · Tuxedo Fitness{% endblock %}
+{% block content %}
+<a class="text-sm underline decoration-caramel underline-offset-4" href="{% url 'training:history' %}">← Voltar ao histórico</a>
+<p class="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-caramel-ink dark:text-caramel-light">Treino concluído</p>
+<h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{{ workout.title }}</h1>
+<p class="mt-3 text-sm text-forest/70 dark:text-cream/70">{{ workout.start_time|date:"d/m/Y H:i" }} · {% if workout.routine %}{{ workout.routine.title }}{% else %}Rotina não informada{% endif %}</p>
+{% if not workout.is_active %}<p class="mt-4 rounded-2xl bg-attention/10 p-4 text-sm text-attention dark:text-attention-light">Este treino foi removido na origem e permanece visível para auditoria.</p>{% endif %}
+<section class="mt-8 space-y-5" aria-label="Exercícios do treino">{% for exercise in workout.exercises.all %}<article class="rounded-3xl border border-forest/10 bg-white p-6 dark:border-cream/10 dark:bg-forest"><h2 class="text-xl font-semibold">{{ exercise.title_snapshot }}</h2><ol class="mt-4 space-y-2 text-sm">{% for set in exercise.sets.all %}<li class="flex flex-wrap gap-3 border-b border-forest/10 py-2 last:border-0 dark:border-cream/10"><span class="font-medium">{{ set.position|add:1 }} · {{ set.get_set_type_display }}</span><span>{% if set.weight_kg is not None %}{{ set.weight_kg|display_mass:presentation_mass_unit }}{% else %}—{% endif %}</span><span>{% if set.reps is not None %}{{ set.reps }} reps{% else %}—{% endif %}</span><span>{% if set.rpe is not None %}RPE {{ set.rpe }}{% endif %}</span></li>{% endfor %}</ol></article>{% empty %}<p>Não há exercícios registrados.</p>{% endfor %}</section>
+{% endblock %}
