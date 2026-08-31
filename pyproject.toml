@@ -5,7 +5,7 @@ description = "A local-first, self-hosted training analytics application built w
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "django>=6.0,<6.1",
+    "django>=6.0,<6.2",
     "gunicorn>=23,<27",
     "python-dotenv>=1.1,<2",
 ]
