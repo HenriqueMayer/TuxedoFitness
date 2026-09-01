@@ -167,6 +167,19 @@ class HevyClientTests(TestCase):
             client.pages('workouts')
         self.assertEqual(page_error.exception.code, 'PAGINATION_INVALID')
 
+    def test_fetches_routine_folders_from_provider_routines_key(self):
+        client = HevyClient(
+            'synthetic-key',
+            transport=lambda *_: response(
+                {'page': 1, 'page_count': 1, 'routines': [folder()]}
+            ),
+        )
+
+        result = client.pages('routine_folders')
+
+        self.assertEqual(result.items, (folder(),))
+        self.assertEqual(result.received_pages, 1)
+
     def test_fetches_workout_event_pages_with_since(self):
         calls = []
 
@@ -190,7 +203,7 @@ class FullImportServiceTests(TestCase):
         data = {
             '/v1/user/info': {'data': {'id': 'hevy-owner', 'name': 'Synthetic Owner', 'url': 'https://hevy.com/u/synthetic'}},
             '/v1/exercise_templates': {'page': 1, 'page_count': 1, 'exercise_templates': [template()]},
-            '/v1/routine_folders': {'page': 1, 'page_count': 1, 'routine_folders': [folder()]},
+            '/v1/routine_folders': {'page': 1, 'page_count': 1, 'routines': [folder()]},
             '/v1/routines': {'page': 1, 'page_count': 1, 'routines': [routine()]},
             '/v1/workouts': {'page': 1, 'page_count': 1, 'workouts': [workout()]},
         }

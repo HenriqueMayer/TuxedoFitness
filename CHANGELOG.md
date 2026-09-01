@@ -6,6 +6,13 @@ follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Mapped the Hevy routine-folder endpoint's `routines` response key so complete
+  and plan synchronization no longer rejects valid pagination metadata.
+- Restored the documented Django 6.0 and Tailwind CSS 3.4 dependency bounds
+  after incompatible automated dependency updates.
+
 ### Planned
 
 - Complete the advanced overview, exercise-history, modality, and comparison

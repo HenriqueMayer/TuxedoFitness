@@ -32,6 +32,9 @@ Only these Hevy operations are approved for the MVP adapter:
 All collection and event pages must be fetched from page 1 through
 `page_count`, including the final page. Exercise templates use at most 100
 items per page; the other paginated allowlisted resources use at most 10.
+The routine-folder endpoint currently exposes its collection under the
+provider's `routines` response key; the adapter maps that key explicitly to
+local routine-folder DTOs.
 
 Body measurements and every Hevy `POST`, `PUT`, or delete operation are
 outside the MVP. Workout events apply only to workouts; plans and templates
