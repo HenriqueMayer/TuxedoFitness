@@ -63,6 +63,12 @@ class HevyClient:
         'workouts': 10,
         'workout_events': 10,
     }
+    COLLECTION_KEYS = {
+        'exercise_templates': 'exercise_templates',
+        'routine_folders': 'routines',
+        'routines': 'routines',
+        'workouts': 'workouts',
+    }
     ALLOWED_PATHS = {
         '/v1/user/info', '/v1/exercise_templates', '/v1/routine_folders',
         '/v1/routines', '/v1/workouts', '/v1/workouts/events',
@@ -138,7 +144,7 @@ class HevyClient:
 
     def pages(self, collection: str) -> PageResult:
         path = f'/v1/{collection}'
-        item_key = collection
+        item_key = self.COLLECTION_KEYS[collection]
         page = 1
         page_count: int | None = None
         items: list[dict[str, Any]] = []

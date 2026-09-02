@@ -44,7 +44,7 @@ last page. Do not infer completion from the returned array length.
 | Workouts | `workouts` | 10 |
 | Routines | `routines` | 10 |
 | Exercise templates | `exercise_templates` | 100 |
-| Routine folders | `routine_folders` | 10 |
+| Routine folders | `routines` | 10 |
 | Workout events | `events` | 10 |
 | Body measurements | `body_measurements` | 10 |
 
