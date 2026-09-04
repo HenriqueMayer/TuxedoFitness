@@ -72,6 +72,7 @@ class SyncRun(models.Model):
         INCREMENTAL = 'incremental', 'Incremental'
         PLANS = 'plans', 'Plans'
         VALIDATE = 'validate', 'Validate'
+        ROUTINE_CREATE = 'routine_create', 'Routine create'
 
     class Trigger(models.TextChoices):
         WEB = 'web', 'Web'
@@ -157,6 +158,45 @@ class SyncRun(models.Model):
             models.Index(
                 fields=['hevy_account', 'state', 'started_at'],
                 name='sync_run_account_state_idx',
+            ),
+        ]
+
+
+class RoutineWriteIntent(models.Model):
+    class State(models.TextChoices):
+        PREVIEWED = 'previewed', 'Previewed'
+        SUBMITTING = 'submitting', 'Submitting'
+        SUCCEEDED = 'succeeded', 'Succeeded'
+        FAILED = 'failed', 'Failed'
+        UNKNOWN = 'unknown', 'Unknown'
+        EXPIRED = 'expired', 'Expired'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    hevy_account = models.ForeignKey(
+        HevyAccount,
+        on_delete=models.CASCADE,
+        related_name='routine_write_intents',
+    )
+    payload = models.JSONField()
+    payload_hash = models.CharField(max_length=64)
+    state = models.CharField(max_length=16, choices=State, default=State.PREVIEWED)
+    expires_at = models.DateTimeField(validators=[validate_aware_datetime])
+    submitted_at = models.DateTimeField(
+        validators=[validate_aware_datetime], null=True, blank=True,
+    )
+    finished_at = models.DateTimeField(
+        validators=[validate_aware_datetime], null=True, blank=True,
+    )
+    external_routine_id = models.CharField(max_length=255, blank=True)
+    error_code = models.CharField(max_length=64, blank=True)
+    sanitized_error = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=['hevy_account', 'state', 'created_at'],
+                name='routine_intent_state_idx',
             ),
         ]
 

@@ -12,8 +12,9 @@
   <img alt="License PolyForm Noncommercial" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-8A5A2F">
 </p>
 
-Tuxedo Fitness imports Hevy data through a backend-only, read-only adapter,
-normalizes it locally, and calculates deterministic training metrics. The web
+Tuxedo Fitness imports Hevy data through a backend-only adapter, normalizes it
+locally, and calculates deterministic training metrics. Its only write action
+is an explicitly previewed and confirmed routine creation. The web
 application is server-rendered Django with progressive HTMX navigation,
 accessible SVG charts, equivalent tables, and no runtime CDN.
 
@@ -27,6 +28,8 @@ product, or official Hevy product.
   cursor safety, retries, and rollback on invalid provider data.
 - Workout history, exercise and routine views, period filters, compatible
   volume/RPE/record/e1RM analytics, and set-level CSV export.
+- Ephemeral per-session Hevy connection, exercise/routine CSV and JSON exports,
+  offline analysis-prompt generation, and confirmed routine creation from JSON.
 - Local preferences, retention cleanup, verified SQLite backup, integrity
   checks, and isolated restore rehearsal.
 - Strict same-origin CSP, backend-only credentials, synthetic tests, dependency
@@ -60,12 +63,16 @@ uv run python manage.py create_owner your-username
 uv run python manage.py runserver 127.0.0.1:8000
 ```
 
-Open `http://127.0.0.1:8000/`. Signup is closed by default. Set
-`ALLOW_SIGNUPS=True` only while intentionally accepting another local account;
-existing login remains available when signup is disabled.
+Open `http://127.0.0.1:8000/`. Local signup is available by default. Set
+`ALLOW_SIGNUPS=False` to stop accepting new accounts; existing login remains
+available when signup is disabled.
 
-Set `HEVY_API_KEY` only in the backend environment, then validate and perform
-the first confirmed import:
+For the web flow, open `Sincronização`, paste the key into the masked connection
+form, test it, and run the first confirmed collection. The key remains only in
+process memory for that authenticated browser session and is forgotten on
+disconnect, logout, session expiry, or process restart.
+
+For management commands, set `HEVY_API_KEY` only in the backend environment:
 
 ```bash
 uv run python manage.py sync_hevy --validate-only --username your-username
@@ -79,8 +86,9 @@ restore, HTTPS, and supported single-instance deployment.
 
 - `.env`, SQLite, backups, exports, diagnostics, and private provider snapshots
   are excluded from Git and must remain owner-readable only.
-- Browser requests never contact Hevy and no credential is persisted in the
-  database, HTML, JavaScript, URL, log, fixture, or export.
+- Browser code never contacts Hevy. A key submitted through the masked form is
+  not rendered back or persisted in the database, cookie, HTML, JavaScript,
+  URL, log, fixture, prompt, or export.
 - SQLite supports one application writer. Shared-network SQLite, multiple
   replicas, queues, and distributed infrastructure are unsupported.
 - Research under `research/` is provenance for a future phase and is not loaded

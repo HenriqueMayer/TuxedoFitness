@@ -6,7 +6,7 @@ logout view. It exposes:
 | Route | Behavior |
 | --- | --- |
 | `/conta/entrar/` | Public login. |
-| `/conta/cadastro/` | Public native signup only when explicitly enabled; closed by default. |
+| `/conta/cadastro/` | Public native signup by default; disable with `ALLOW_SIGNUPS=False`. |
 | `/conta/sair/` | Authenticated POST logout. |
 | `/conta/configuracoes/` | Authenticated preference form, export link, and backup-gated deletion. |
 
@@ -16,9 +16,9 @@ without affecting login. `create_owner <username>` remains an empty-database
 bootstrap alternative. Settings edits stay local. Deletion requires the exact `EXCLUIR`
 confirmation and a successful SQLite integrity and foreign-key checked backup
 outside the source checkout. `backup_database` creates a verified backup and
-`check_database` validates any selected SQLite file. Key replacement is an
-environment-only operation: update
-`HEVY_API_KEY` and restart the application; never submit it through the UI.
+`check_database` validates any selected SQLite file. Management-command keys
+remain environment-only. The web flow accepts a masked key into process memory
+and the custom POST logout removes it before the Django session is flushed.
 
 `prune_runtime_data` removes expired JSON snapshots only from the ignored
 private snapshot directory and prunes old synchronization logs according to

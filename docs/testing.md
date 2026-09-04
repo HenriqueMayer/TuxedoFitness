@@ -44,7 +44,8 @@ npm run test:e2e
 
 Playwright runs serially against a unique disposable database and three
 viewports: 1440×900, 768×1024, and 390×844. Console/CSP monitoring starts before
-the first login navigation. Tests cover the closed-signup default, boosted
+the first login navigation. Tests cover default signup visibility, the explicit
+disabled-signup override, boosted
 navigation continuity, SVG/table accessibility, idle/busy state, theme, mobile
 focus/Escape, filters with and without JavaScript, empty periods, URL history,
 and horizontal overflow.

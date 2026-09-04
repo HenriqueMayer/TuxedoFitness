@@ -26,12 +26,13 @@ test.describe('public surfaces', () => {
     await expectNoOverflow(page);
   });
 
-  test('login and closed signup screens are explicit', async ({ page }) => {
+  test('login offers public account creation by default', async ({ page }) => {
     await page.goto('/conta/entrar/');
     await expect(page.getByRole('heading', { name: 'Entrar.' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Criar conta', exact: true }).last()).toBeVisible();
     await page.goto('/conta/cadastro/');
-    await expect(page.getByRole('heading', { name: 'Novos cadastros estão desativados.' })).toBeVisible();
-    await expect(page.locator('#main-content').getByRole('link', { name: 'Entrar' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Crie sua conta.' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Criar conta' })).toBeVisible();
     await expectNoOverflow(page);
   });
 });
@@ -59,12 +60,25 @@ test.describe('authenticated surfaces', () => {
     await expectNoOverflow(page);
   });
 
+  test('Hevy workspace exposes the five guided actions without a stored key', async ({ page }) => {
+    await page.goto('/sincronizacao/');
+    await expect(page.getByRole('heading', { name: 'Ferramentas Hevy' })).toBeVisible();
+    await expect(page.getByText('Sessão desconectada').first()).toBeVisible();
+    await expect(page.getByLabel('API key do Hevy')).toHaveAttribute('type', 'password');
+    await expect(page.getByRole('heading', { name: 'Coletar e analisar histórico' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Exportar exercícios' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Exportar rotinas' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Criar rotina via JSON' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Gerar prompt de análise' })).toBeVisible();
+    await expectNoOverflow(page);
+  });
+
   test('boosted primary navigation preserves the document and has no overflow', async ({ page }, testInfo) => {
     const routes = [
       ['Histórico', 'Histórico'],
       ['Exercícios', 'Exercícios'],
       ['Rotinas', 'Rotinas'],
-      ['Sincronização', 'Sincronização'],
+      ['Sincronização', 'Ferramentas Hevy'],
       ['Configurações', 'Configurações'],
     ];
     await page.evaluate(() => { window.__tuxedoNavigationMarker = 'preserved'; });
@@ -105,7 +119,7 @@ test.describe('authenticated surfaces', () => {
     await expect(page).toHaveURL(/inicio=2030-01-01/);
     await expect(page.getByText('Atualizando indicadores…')).toHaveAttribute('aria-hidden', 'true');
     await expect(page.getByText('O gráfico será exibido quando houver treinos confirmados neste período.').first()).toBeVisible();
-    await expect(page.getByRole('table', { name: /tabela equivalente/ })).toBeVisible();
+    await expect(page.getByRole('table', { name: /tabela equivalente/ }).first()).toBeVisible();
     await expect(page.getByRole('row', { name: /31\/12 0/ })).toBeVisible();
   });
 
@@ -120,7 +134,7 @@ test.describe('authenticated surfaces', () => {
     await page.getByLabel('Fim').fill('2030-02-28');
     await page.getByRole('button', { name: 'Aplicar período' }).click();
     await expect(page).toHaveURL(/inicio=2030-02-01/);
-    await expect(page.getByRole('table', { name: /tabela equivalente/ })).toBeVisible();
+    await expect(page.getByRole('table', { name: /tabela equivalente/ }).first()).toBeVisible();
     await expect(page.getByRole('heading', { name: /Olá, e2e-owner/ })).toBeVisible();
     await context.close();
   });

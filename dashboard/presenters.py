@@ -19,7 +19,7 @@ class BarViewModel(TypedDict):
     width: float
     height: float
     label: str
-    value: int
+    value: Any
     show_label: bool
 
 
@@ -39,6 +39,7 @@ class ChartViewModel(TypedDict):
     axis_ticks: list[AxisTickViewModel]
     table_headers: list[str]
     table_rows: list[dict[str, str]]
+    unit: str
 
 
 def _period_bucket(period: LocalPeriod) -> str:
@@ -158,10 +159,59 @@ class DashboardPresenter:
                 {'label': label, 'value': _localized_number(value)}
                 for label, value in zip(labels, values, strict=True)
             ],
+            'unit': 'treino(s)',
+        }
+
+    def _categorical_chart(
+        self, *, dom_id, title, values, first_header, unit,
+        summarize_points=False,
+    ) -> ChartViewModel:
+        labels = list(values)
+        numeric = [float(values[label]) for label in labels]
+        total = sum(values.values())
+        has_data = bool(labels) and any(value > 0 for value in numeric)
+        summary = (
+            f'{len(labels)} ponto(s) de evolução em {unit}.'
+            if has_data and summarize_points else
+            f'{_localized_number(total)} {unit} no período selecionado.'
+            if has_data else f'Sem dados de {title.lower()} no período selecionado.'
+        )
+        chart_width = SVG_WIDTH - SVG_MARGIN['left'] - SVG_MARGIN['right']
+        chart_height = SVG_HEIGHT - SVG_MARGIN['top'] - SVG_MARGIN['bottom']
+        slot_width = chart_width / max(len(numeric), 1)
+        bar_width = max(1.0, slot_width * 0.64)
+        maximum = max(max(numeric, default=0), 1)
+        bars: list[BarViewModel] = []
+        for index, (label, value) in enumerate(zip(labels, numeric, strict=True)):
+            height = chart_height * value / maximum
+            bars.append({
+                'x': round(SVG_MARGIN['left'] + index * slot_width + (slot_width - bar_width) / 2, 2),
+                'y': round(SVG_MARGIN['top'] + chart_height - height, 2),
+                'width': round(bar_width, 2),
+                'height': round(height, 2),
+                'label': label,
+                'value': _localized_number(values[label]),
+                'show_label': True,
+            })
+        return {
+            'dom_id': dom_id,
+            'title': title,
+            'aria_label': f'{title}: {summary}',
+            'summary': summary,
+            'has_data': has_data,
+            'view_box': f'0 0 {SVG_WIDTH} {SVG_HEIGHT}',
+            'bars': bars,
+            'axis_ticks': _axis_ticks(max(1, int(maximum + 0.999)), chart_height),
+            'table_headers': [first_header, unit],
+            'table_rows': [
+                {'label': label, 'value': _localized_number(values[label])}
+                for label in labels
+            ],
+            'unit': unit,
         }
 
     def present_overview(
-        self, overview: dict[str, Any], *, activity_buckets=None
+        self, overview: dict[str, Any], *, activity_buckets=None, prepared=None
     ) -> dict[str, Any]:
         """Return presentation metadata without recalculating analytics."""
 
@@ -169,7 +219,25 @@ class DashboardPresenter:
         if activity_buckets is None:
             metric = overview.get('metrics', {}).get('activity_buckets')
             activity_buckets = getattr(metric, 'value', metric) or {}
+        prepared = prepared or {}
+        charts = [self._activity_chart(period, activity_buckets)]
+        charts.append(self._categorical_chart(
+            dom_id='set-types-chart', title='Séries por tipo',
+            values=prepared.get('set_type_counts', {}), first_header='Tipo', unit='série(s)',
+        ))
+        charts.append(self._categorical_chart(
+            dom_id='rpe-chart', title='Distribuição de RPE',
+            values=prepared.get('rpe_distribution', {}), first_header='RPE', unit='série(s)',
+        ))
+        if prepared.get('exercise_evolution_title'):
+            charts.append(self._categorical_chart(
+                dom_id='exercise-evolution-chart',
+                title=f"Evolução · {prepared['exercise_evolution_title']}",
+                values=prepared.get('exercise_evolution', {}),
+                first_header='Data', unit=prepared.get('exercise_evolution_unit', 'valor'),
+                summarize_points=True,
+            ))
         return {
-            'charts': [self._activity_chart(period, activity_buckets)],
+            'charts': charts,
             'max_plot_points': MAX_PLOT_POINTS,
         }

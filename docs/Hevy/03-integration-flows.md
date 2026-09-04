@@ -4,7 +4,8 @@
 
 1. The user obtains the key in Hevy Web under `Settings > Developer`.
 2. The backend validates it through `GET /v1/user/info`.
-3. Keep the key in the backend environment. Do not store it in the application
+3. Keep command-line keys in the backend environment. The web UI may hold a key
+   only in its process-memory session store. Do not persist it in the application
    database. Retain returned `data.id` as the external account identifier.
 4. Only show `name` and `url` after validation. Never return the key to a web
    client.

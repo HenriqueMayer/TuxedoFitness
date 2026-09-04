@@ -5,6 +5,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from integrations.credentials import session_credentials
 from integrations.hevy import HevyError
 from integrations.models import SyncRun
 from training.tests.factories import create_account
@@ -12,20 +13,24 @@ from training.tests.factories import create_account
 
 class IntegrationReadViewTests(TestCase):
     def setUp(self):
+        session_credentials.clear()
         self.account = create_account('integration-view-owner')
         self.client.force_login(self.account.user)
+
+    def tearDown(self):
+        session_credentials.clear()
 
     def test_sync_overview_does_not_render_credentials(self):
         response = self.client.get(reverse('integrations:sync'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Estado da conexão')
+        self.assertContains(response, 'Estado local')
         self.assertNotContains(response, 'HEVY_API_KEY')
         self.assertNotContains(response, 'api-key')
-        self.assertContains(response, 'Faça uma atualização completa')
-        self.assertContains(response, 'disabled')
+        self.assertContains(response, 'Sessão desconectada')
+        self.assertContains(response, 'type="password"')
 
-    @patch('integrations.views.HevyClient.from_environment')
+    @patch('integrations.views._client_for_request')
     def test_incremental_without_cursor_returns_a_controlled_message(self, client_factory):
         response = self.client.post(reverse('integrations:incremental'), follow=True)
 
@@ -49,15 +54,16 @@ class IntegrationReadViewTests(TestCase):
         self.assertEqual(client.post(reverse('integrations:validate')).status_code, 403)
         self.assertEqual(client.post(reverse('integrations:incremental')).status_code, 403)
 
-    @patch('integrations.views.HevyClient.from_environment')
     @patch('integrations.views.FullImportService.validate_account', side_effect=HevyError('AUTH_INVALID', 'Credential rejected.'))
-    def test_validation_failure_is_sanitized_for_the_owner(self, validate, client_factory):
-        response = self.client.post(reverse('integrations:validate'), follow=True)
+    def test_validation_failure_is_sanitized_for_the_owner(self, validate):
+        response = self.client.post(
+            reverse('integrations:validate'), {'api_key': 'synthetic-key'}, follow=True
+        )
 
         self.assertContains(response, 'AUTH_INVALID: Credential rejected.')
         self.assertNotContains(response, 'api-key')
 
-    @patch('integrations.views.HevyClient.from_environment')
+    @patch('integrations.views._client_for_request')
     @patch('integrations.views.IncrementalSyncService.run', side_effect=DatabaseError('private database detail'))
     def test_database_failure_does_not_render_internal_detail(self, run_sync, client_factory):
         response = self.client.post(reverse('integrations:incremental'), follow=True)
@@ -65,18 +71,21 @@ class IntegrationReadViewTests(TestCase):
         self.assertContains(response, 'DATABASE_ERROR: Falha ao persistir os dados locais.')
         self.assertNotContains(response, 'private database detail')
 
-    @patch('integrations.views.HevyClient.from_environment')
     @patch('integrations.views.FullImportService.validate_account')
-    def test_validate_action_is_post_only_and_redirects(self, validate, client_factory):
+    def test_validate_action_is_post_only_and_redirects(self, validate):
         validate.return_value = self.account
 
-        response = self.client.post(reverse('integrations:validate'))
+        response = self.client.post(
+            reverse('integrations:validate'), {'api_key': 'synthetic-key'}
+        )
 
         self.assertRedirects(response, reverse('integrations:sync'))
         validate.assert_called_once_with(self.account.user)
-        client_factory.assert_called_once_with()
+        follow = self.client.get(reverse('integrations:sync'))
+        self.assertContains(follow, 'Sessão conectada')
+        self.assertNotContains(follow, 'synthetic-key')
 
-    @patch('integrations.views.HevyClient.from_environment')
+    @patch('integrations.views._client_for_request')
     @patch('integrations.views.IncrementalSyncService.run')
     def test_incremental_action_redirects_to_run_detail(self, run_sync, client_factory):
         run = SyncRun.objects.create(
@@ -92,9 +101,9 @@ class IntegrationReadViewTests(TestCase):
 
         self.assertRedirects(response, reverse('integrations:run-detail', args=[run.pk]))
         run_sync.assert_called_once_with(self.account.user, trigger=SyncRun.Trigger.WEB)
-        client_factory.assert_called_once_with()
+        client_factory.assert_called_once()
 
-    @patch('integrations.views.HevyClient.from_environment')
+    @patch('integrations.views._client_for_request')
     @patch('integrations.views.FullImportService.run')
     def test_full_refresh_action_uses_explicit_confirmation(self, run_full, client_factory):
         run = SyncRun.objects.create(
@@ -110,9 +119,9 @@ class IntegrationReadViewTests(TestCase):
 
         self.assertRedirects(response, reverse('integrations:run-detail', args=[run.pk]))
         run_full.assert_called_once_with(self.account.user, trigger=SyncRun.Trigger.WEB)
-        client_factory.assert_called_once_with()
+        client_factory.assert_called_once()
 
-    @patch('integrations.views.HevyClient.from_environment')
+    @patch('integrations.views._client_for_request')
     @patch(
         'integrations.views.FullImportService.run',
         side_effect=HevyError('HTTP_TRANSIENT', 'Provider temporarily unavailable.'),
@@ -156,7 +165,7 @@ class IntegrationReadViewTests(TestCase):
 
         self.assertContains(response, 'Somente execuções incrementais')
 
-    @patch('integrations.views.HevyClient.from_environment')
+    @patch('integrations.views._client_for_request')
     @patch('integrations.views.IncrementalSyncService.run')
     def test_retry_links_to_previous_run(self, run_sync, client_factory):
         prior = SyncRun.objects.create(
@@ -184,4 +193,4 @@ class IntegrationReadViewTests(TestCase):
             prior_run=prior,
             trigger=SyncRun.Trigger.RETRY,
         )
-        client_factory.assert_called_once_with()
+        client_factory.assert_called_once()

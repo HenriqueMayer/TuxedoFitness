@@ -11,7 +11,7 @@ Technical and product documentation for Tuxedo Fitness.
 | [`frontend.md`](frontend.md) | Design system, assets, behavior, and accessibility. |
 | [`data-model.md`](data-model.md) | Implemented models, fields, and constraints. |
 | [`analytics.md`](analytics.md) | Metric formulas, eligibility, and limitations. |
-| [`hevy-integration.md`](hevy-integration.md) | Verified read-only contract baseline. |
+| [`hevy-integration.md`](hevy-integration.md) | Verified read contract baseline and routine-write exception. |
 | [`operations.md`](operations.md) | Installation and local operation. |
 | [`testing.md`](testing.md) | Current test layers and commands. |
 | [`performance.md`](performance.md) | Disposable reference corpus, method, targets, and measurements. |

@@ -6,6 +6,22 @@ follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Made local account creation visible and available by default from the public
+  landing page and login screen; `ALLOW_SIGNUPS=False` still closes registration.
+- Added a process-memory, session-scoped Hevy connection flow with explicit
+  disconnect and logout cleanup.
+- Added exercise and routine CSV/JSON exports, deterministic history charts,
+  and local prompt generation for external training analysis.
+- Added strict routine JSON validation, a human-readable preview, single-use
+  confirmation intents, and non-retried `POST /v1/routines` creation.
+
+### Security
+
+- Kept web credentials out of cookies, sessions, models, exports, prompts, and
+  logs, and classified ambiguous writes without automatically retrying them.
+
 ### Fixed
 
 - Mapped the Hevy routine-folder endpoint's `routines` response key so complete

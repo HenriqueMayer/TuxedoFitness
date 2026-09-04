@@ -25,7 +25,7 @@ if not SECRET_KEY:
     raise ImproperlyConfigured('SECRET_KEY must be set in the environment.')
 
 DEBUG = env_flag('DEBUG', False)
-ALLOW_SIGNUPS = env_flag('ALLOW_SIGNUPS', False)
+ALLOW_SIGNUPS = env_flag('ALLOW_SIGNUPS', True)
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get(

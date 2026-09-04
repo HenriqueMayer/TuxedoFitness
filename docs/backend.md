@@ -14,8 +14,8 @@ the local runtime without storing secrets in models.
 ## Security
 
 - Every personal route uses `LoginRequiredMixin`.
-- `/conta/cadastro/` creates a native Django user only when explicitly enabled
-  with `ALLOW_SIGNUPS=True`; the default is closed and returns 403.
+- `/conta/cadastro/` creates a native Django user by default. Setting
+  `ALLOW_SIGNUPS=False` closes registration with 403 without disabling login.
 - Logout accepts POST only and includes CSRF protection.
 - CSP permits executable and presentation assets from `'self'` only, rejects
   inline event handlers, frames, and plugins, and limits forms to the same
@@ -49,9 +49,12 @@ soft deletion without importing an HTTP client. Its full-import persistence
 operation replaces ordered child rows inside the caller's transaction and
 upserts parent rows by account-scoped external identity.
 
-The Hevy adapter is the only HTTP boundary. It reads `HEVY_API_KEY` from the
-environment, accepts only the official HTTPS host and approved GET paths, and
-uses standard-library transport with a 30-second timeout. DTO validation
+The Hevy adapter is the only HTTP boundary. Management commands read
+`HEVY_API_KEY` from the environment; authenticated web flows use a
+process-local credential bound to the current Django session. The adapter
+accepts only the official HTTPS host, approved GET paths, and the explicitly
+confirmed routine-creation POST. It uses standard-library transport with a
+30-second timeout. DTO validation
 normalizes UTC timestamps, IDs, decimals, nullable metrics, planned rest, and
 recorded RPE before the repository is called.
 
@@ -75,6 +78,12 @@ after that backup succeeds and the owner confirms `EXCLUIR`.
 The presentation-only `DashboardPresenter` consumes weekly or monthly activity
 buckets and returns typed SVG geometry, localized labels, summaries, and table
 rows. No chart code calls Hevy, recalculates domain formulas, or writes SQLite.
+
+`HistoryPreparationService` builds non-persistent chart read models from
+normalized workouts. `RoutinePayloadValidator` checks provider-shaped JSON
+against local templates and folders. `RoutineWriteIntent` makes confirmations
+single-use without storing the credential; ambiguous remote results remain
+auditable and require a plan refresh before any new attempt.
 
 Sprint 9 adds verified backup and SQLite-check management commands. The backup
 uses SQLite's online backup API, then requires both `integrity_check=ok` and an

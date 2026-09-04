@@ -31,10 +31,10 @@ uv run python manage.py check
 uv run python manage.py runserver 127.0.0.1:8000
 ```
 
-Open `http://127.0.0.1:8000/` after creating the first owner with
-`uv run python manage.py create_owner your-username`. Signup is closed by
-default; set `ALLOW_SIGNUPS=True` only while intentionally accepting another
-local account, then disable it again. The command prompts for a password and is
+Open `http://127.0.0.1:8000/`. Signup is available from the landing and login
+pages by default; set `ALLOW_SIGNUPS=False` to close new registration without
+disabling login. Alternatively, create the first owner with
+`uv run python manage.py create_owner your-username`. The command prompts for a password and is
 intended only for an empty database. For
 unattended local initialization, expose `TUXEDO_OWNER_PASSWORD` only to that
 process and pass `--no-input`. Recover a forgotten password locally with:

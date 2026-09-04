@@ -7,7 +7,6 @@ from io import StringIO
 from pathlib import Path
 from unittest import mock
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -98,8 +97,12 @@ class AuthenticationTests(TestCase):
 
 
 class SignupTests(TestCase):
-    def test_registration_is_closed_by_default(self):
-        self.assertFalse(settings.ALLOW_SIGNUPS)
+    @override_settings(ALLOW_SIGNUPS=True)
+    def test_login_offers_registration_when_available(self):
+        response = self.client.get(reverse('accounts:login'))
+
+        self.assertContains(response, 'Criar conta')
+        self.assertContains(response, reverse('accounts:signup'))
 
     @override_settings(ALLOW_SIGNUPS=True)
     def test_user_can_register_and_is_logged_in(self):

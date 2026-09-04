@@ -38,10 +38,27 @@ class PageResult:
 
 
 Transport = Callable[[str, dict[str, str], float], tuple[int, dict[str, str], bytes]]
+WriteTransport = Callable[
+    [str, dict[str, str], bytes, float],
+    tuple[int, dict[str, str], bytes],
+]
 
 
 def default_transport(url: str, headers: dict[str, str], timeout: float):
     request = Request(url, headers=headers, method='GET')
+    try:
+        with urlopen(request, timeout=timeout) as response:
+            return response.status, dict(response.headers.items()), response.read()
+    except HTTPError as error:
+        return error.code, dict(error.headers.items()), error.read()
+    except URLError as error:
+        raise TimeoutError from error
+
+
+def default_write_transport(
+    url: str, headers: dict[str, str], body: bytes, timeout: float
+):
+    request = Request(url, headers=headers, data=body, method='POST')
     try:
         with urlopen(request, timeout=timeout) as response:
             return response.status, dict(response.headers.items()), response.read()
@@ -74,8 +91,11 @@ class HevyClient:
         '/v1/routines', '/v1/workouts', '/v1/workouts/events',
     }
 
-    def __init__(self, api_key: str, base_url: str = BASE_URL, *, transport: Transport = default_transport,
-                 sleep: Callable[[float], None] = time.sleep, jitter: Callable[[], float] = random.random):
+    def __init__(self, api_key: str, base_url: str = BASE_URL, *,
+                 transport: Transport = default_transport,
+                 write_transport: WriteTransport = default_write_transport,
+                 sleep: Callable[[float], None] = time.sleep,
+                 jitter: Callable[[], float] = random.random):
         if not api_key.strip():
             raise HevyError('CONFIG_MISSING_KEY', 'Hevy API key is not configured.')
         parsed = urlparse(base_url)
@@ -84,6 +104,7 @@ class HevyClient:
         self.api_key = api_key.strip()
         self.base_url = base_url.rstrip('/') + '/'
         self.transport = transport
+        self.write_transport = write_transport
         self.sleep = sleep
         self.jitter = jitter
         self.retry_count = 0
@@ -135,6 +156,61 @@ class HevyClient:
                 wait = 2 ** (attempt - 1) + self.jitter()
             self.sleep(wait)
         raise AssertionError('unreachable')
+
+    @staticmethod
+    def _decode_payload(body: bytes) -> dict[str, Any]:
+        if len(body) > HevyClient.MAX_RESPONSE_BYTES:
+            raise HevyError('PAYLOAD_INVALID', 'Hevy response exceeds the size limit.')
+        try:
+            payload = json.loads(body)
+        except (TypeError, json.JSONDecodeError) as error:
+            raise HevyError('PAYLOAD_INVALID', 'Hevy returned invalid JSON.') from error
+        if not isinstance(payload, dict):
+            raise HevyError('PAYLOAD_INVALID', 'Hevy returned an invalid response.')
+        return payload
+
+    def create_routine(self, payload: dict[str, Any]) -> RoutineDTO:
+        """Create one routine without automatically retrying an ambiguous write."""
+        url = urljoin(self.base_url, 'v1/routines')
+        body = json.dumps(payload, ensure_ascii=False, separators=(',', ':')).encode()
+        if len(body) > 65_536:
+            raise HevyError('PAYLOAD_INVALID', 'Routine payload exceeds the size limit.')
+        headers = {
+            'api-key': self.api_key,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        try:
+            status, _, response_body = self.write_transport(
+                url, headers, body, self.TIMEOUT_SECONDS
+            )
+        except TimeoutError as error:
+            raise HevyError(
+                'WRITE_UNKNOWN',
+                'Hevy did not confirm whether the routine was created.',
+            ) from error
+        if 200 <= status < 300:
+            try:
+                response = self._decode_payload(response_body)
+                routine = response.get('routine')
+                if not isinstance(routine, dict):
+                    raise HevyError(
+                        'PAYLOAD_INVALID', 'Hevy returned an invalid routine response.'
+                    )
+                return RoutineDTO.from_payload(routine)
+            except (HevyError, PayloadError) as error:
+                raise HevyError(
+                    'WRITE_UNKNOWN',
+                    'Hevy accepted the request but returned an invalid confirmation.',
+                ) from error
+        if status in {401, 403}:
+            raise HevyError('AUTH_INVALID', f'Hevy request failed with HTTP {status}.')
+        if status == 408 or status >= 500:
+            raise HevyError(
+                'WRITE_UNKNOWN',
+                'Hevy did not confirm whether the routine was created.',
+            )
+        raise HevyError('HTTP_PERMANENT', f'Hevy request failed with HTTP {status}.')
 
     def user_info(self) -> AccountDTO:
         try:

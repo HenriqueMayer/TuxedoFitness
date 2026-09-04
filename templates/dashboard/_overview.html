@@ -19,6 +19,7 @@
             <div><label for="id_inicio" class="text-sm font-medium">{{ period_form.inicio.label }}</label>{{ period_form.inicio }}</div>
             <div><label for="id_fim" class="text-sm font-medium">{{ period_form.fim.label }}</label>{{ period_form.fim }}</div>
             <div class="flex items-center gap-2"><label for="id_comparar" class="text-sm font-medium">{{ period_form.comparar }} {{ period_form.comparar.label }}</label></div>
+            <div><label for="id_exercicio" class="text-sm font-medium">{{ period_form.exercicio.label }}</label>{{ period_form.exercicio }}</div>
             <div class="flex items-end"><button id="period-submit" class="w-full rounded-full bg-caramel px-5 py-3 text-sm font-semibold text-forest-deep hover:bg-caramel-light" type="submit">Aplicar período</button></div>
             <p id="overview-loading" class="htmx-indicator text-sm text-forest/60 dark:text-cream/60" data-request-status role="status" aria-live="polite" aria-hidden="true">Atualizando indicadores…</p>
         </form>

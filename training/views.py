@@ -6,6 +6,7 @@ from django.core.paginator import Paginator
 from django.db.models import Exists, OuterRef, Prefetch, Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.views.generic import TemplateView
 
 from analytics.services import AnalyticsService
@@ -221,7 +222,9 @@ class WorkoutExportView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         account = _account(request.user)
         response = HttpResponse(content_type='text/csv; charset=utf-8')
-        response['Content-Disposition'] = 'attachment; filename="treinos.csv"'
+        response['Content-Disposition'] = (
+            f'attachment; filename="workout-history-{timezone.localdate():%Y%m%d}.csv"'
+        )
         writer = csv.writer(response, lineterminator='\n')
         writer.writerow([
             'treino_id', 'treino_titulo', 'inicio_utc', 'fim_utc', 'rotina',

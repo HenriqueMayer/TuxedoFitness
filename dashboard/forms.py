@@ -29,13 +29,30 @@ class PeriodForm(forms.Form):
         required=False,
         label='Comparar com o período anterior',
     )
+    exercicio = forms.ChoiceField(
+        required=False,
+        label='Evolução do exercício',
+        choices=[('', 'Selecione um exercício')],
+        widget=forms.Select(attrs={
+            'class': 'mt-1 w-full rounded-xl border border-forest/20 bg-transparent px-3 py-2 dark:border-cream/20',
+        }),
+    )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, account=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['comparar'].widget.attrs['class'] = 'h-4 w-4 rounded border-forest/30'
         today = timezone.localdate()
         self.fields['inicio'].initial = today - timedelta(days=27)
         self.fields['fim'].initial = today
+        if account is not None:
+            from training.models import ExerciseTemplate
+
+            self.fields['exercicio'].choices = [('', 'Selecione um exercício'), *[
+                (str(pk), title)
+                for pk, title in ExerciseTemplate.objects.filter(
+                    hevy_account=account
+                ).order_by('title').values_list('pk', 'title')
+            ]]
 
     def clean(self):
         cleaned = super().clean()

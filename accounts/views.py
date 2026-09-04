@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView as DjangoLoginView
+from django.contrib.auth.views import LogoutView as DjangoLogoutView
 from django.db import transaction
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -11,6 +12,7 @@ from django.views.generic import CreateView, TemplateView
 from accounts.forms import LoginForm, OwnerPreferenceForm, SignupForm
 from accounts.models import OwnerPreference
 from accounts.services import BackupError, create_verified_backup
+from integrations.credentials import session_credentials
 from integrations.models import HevyAccount
 from training.models import ExerciseTemplate, Routine, Workout
 
@@ -19,6 +21,12 @@ class LoginView(DjangoLoginView):
     template_name = 'accounts/login.html'
     authentication_form = LoginForm
     redirect_authenticated_user = True
+
+
+class LogoutView(DjangoLogoutView):
+    def post(self, request, *args, **kwargs):
+        session_credentials.delete(request)
+        return super().post(request, *args, **kwargs)
 
 
 class SignupView(CreateView):

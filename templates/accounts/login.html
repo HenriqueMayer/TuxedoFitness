@@ -15,6 +15,6 @@
         {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
         <button type="submit" class="inline-flex w-full items-center justify-center rounded-full bg-caramel px-6 py-3 text-sm font-semibold text-forest-deep hover:bg-caramel-light">Entrar</button>
     </form>
-    {% if signup_available %}<p class="mt-6 text-center text-sm text-forest/70 dark:text-cream/70">Ainda não tem conta? <a href="{% url 'accounts:signup' %}" class="font-medium text-caramel-ink underline decoration-caramel underline-offset-4 dark:text-caramel-light">Cadastre-se</a>.</p>{% endif %}
+    {% if signup_available %}<div class="mt-6 rounded-3xl border border-forest/10 bg-white p-6 text-center dark:border-cream/10 dark:bg-forest"><p class="text-sm text-forest/70 dark:text-cream/70">Ainda não tem uma conta local?</p><a href="{% url 'accounts:signup' %}" class="mt-4 inline-flex w-full items-center justify-center rounded-full border border-caramel px-6 py-3 text-sm font-semibold text-caramel-ink hover:bg-caramel/10 dark:text-caramel-light">Criar conta</a></div>{% endif %}
 </div>
 {% endblock %}

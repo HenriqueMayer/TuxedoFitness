@@ -4,9 +4,24 @@ This document records implementation truth. The PRD defines product intent,
 but a requirement is considered implemented only when code and executable
 evidence exist.
 
+## Unreleased implemented
+
+- Authenticated web users can test a Hevy key held only in process memory for
+  the current session, explicitly disconnect it, and retain local data after it
+  is forgotten.
+- The synchronization page is now a five-action Hevy workspace for complete
+  history preparation, exercise/routine CSV and JSON exports, routine creation,
+  and offline prompt generation.
+- Routine creation accepts strict provider-shaped JSON, validates local
+  exercise/folder references and modality fields, presents a preview, consumes
+  a 30-minute single-use intent, sends one non-retried provider POST, and
+  refreshes local plans after confirmed success.
+- The overview presents activity, set-type, RPE, and selected-exercise evolution
+  as server-rendered SVG with text and table equivalents.
+
 ## v0.1.0 implemented
 
-- Local Django 6 application, native authentication, closed-by-default signup,
+- Local Django 6 application, native authentication, environment-disableable signup,
   per-user presentation preferences, and protected personal routes.
 - Normalized SQLite models for provider identity, exercises, routines,
   workouts, sets, synchronization state, cursors, and audited runs.
@@ -28,8 +43,8 @@ evidence exist.
 
 ## Planned for v0.2.0
 
-- Present weekly-target consistency, average duration, set-type distribution,
-  frequent exercises, and recent exercise evolution on the overview.
+- Present weekly-target consistency, average duration, and frequent exercises
+  on the overview.
 - Expand exercise lists with equipment, secondary muscles, custom status,
   recent activity, and compact metric summaries.
 - Expand exercise detail with local set history, RPE completeness, date filters,
@@ -41,9 +56,9 @@ evidence exist.
 
 ## Future and intentionally absent
 
-Hevy writes, webhooks, body measurements, generated routines, conversational
-agents, medical advice, multi-tenancy, queues, and distributed infrastructure
-are not part of v0.1.0 or v0.2.0.
+Editing existing Hevy routines, writing workouts/folders/exercises, webhooks,
+body measurements, embedded LLM calls, conversational agents, medical advice,
+multi-tenancy, queues, and distributed infrastructure remain absent.
 
 ## Release evidence
 

@@ -17,6 +17,7 @@ pages/accounts/dashboard/training views
        normalized training/integration models
 
 Hevy HTTP -> integrations adapter -> validated DTOs -> training persistence
+                                   -> confirmed routine POST
 ```
 
 | App | Responsibility |
@@ -24,7 +25,7 @@ Hevy HTTP -> integrations adapter -> validated DTOs -> training persistence
 | `core` | Settings, security checks, root routing, liveness/readiness, ASGI/WSGI. |
 | `pages` | Public landing page containing synthetic presentation only. |
 | `accounts` | Authentication, signup policy, preferences, backup and local deletion controls. |
-| `integrations` | Provider client, DTOs, synchronization coordination, state, cursor and run audit. |
+| `integrations` | Ephemeral credentials, provider client, DTOs, synchronization, exports, prompt generation, and confirmed routine-write audit. |
 | `training` | Normalized persistence, repositories, and read-only training pages. |
 | `analytics` | Deterministic formulas, eligibility, comparisons and metric metadata. |
 | `dashboard` | Overview composition and presentation-only SVG read models. |
@@ -39,8 +40,10 @@ the code does not enforce.
 
 - SQLite, `.env`, backups, exports, diagnostics, and provider snapshots remain
   outside the tracked public tree. POSIX environment files must be mode `0600`.
-- Secrets enter through a selected environment file or process environment and
-  never enter models, responses, URLs, logs, fixtures, or exports.
+- Command secrets enter through a selected environment file or process
+  environment. Web secrets enter the process-memory session store through a
+  masked POST. They never enter cookies, persistent sessions, models,
+  responses, URLs, logs, fixtures, prompts, or exports.
 - Canonical timestamps are aware; canonical mass/distance storage remains in
   provider units and presentation conversion happens at the template boundary.
 - Synchronization validates complete provider responses before canonical
@@ -58,3 +61,7 @@ remain valid after a body swap.
 The SVG presentation model is created from analytics read models and contains
 geometry, localized labels, summaries, and table rows only. It performs no
 domain calculation, persistence, or external I/O.
+
+Routine JSON is staged in a non-secret, expiring database intent. Only an
+authenticated CSRF-protected confirmation consumes it. The backend sends one
+provider POST and never retries an ambiguous write automatically.

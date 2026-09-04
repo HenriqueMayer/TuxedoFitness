@@ -29,6 +29,7 @@ module.exports = defineConfig({
     env: {
       SECRET_KEY: 'synthetic-e2e-django-key',
       DEBUG: 'False',
+      ALLOW_SIGNUPS: 'True',
       ALLOWED_HOSTS: '127.0.0.1,localhost',
       TUXEDO_FITNESS_DB: e2eDatabase,
       UV_CACHE_DIR: '/tmp/tuxedo-fitness-uv-cache',
