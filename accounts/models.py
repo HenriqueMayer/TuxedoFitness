@@ -1,17 +1,19 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class OwnerPreference(models.Model):
-    MASS_UNIT_CHOICES = [('kg', 'Quilogramas'), ('lb', 'Libras')]
-    DISTANCE_UNIT_CHOICES = [('km', 'Quilômetros'), ('mi', 'Milhas')]
+    MASS_UNIT_CHOICES = [('kg', _('Kilograms')), ('lb', _('Pounds'))]
+    DISTANCE_UNIT_CHOICES = [('km', _('Kilometres')), ('mi', _('Miles'))]
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='fitness_preferences',
     )
+    date_format = models.CharField(max_length=3, choices=[('DMY', 'DD/MM/YYYY'), ('MDY', 'MM/DD/YYYY')], default='DMY')
     presentation_timezone = models.CharField(
         max_length=64,
         default='America/Sao_Paulo',

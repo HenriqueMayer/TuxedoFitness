@@ -9,7 +9,7 @@ class LandingPageTests(TestCase):
         response = self.client.get(reverse('pages:landing'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Seu histórico de treino')
+        self.assertContains(response, 'Understand your training.')
         self.assertContains(response, reverse('accounts:signup'))
         self.assertContains(response, reverse('accounts:login'))
 
@@ -20,11 +20,11 @@ class LandingPageTests(TestCase):
         response = self.client.get(reverse('pages:landing'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Criar conta')
+        self.assertContains(response, 'Create account')
 
     @override_settings(ALLOW_SIGNUPS=False)
     def test_landing_hides_signup_when_disabled(self):
         response = self.client.get(reverse('pages:landing'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'Criar conta')
+        self.assertNotContains(response, 'Create account')

@@ -6,33 +6,31 @@ follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+No additional changes.
+
+## [0.2.0] - 2026-09-05
+
+### Breaking
+
+- Fresh local database required; no supported migration of 0.1.x users or test data. The default private directory is `var/private/v020`.
+- Hevy credentials move from session-only storage to per-user encrypted persistence with a separate installation key ring.
+- Stable English routes and native EN/PT-BR gettext replace the old guided screens.
+
 ### Added
 
-- Made local account creation visible and available by default from the public
-  landing page and login screen; `ALLOW_SIGNUPS=False` still closes registration.
-- Added a process-memory, session-scoped Hevy connection flow with explicit
-  disconnect and logout cleanup.
-- Added exercise and routine CSV/JSON exports, deterministic history charts,
-  and local prompt generation for external training analysis.
-- Added strict routine JSON validation, a human-readable preview, single-use
-  confirmation intents, and non-retried `POST /v1/routines` creation.
+- Tuxedo family shell and parity contract pinned to Finance `90cfe53`, local assets and both themes.
+- Access-triggered/manual sync with daily catalogue cache, original provider snapshots and read aliases.
+- Full-history browsing, bilingual catalogue, routine folders, six configurable analysis topics, favorites and exports.
+- Optional training profile, versioned immutable prompt generations, original API context and offline copy/download.
+- Batch routine envelopes, whole-batch validation, remote comparisons, expiring single-use confirmations and per-operation outcomes.
+- Key rotation, synthetic contract tests, branch coverage, isolated E2E/capture tooling and bilingual static preview.
 
-### Security
+### Reliability
 
-- Kept web credentials out of cookies, sessions, models, exports, prompts, and
-  logs, and classified ambiguous writes without automatically retrying them.
+- Provider writes never retry ambiguous outcomes; partial successes and pending local refresh remain visible.
+- Same-path updates preserve scroll/focus; SVG charts include keyboard interaction and equivalent tables.
+- Documentation distinguishes synthetic tests from real Hevy operations.
 
-### Fixed
-
-- Mapped the Hevy routine-folder endpoint's `routines` response key so complete
-  and plan synchronization no longer rejects valid pagination metadata.
-- Restored the documented Django 6.0 and Tailwind CSS 3.4 dependency bounds
-  after incompatible automated dependency updates.
-
-### Planned
-
-- Complete the advanced overview, exercise-history, modality, and comparison
-  views described for v0.2.0 in the PRD.
 
 ## [0.1.0] - 2026-08-31
 

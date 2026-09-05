@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
+from decimal import Decimal
 from typing import Any, TypedDict
+
+from django.utils import formats
+from django.utils.translation import gettext as _
 
 from analytics.services import LocalPeriod
 
@@ -52,27 +56,28 @@ def _bucket_start(value: date, bucket: str) -> date:
     return value - timedelta(days=value.weekday())
 
 
-def _localized_date(value: date, *, include_year: bool) -> str:
-    return value.strftime('%d/%m/%Y' if include_year else '%d/%m')
+def _localized_date(value: date, *, include_year: bool, preference=None) -> str:
+    pattern = '%m/%d' if getattr(preference, 'date_format', 'DMY') == 'MDY' else '%d/%m'
+    return value.strftime(pattern + ('/%Y' if include_year else ''))
 
 
 def _localized_number(value: Any) -> str:
     if value is None:
         return ''
-    return str(value).replace('.', ',')
+    return formats.number_format(Decimal(str(value)).quantize(Decimal('0.01')).normalize(), force_grouping=False)
 
 
-def _axis_ticks(maximum: int, chart_height: float) -> list[AxisTickViewModel]:
+def _axis_ticks(maximum: float, chart_height: float) -> list[AxisTickViewModel]:
     top = SVG_MARGIN['top']
     baseline = top + chart_height
-    if maximum <= 4:
-        values = list(range(maximum + 1))
+    if maximum == int(maximum):
+        values = list(range(int(maximum) + 1)) if maximum <= 4 else list(dict.fromkeys(round(maximum * index / 4) for index in range(5)))
     else:
-        values = list(dict.fromkeys(round(maximum * index / 4) for index in range(5)))
+        values = [maximum * index / 4 for index in range(5)]
     return [
         {
             'y': round(baseline - chart_height * value / maximum, 2),
-            'label': str(value),
+            'label': _localized_number(value),
         }
         for value in values
     ]
@@ -80,6 +85,9 @@ def _axis_ticks(maximum: int, chart_height: float) -> list[AxisTickViewModel]:
 
 class DashboardPresenter:
     """Turn analytics read models into localized SVG and table payloads."""
+
+    def __init__(self, preference=None):
+        self.preference = preference
 
     def _activity_series(
         self, period: LocalPeriod, buckets: dict[date, int | None] | None
@@ -114,17 +122,13 @@ class DashboardPresenter:
     ) -> ChartViewModel:
         bucket, points = self._activity_series(period, buckets)
         include_year = period.days > 365
-        labels = [_localized_date(key, include_year=include_year) for key, _ in points]
+        labels = [_localized_date(key, include_year=include_year, preference=self.preference) for key, _ in points]
         values = [int(value or 0) for _, value in points]
         total = sum(values)
         has_data = any(value > 0 for value in values)
-        bucket_label = 'semana' if bucket == 'week' else 'mês'
-        title = f'Treinos por {bucket_label}'
-        summary = (
-            f'{total} treino(s) registrado(s) no período, agrupado(s) por {bucket_label}.'
-            if has_data
-            else 'Nenhum treino confirmado no período selecionado.'
-        )
+        bucket_label = _('week') if bucket == 'week' else _('month')
+        title = _('Workouts per week') if bucket == 'week' else _('Workouts per month')
+        summary = _('%(count)s workouts grouped by %(bucket)s.') % {'count': total, 'bucket': bucket_label} if has_data else _('No workouts recorded in the selected period.')
 
         chart_width = SVG_WIDTH - SVG_MARGIN['left'] - SVG_MARGIN['right']
         chart_height = SVG_HEIGHT - SVG_MARGIN['top'] - SVG_MARGIN['bottom']
@@ -154,12 +158,12 @@ class DashboardPresenter:
             'view_box': f'0 0 {SVG_WIDTH} {SVG_HEIGHT}',
             'bars': bars,
             'axis_ticks': _axis_ticks(maximum, chart_height),
-            'table_headers': ['Período', 'Treinos'],
+            'table_headers': [_('Period'), _('Workouts')],
             'table_rows': [
                 {'label': label, 'value': _localized_number(value)}
                 for label, value in zip(labels, values, strict=True)
             ],
-            'unit': 'treino(s)',
+            'unit': _('workouts'),
         }
 
     def _categorical_chart(
@@ -168,14 +172,8 @@ class DashboardPresenter:
     ) -> ChartViewModel:
         labels = list(values)
         numeric = [float(values[label]) for label in labels]
-        total = sum(values.values())
-        has_data = bool(labels) and any(value > 0 for value in numeric)
-        summary = (
-            f'{len(labels)} ponto(s) de evolução em {unit}.'
-            if has_data and summarize_points else
-            f'{_localized_number(total)} {unit} no período selecionado.'
-            if has_data else f'Sem dados de {title.lower()} no período selecionado.'
-        )
+        has_data = bool(labels)
+        summary = _('%(count)s observations in %(unit)s.') % {'count': len(labels), 'unit': unit} if has_data else _('No eligible observations in this period.')
         chart_width = SVG_WIDTH - SVG_MARGIN['left'] - SVG_MARGIN['right']
         chart_height = SVG_HEIGHT - SVG_MARGIN['top'] - SVG_MARGIN['bottom']
         slot_width = chart_width / max(len(numeric), 1)
@@ -191,7 +189,7 @@ class DashboardPresenter:
                 'height': round(height, 2),
                 'label': label,
                 'value': _localized_number(values[label]),
-                'show_label': True,
+                'show_label': index % max(1, (len(labels) + 5) // 6) == 0,
             })
         return {
             'dom_id': dom_id,
@@ -201,7 +199,7 @@ class DashboardPresenter:
             'has_data': has_data,
             'view_box': f'0 0 {SVG_WIDTH} {SVG_HEIGHT}',
             'bars': bars,
-            'axis_ticks': _axis_ticks(max(1, int(maximum + 0.999)), chart_height),
+            'axis_ticks': _axis_ticks(maximum, chart_height),
             'table_headers': [first_header, unit],
             'table_rows': [
                 {'label': label, 'value': _localized_number(values[label])}
@@ -222,19 +220,19 @@ class DashboardPresenter:
         prepared = prepared or {}
         charts = [self._activity_chart(period, activity_buckets)]
         charts.append(self._categorical_chart(
-            dom_id='set-types-chart', title='Séries por tipo',
-            values=prepared.get('set_type_counts', {}), first_header='Tipo', unit='série(s)',
+            dom_id='set-types-chart', title=_('Sets by type'),
+            values=prepared.get('set_type_counts', {}), first_header=_('Type'), unit=_('sets'),
         ))
         charts.append(self._categorical_chart(
-            dom_id='rpe-chart', title='Distribuição de RPE',
-            values=prepared.get('rpe_distribution', {}), first_header='RPE', unit='série(s)',
+            dom_id='rpe-chart', title=_('RPE distribution'),
+            values=prepared.get('rpe_distribution', {}), first_header='RPE', unit=_('sets'),
         ))
         if prepared.get('exercise_evolution_title'):
             charts.append(self._categorical_chart(
                 dom_id='exercise-evolution-chart',
-                title=f"Evolução · {prepared['exercise_evolution_title']}",
+                title=_("Progression") + " · " + prepared["exercise_evolution_title"],
                 values=prepared.get('exercise_evolution', {}),
-                first_header='Data', unit=prepared.get('exercise_evolution_unit', 'valor'),
+                first_header=_('Date'), unit=prepared.get('exercise_evolution_unit', _('value')),
                 summarize_points=True,
             ))
         return {

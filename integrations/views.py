@@ -1,9 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
-from django.http import Http404, HttpResponse
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.decorators import method_decorator
+from django.utils.translation import gettext as _
 from django.views import View
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import TemplateView
 
 from integrations.credentials import session_credentials
@@ -12,26 +15,17 @@ from integrations.exports import (
     exercise_catalog_json,
     routines_csv,
     routines_json,
+    workouts_json,
 )
 from integrations.forms import (
     FullRefreshConfirmationForm,
     HevyConnectionForm,
-    PromptTemplateForm,
-    RoutineConfirmationForm,
-    RoutineJsonForm,
 )
 from integrations.hevy import HevyClient, HevyError
 from integrations.models import (
     IntegrationState,
-    RoutineWriteIntent,
     SyncCursor,
     SyncRun,
-)
-from integrations.prompting import PromptTemplateService
-from integrations.routines import (
-    RoutinePayloadValidator,
-    RoutineValidationError,
-    RoutineWriteService,
 )
 from integrations.services import (
     ADAPTER_VERSION,
@@ -39,7 +33,7 @@ from integrations.services import (
     IncrementalSyncService,
     PlanRefreshService,
 )
-from training.models import Routine, Workout
+from training.models import Workout
 
 
 def _account(user):
@@ -51,14 +45,14 @@ def _client_for_request(request):
     if api_key is None:
         raise HevyError(
             'CONFIG_MISSING_KEY',
-            'Conecte sua API key do Hevy novamente para esta sessão.',
+            _('Connect your Hevy account in Settings.'),
         )
     return HevyClient(api_key)
 
 
 def _failure_message(request, error):
     if isinstance(error, DatabaseError):
-        messages.error(request, 'DATABASE_ERROR: Falha ao persistir os dados locais.')
+        messages.error(request, _('DATABASE_ERROR: Local persistence failed.'))
         return
     code = error.code if isinstance(error, HevyError) else 'SYNC_INVALID'
     messages.error(request, f'{code}: {error}')
@@ -94,7 +88,7 @@ class SyncView(LoginRequiredMixin, TemplateView):
             'adapter_version': ADAPTER_VERSION,
             'hevy_documentation_date': '2026-09-04',
             'connection_form': HevyConnectionForm(),
-            'session_connected': session_credentials.get(self.request) is not None,
+            'session_connected': bool(account and account.encrypted_api_key),
             'history_ready': bool(account and (
                 (state and state.last_full_refresh_at)
                 or Workout.all_objects.filter(hevy_account=account).exists()
@@ -103,19 +97,22 @@ class SyncView(LoginRequiredMixin, TemplateView):
         return context
 
 
+@method_decorator(sensitive_post_parameters('api_key'), name='dispatch')
 class ValidateConnectionView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = HevyConnectionForm(request.POST)
         if not form.is_valid():
-            messages.error(request, 'Informe uma API key válida do Hevy.')
+            messages.error(request, _('Enter a valid Hevy API key.'))
             return redirect('integrations:sync')
         client = HevyClient(form.cleaned_data['api_key'])
         try:
+            from integrations.credentials import cipher
+            cipher()
             FullImportService(client).validate_account(request.user)
             session_credentials.put(request, form.cleaned_data['api_key'])
             messages.success(
                 request,
-                'Conexão validada. A chave ficará somente nesta sessão.',
+                _('Connection saved with encryption. History will synchronize automatically.'),
             )
         except (DatabaseError, HevyError, ValueError) as error:
             _failure_message(request, error)
@@ -131,7 +128,7 @@ class DisconnectView(LoginRequiredMixin, View):
                 status=IntegrationState.Status.DISCONNECTED,
                 is_stale=True,
             )
-        messages.success(request, 'A chave do Hevy foi removida desta sessão.')
+        messages.success(request, _('Disconnected. Local history was preserved.'))
         return redirect('integrations:sync')
 
 
@@ -139,7 +136,7 @@ class IncrementalSyncView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         account = _account(request.user)
         if account is None:
-            messages.error(request, 'Valide a conexão com o Hevy antes de sincronizar treinos.')
+            messages.error(request, _('Validate the Hevy connection before synchronizing workouts.'))
             return redirect('integrations:sync')
         try:
             run = IncrementalSyncService(
@@ -210,7 +207,7 @@ class RetrySyncView(LoginRequiredMixin, View):
             prior_run.mode != SyncRun.Mode.INCREMENTAL
             or prior_run.state not in {SyncRun.State.FAILED, SyncRun.State.PARTIAL}
         ):
-            messages.error(request, 'Somente execuções incrementais com falha ou parciais podem ser repetidas.')
+            messages.error(request, _('Only failed or partial incremental runs can be retried.'))
             return redirect('integrations:run-detail', pk=prior_run.pk)
         try:
             run = IncrementalSyncService(
@@ -235,12 +232,13 @@ class PlanRefreshView(LoginRequiredMixin, View):
         except (DatabaseError, HevyError, ValueError) as error:
             _failure_message(request, error)
             return redirect('integrations:sync')
-        messages.success(request, 'Catálogo e rotinas foram atualizados.')
+        messages.success(request, _('Catalogue and routines were refreshed.'))
         return redirect('integrations:run-detail', pk=run.pk)
 
 
 class LocalExportView(LoginRequiredMixin, View):
     exporters = {
+        ('workouts', 'json'): workouts_json,
         ('exercises', 'csv'): exercise_catalog_csv,
         ('exercises', 'json'): exercise_catalog_json,
         ('routines', 'csv'): routines_csv,
@@ -253,97 +251,3 @@ class LocalExportView(LoginRequiredMixin, View):
         if account is None or exporter is None:
             raise Http404
         return exporter(account)
-
-
-class PromptTemplateView(LoginRequiredMixin, TemplateView):
-    template_name = 'integrations/prompt_template.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.setdefault('form', PromptTemplateForm())
-        context.setdefault('generated_prompt', None)
-        return context
-
-    def post(self, request, *args, **kwargs):
-        account = _account(request.user)
-        if account is None:
-            messages.error(request, 'Colete o histórico antes de gerar um prompt.')
-            return redirect('integrations:sync')
-        form = PromptTemplateForm(request.POST)
-        if not form.is_valid():
-            return self.render_to_response(self.get_context_data(form=form))
-        generated = PromptTemplateService(account).build(form.cleaned_data)
-        if request.POST.get('action') == 'download':
-            response = HttpResponse(generated, content_type='text/markdown; charset=utf-8')
-            response['Content-Disposition'] = 'attachment; filename="training-analysis-prompt.md"'
-            return response
-        return self.render_to_response(
-            self.get_context_data(form=form, generated_prompt=generated)
-        )
-
-
-class RoutineCreateView(LoginRequiredMixin, TemplateView):
-    template_name = 'integrations/routine_create.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.setdefault('form', RoutineJsonForm())
-        return context
-
-    def post(self, request, *args, **kwargs):
-        account = _account(request.user)
-        if account is None:
-            messages.error(request, 'Atualize o catálogo antes de criar uma rotina.')
-            return redirect('integrations:sync')
-        form = RoutineJsonForm(request.POST)
-        if not form.is_valid():
-            return self.render_to_response(self.get_context_data(form=form))
-        validator = RoutinePayloadValidator(account)
-        try:
-            payload = validator.validate(form.cleaned_data['payload'])
-        except RoutineValidationError as error:
-            form.add_error('payload', str(error))
-            return self.render_to_response(self.get_context_data(form=form))
-        intent = RoutineWriteService().create_intent(account, payload)
-        return render(request, 'integrations/routine_preview.html', {
-            'intent': intent,
-            'preview': validator.preview(payload),
-            'form': RoutineConfirmationForm(initial={'intent_id': intent.pk}),
-        })
-
-
-class RoutineConfirmView(LoginRequiredMixin, View):
-    def post(self, request, *args, **kwargs):
-        form = RoutineConfirmationForm(request.POST)
-        account = _account(request.user)
-        if not form.is_valid() or account is None:
-            messages.error(request, 'A confirmação da rotina é inválida.')
-            return redirect('integrations:routine-create')
-        client = None
-        try:
-            client = _client_for_request(request)
-            routine = RoutineWriteService().submit(
-                account, form.cleaned_data['intent_id'], client
-            )
-        except RoutineWriteIntent.DoesNotExist:
-            messages.error(request, 'A prévia não existe para esta conta.')
-            return redirect('integrations:routine-create')
-        except (HevyError, RoutineValidationError) as error:
-            _failure_message(request, error)
-            return redirect('integrations:routine-create')
-
-        try:
-            PlanRefreshService(client).run(request.user, trigger=SyncRun.Trigger.WEB)
-        except (DatabaseError, HevyError, ValueError):
-            messages.warning(
-                request,
-                'A rotina foi criada no Hevy, mas os planos locais não puderam ser atualizados. Atualize catálogo e rotinas antes de tentar novamente.',
-            )
-            return redirect('integrations:sync')
-        local_routine = Routine.objects.filter(
-            hevy_account=account, external_id=routine.external_id
-        ).first()
-        messages.success(request, 'Rotina criada no Hevy e confirmada localmente.')
-        if local_routine is not None:
-            return redirect('training:routine-detail', pk=local_routine.pk)
-        return redirect('integrations:sync')

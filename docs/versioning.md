@@ -12,7 +12,7 @@ the README badge, changelog, and release tag are validated by
 `scripts/check_version.py`. `package.json` contains development tools only.
 
 Release tags use the canonical version prefixed with `v`, for example
-`v0.1.0`.
+`v0.2.0`.
 
 ## Release workflow
 

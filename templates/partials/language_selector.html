@@ -1,0 +1,7 @@
+{% load i18n %}{% get_current_language as active_language %}
+<form action="{% url 'set_language' %}" method="post" hx-boost="false" class="flex items-center gap-2">
+{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+<label class="sr-only" for="language-choice">{% translate "Language" %}</label>
+<select id="language-choice" name="language" class="rounded-full border border-forest/20 bg-transparent px-3 py-2 text-xs dark:border-cream/30" data-language>
+<option value="en" {% if active_language == 'en' %}selected{% endif %}>EN</option><option value="pt-br" {% if active_language == 'pt-br' %}selected{% endif %}>PT-BR</option></select>
+<noscript><button class="btn-secondary">{% translate "Apply" %}</button></noscript></form>

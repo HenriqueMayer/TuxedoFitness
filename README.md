@@ -1,123 +1,39 @@
-<p align="center">
-  <img src="static/brand/tuxedo-fitness-emblem-128.png" width="96" height="96" alt="Tuxedo Fitness emblem">
-</p>
+# Tuxedo Fitness
 
-<h1 align="center">Tuxedo Fitness</h1>
+<img alt="Version 0.2.0" src="https://img.shields.io/badge/version-0.2.0-B88A59">
 
-<p align="center">Local-first, self-hosted training analytics with an owner-controlled SQLite record.</p>
+[Português (Brasil)](README.pt-BR.md) · [Documentation](docs/README.md) · [Interface tour](preview/index.html)
 
-<p align="center">
-  <img alt="Version 0.1.0" src="https://img.shields.io/badge/version-0.1.0-B88A59">
-  <img alt="Python 3.12+" src="https://img.shields.io/badge/python-3.12%2B-1A2E26">
-  <img alt="License PolyForm Noncommercial" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-8A5A2F">
-</p>
+A local-first training dashboard in the Tuxedo family. Connect Hevy once, explore your history and exercise catalogue, analyze training, and generate complete prompts for the LLM you choose. Review a JSON proposal before creating or updating routines in Hevy.
 
-Tuxedo Fitness imports Hevy data through a backend-only adapter, normalizes it
-locally, and calculates deterministic training metrics. Its only write action
-is an explicitly previewed and confirmed routine creation. The web
-application is server-rendered Django with progressive HTMX navigation,
-accessible SVG charts, equivalent tables, and no runtime CDN.
+- Encrypted, account-scoped Hevy credentials stored across sessions and restarts.
+- Full training history, routine folders, bilingual exercise search and CSV/JSON exports.
+- Six configurable analysis topics: frequency, progression, effort, volume, distribution and duration.
+- Optional training profile and immutable, downloadable prompt generations using original Hevy data.
+- Batch routine creation/update with validation, remote comparison, single-use confirmation and per-operation results.
+- English and Brazilian Portuguese, independent units/timezone/date preferences, light/dark themes and server-rendered fallbacks.
 
-This is a personal application, not a hosted service, public API, medical
-product, or official Hevy product.
+Nutrition, body measurements, editing completed workouts and an integrated LLM chat are outside this release. The application never sends your data to an LLM automatically. Hevy API access requires Hevy Pro.
 
-## Current capabilities
+## Install
 
-- Native Django login and explicitly controlled local signup.
-- Full, plan-only, and incremental workout synchronization with audit runs,
-  cursor safety, retries, and rollback on invalid provider data.
-- Workout history, exercise and routine views, period filters, compatible
-  volume/RPE/record/e1RM analytics, and set-level CSV export.
-- Ephemeral per-session Hevy connection, exercise/routine CSV and JSON exports,
-  offline analysis-prompt generation, and confirmed routine creation from JSON.
-- Local preferences, retention cleanup, verified SQLite backup, integrity
-  checks, and isolated restore rehearsal.
-- Strict same-origin CSP, backend-only credentials, synthetic tests, dependency
-  audits, and desktop/tablet/mobile browser coverage.
-
-Advanced overview, exercise-history, and modality presentation is planned for
-v0.2.0. The exact implemented/planned split is recorded in the
-[Product Requirements Document](docs/ProductRequirementsDocument.md).
-
-## Quick start
-
-Requirements: Python 3.12, [uv](https://docs.astral.sh/uv/), Node.js 20, npm,
-and a Hevy Pro API credential for synchronization.
+Python 3.12+ and [uv](https://docs.astral.sh/uv/) are required. Node is only needed to rebuild assets or run browser tests. CSS, fonts, HTMX and compiled translations are versioned.
 
 ```bash
-git clone git@github.com:HenriqueMayer/TuxedoFitness.git
-cd TuxedoFitness
 uv sync --locked
-npm ci
-npm run build
-install -m 600 .env.example .env
-```
-
-Generate a Django key and place it in `SECRET_KEY` in `.env` using a local
-editor. Never source the file or paste secrets into commands, issues, or logs.
-
-```bash
-uv run python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+uv run python scripts/init_local.py
 uv run python manage.py migrate
-uv run python manage.py create_owner your-username
-uv run python manage.py runserver 127.0.0.1:8000
+uv run python manage.py runserver
 ```
 
-Open `http://127.0.0.1:8000/`. Local signup is available by default. Set
-`ALLOW_SIGNUPS=False` to stop accepting new accounts; existing login remains
-available when signup is disabled.
+Open <http://127.0.0.1:8000/>, create an account, and save your Hevy key in **Hevy connection**. The first access-triggered synchronization imports all pages; the header also offers a manual button. Local pages remain usable during provider failures.
 
-For the web flow, open `Sincronização`, paste the key into the masked connection
-form, test it, and run the first confirmed collection. The key remains only in
-process memory for that authenticated browser session and is forgotten on
-disconnect, logout, session expiry, or process restart.
+**0.2.0 starts with a new database.** There is no supported data migration from 0.1.x. Do not point the new installation at the old database; preserve the old installation and follow [the reset procedure](docs/operations.md). The default data directory is `var/private/v020`.
 
-For management commands, set `HEVY_API_KEY` only in the backend environment:
-
-```bash
-uv run python manage.py sync_hevy --validate-only --username your-username
-uv run python manage.py sync_hevy --mode=full --confirm-full-refresh --username your-username
-```
-
-See [operations](docs/operations.md) for incremental sync, scheduling, backups,
-restore, HTTPS, and supported single-instance deployment.
-
-## Privacy and architecture
-
-- `.env`, SQLite, backups, exports, diagnostics, and private provider snapshots
-  are excluded from Git and must remain owner-readable only.
-- Browser code never contacts Hevy. A key submitted through the masked form is
-  not rendered back or persisted in the database, cookie, HTML, JavaScript,
-  URL, log, fixture, prompt, or export.
-- SQLite supports one application writer. Shared-network SQLite, multiple
-  replicas, queues, and distributed infrastructure are unsupported.
-- Research under `research/` is provenance for a future phase and is not loaded
-  by the MVP runtime.
+Back up both SQLite and the installation encryption keys, stored separately. Losing the encryption keys prevents decrypting stored Hevy credentials. See [backup, restore and rotation](docs/operations.md).
 
 ## Development
 
-The complete quality pipeline is in [testing](docs/testing.md). The short path
-is:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for checks, isolated browser tests, synthetic capture and translation maintenance. Finance commit `90cfe53` is the family reference; [the parity contract](docs/tuxedo-parity.md) records shared patterns and deliberate domain differences.
 
-```bash
-uv lock --check
-uv run python scripts/check_version.py
-uv run python manage.py check
-uv run python manage.py test
-uv run ruff check .
-uv run python scripts/security/scan_secrets.py
-npm ci
-npm run build
-npm run test:e2e
-```
-
-Contributions must use synthetic data and preserve the product boundaries in
-[CONTRIBUTING.md](CONTRIBUTING.md). Security reports belong in GitHub private
-vulnerability reporting, not public issues.
-
-## License
-
-Copyright 2026 Henrique Mayer. Licensed under the
-[PolyForm Noncommercial License 1.0.0](LICENSE). Personal and noncommercial use
-is permitted; commercial use is not. Bundled dependencies retain the licenses
-listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+This repository is independently installable and never imports the Finance checkout at runtime. Technical documentation and code use English; the interface supports EN/PT-BR. [PolyForm Noncommercial 1.0.0](LICENSE).

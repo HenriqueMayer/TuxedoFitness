@@ -1,45 +1,13 @@
 # Frontend
 
-## Rendering and assets
+Family baseline: [parity contract](tuxedo-parity.md). Inter 400/500/600/700 is served locally. Light: cream #FAF8F3, forest #1A2E26, caramel #B88A59. Dark: night #101010, surface #1B1B1B, raised #262626, muted #B8B8B8. Chart emphasis is semantic; a higher RPE or load does not imply a better outcome.
 
-The interface uses Django templates and precompiled Tailwind CSS 3.4.17. Inter,
-HTMX 2.0.10, theme, navigation, menu, and action scripts are local; runtime CDN,
-inline script, and inline style permissions are not required.
+Main navigation: Overview, Analysis, History, Routines, Exercises, Generate prompt. Account menu: Settings, Training profile, Hevy connection, Saved prompts. The synchronization status and manual fallback stay available in the authenticated shell.
 
-```bash
-npm ci
-npm run build
-```
+Templates use shared panel/input/button classes. Controls have labels and errors. Prompt history modes expose relevant controls, clear incompatible values on change, and validate on the server. Without JS all relevant inputs and their labels are available; irrelevant values are cleared during form cleaning.
 
-`assets/css/tailwind.css` is authoritative and `static/css/app.css` is tracked
-generated output. CI rebuilds it and rejects differences.
+HTMX uses `show:none`. Same-path updates restore scroll and the equivalent focused control; navigation to another pathname focuses h1. Language uses Django's native cookie, not URL prefixes. Date order, timezone and mass/distance units are independent of language. User-written titles/comments are never translated.
 
-## Stable navigation
+Charts are server-calculated SVGs with title/description and an equivalent table. All marks are painted before focusable hit targets and tooltips. Tooltips have keyboard and pointer access. Tables support horizontal overflow within the card; pages must not overflow horizontally on mobile. No calculation is duplicated in browser code.
 
-The shell uses body-level `hx-boost` for GET links. Requests retain current
-content until the server returns, update history/title, restore focus to the new
-heading, and report failures through an accessible live region. Login, signup,
-logout, other POSTs, and CSV downloads use normal HTTP navigation.
-
-The mobile menu is document-delegated, traps focus while open, makes the
-background inert, closes on Escape/link/close, and restores focus. Theme state
-is applied by a small pre-CSS local script to avoid an initial color flash.
-
-## Dashboard SVG
-
-`DashboardPresenter` creates typed server-side geometry for the activity bar
-chart. The template renders `<title>`, `<desc>`, focusable bars with localized
-labels, an explicit empty state, and an equivalent table. CSS semantic tokens
-provide light/dark colors without client-side re-rendering.
-
-The period form targets only `#overview-results`; the form and page shell stay
-stable. The loading status is invisible and `aria-hidden` while idle and is
-announced only during the request. Without JavaScript the same GET returns the
-complete authoritative page.
-
-## Public and authenticated surfaces
-
-The public page contains synthetic illustration only. Signup is visible only
-when explicitly enabled. Every page containing local training data requires
-authentication. Fixed interface text is Brazilian Portuguese; code and
-technical documentation are English.
+Compiled CSS, local fonts, HTMX, JS and gettext MO files are versioned. Build with `npm run build`; compile translations with `manage.py compilemessages -l pt_BR --ignore=.venv`. Validate both languages/themes, desktop/tablet/mobile and no-JS paths with the isolated browser runner.

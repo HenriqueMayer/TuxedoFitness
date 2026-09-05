@@ -7,12 +7,12 @@ from django.contrib.auth.views import LogoutView as DjangoLogoutView
 from django.db import transaction
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
 from django.views.generic import CreateView, TemplateView
 
 from accounts.forms import LoginForm, OwnerPreferenceForm, SignupForm
 from accounts.models import OwnerPreference
 from accounts.services import BackupError, create_verified_backup
-from integrations.credentials import session_credentials
 from integrations.models import HevyAccount
 from training.models import ExerciseTemplate, Routine, Workout
 
@@ -25,7 +25,6 @@ class LoginView(DjangoLoginView):
 
 class LogoutView(DjangoLogoutView):
     def post(self, request, *args, **kwargs):
-        session_credentials.delete(request)
         return super().post(request, *args, **kwargs)
 
 
@@ -50,7 +49,7 @@ class SignupView(CreateView):
         response = super().form_valid(form)
         OwnerPreference.objects.create(user=self.object)
         login(self.request, self.object)
-        messages.success(self.request, 'Sua conta local foi criada com segurança.')
+        messages.success(self.request, _('Your local account was created.'))
         return response
 
 
@@ -59,7 +58,7 @@ class SettingsView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        preference, _ = self._preference()
+        preference, created = self._preference()
         context.update({
             'preferences': preference,
             'form': OwnerPreferenceForm(instance=preference),
@@ -67,13 +66,13 @@ class SettingsView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        preference, _ = self._preference()
+        preference, created = self._preference()
         if request.POST.get('action') == 'delete_data':
             return self._delete_data(request)
         form = OwnerPreferenceForm(request.POST, instance=preference)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Preferências salvas localmente.')
+            messages.success(request, _('Preferences saved locally.'))
             return redirect('accounts:settings')
         context = self.get_context_data()
         context['form'] = form
@@ -83,8 +82,8 @@ class SettingsView(LoginRequiredMixin, TemplateView):
         return OwnerPreference.objects.get_or_create(user=self.request.user)
 
     def _delete_data(self, request):
-        if request.POST.get('confirmation', '').strip().upper() != 'EXCLUIR':
-            messages.error(request, 'Digite EXCLUIR para confirmar a remoção local.')
+        if request.POST.get('confirmation', '').strip().upper() not in {'DELETE', 'EXCLUIR'}:
+            messages.error(request, _('Type DELETE to confirm local removal.'))
             return redirect('accounts:settings')
         try:
             backup = create_verified_backup()
@@ -98,5 +97,5 @@ class SettingsView(LoginRequiredMixin, TemplateView):
                 Routine.all_objects.filter(hevy_account=account).delete()
                 ExerciseTemplate.all_objects.filter(hevy_account=account).delete()
                 account.delete()
-        messages.success(request, f'Dados locais removidos após backup validado ({backup.name}).')
+        messages.success(request, _('Local data removed after verified backup (%(filename)s).') % {'filename': backup.name})
         return redirect('accounts:settings')

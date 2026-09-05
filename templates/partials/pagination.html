@@ -1,0 +1,2 @@
+{% load i18n fitness_ui %}
+{% if page_obj.has_other_pages %}<nav class="mt-6 flex items-center justify-between gap-4" aria-label="{% translate 'Pagination' %}">{% if page_obj.has_previous %}<a class="btn-secondary" href="?{% querystring page=page_obj.previous_page_number %}">{% translate "Previous" %}</a>{% else %}<span></span>{% endif %}<span class="muted">{% translate "Page" %} {{ page_obj.number }}</span>{% if page_obj.has_next %}<a class="btn-secondary" href="?{% querystring page=page_obj.next_page_number %}">{% translate "Next" %}</a>{% endif %}</nav>{% endif %}

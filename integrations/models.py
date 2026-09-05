@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F, Q
+from django.utils.translation import gettext_lazy as _
 
 from core.validators import validate_aware_datetime
 
@@ -14,6 +15,8 @@ class HevyAccount(models.Model):
         on_delete=models.CASCADE,
         related_name='hevy_account',
     )
+    encrypted_api_key = models.TextField(blank=True, editable=False)
+    credential_updated_at = models.DateTimeField(null=True, blank=True)
     external_user_id = models.CharField(max_length=255, unique=True)
     display_name = models.CharField(max_length=255)
     profile_url = models.URLField(max_length=500, blank=True)
@@ -29,9 +32,9 @@ class HevyAccount(models.Model):
 
 class IntegrationState(models.Model):
     class Status(models.TextChoices):
-        DISCONNECTED = 'disconnected', 'Disconnected'
-        CONNECTED = 'connected', 'Connected'
-        ERROR = 'error', 'Error'
+        DISCONNECTED = 'disconnected', _('Disconnected')
+        CONNECTED = 'connected', _('Connected')
+        ERROR = 'error', _('Error')
 
     hevy_account = models.OneToOneField(
         HevyAccount,
@@ -64,28 +67,31 @@ class IntegrationState(models.Model):
         blank=True,
     )
     is_stale = models.BooleanField(default=True)
+    last_plans_at = models.DateTimeField(null=True, blank=True)
+    last_catalog_at = models.DateTimeField(null=True, blank=True)
+    next_auto_attempt_at = models.DateTimeField(null=True, blank=True)
 
 
 class SyncRun(models.Model):
     class Mode(models.TextChoices):
-        FULL = 'full', 'Full'
-        INCREMENTAL = 'incremental', 'Incremental'
-        PLANS = 'plans', 'Plans'
-        VALIDATE = 'validate', 'Validate'
-        ROUTINE_CREATE = 'routine_create', 'Routine create'
+        FULL = 'full', _('Full')
+        INCREMENTAL = 'incremental', _('Incremental')
+        PLANS = 'plans', _('Plans')
+        VALIDATE = 'validate', _('Validate')
+        ROUTINE_CREATE = 'routine_create', _('Routine create')
 
     class Trigger(models.TextChoices):
-        WEB = 'web', 'Web'
-        COMMAND = 'command', 'Command'
-        SCHEDULE = 'schedule', 'Schedule'
-        RETRY = 'retry', 'Retry'
+        WEB = 'web', _('Web')
+        COMMAND = 'command', _('Command')
+        SCHEDULE = 'schedule', _('Schedule')
+        RETRY = 'retry', _('Retry')
 
     class State(models.TextChoices):
-        PENDING = 'pending', 'Pending'
-        RUNNING = 'running', 'Running'
-        SUCCEEDED = 'succeeded', 'Succeeded'
-        PARTIAL = 'partial', 'Partial'
-        FAILED = 'failed', 'Failed'
+        PENDING = 'pending', _('Pending')
+        RUNNING = 'running', _('Running')
+        SUCCEEDED = 'succeeded', _('Succeeded')
+        PARTIAL = 'partial', _('Partial')
+        FAILED = 'failed', _('Failed')
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     hevy_account = models.ForeignKey(
@@ -162,44 +168,6 @@ class SyncRun(models.Model):
         ]
 
 
-class RoutineWriteIntent(models.Model):
-    class State(models.TextChoices):
-        PREVIEWED = 'previewed', 'Previewed'
-        SUBMITTING = 'submitting', 'Submitting'
-        SUCCEEDED = 'succeeded', 'Succeeded'
-        FAILED = 'failed', 'Failed'
-        UNKNOWN = 'unknown', 'Unknown'
-        EXPIRED = 'expired', 'Expired'
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    hevy_account = models.ForeignKey(
-        HevyAccount,
-        on_delete=models.CASCADE,
-        related_name='routine_write_intents',
-    )
-    payload = models.JSONField()
-    payload_hash = models.CharField(max_length=64)
-    state = models.CharField(max_length=16, choices=State, default=State.PREVIEWED)
-    expires_at = models.DateTimeField(validators=[validate_aware_datetime])
-    submitted_at = models.DateTimeField(
-        validators=[validate_aware_datetime], null=True, blank=True,
-    )
-    finished_at = models.DateTimeField(
-        validators=[validate_aware_datetime], null=True, blank=True,
-    )
-    external_routine_id = models.CharField(max_length=255, blank=True)
-    error_code = models.CharField(max_length=64, blank=True)
-    sanitized_error = models.CharField(max_length=500, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        indexes = [
-            models.Index(
-                fields=['hevy_account', 'state', 'created_at'],
-                name='routine_intent_state_idx',
-            ),
-        ]
-
 
 class SyncCursor(models.Model):
     hevy_account = models.ForeignKey(
@@ -236,3 +204,15 @@ class SyncLock(models.Model):
         null=True,
         blank=True,
     )
+
+
+class ProviderSnapshot(models.Model):
+    """Latest complete provider pages, committed with their normalized records."""
+    hevy_account = models.ForeignKey(HevyAccount, on_delete=models.CASCADE, related_name='snapshots')
+    resource = models.CharField(max_length=32)
+    pages = models.JSONField(default=list)
+    synced_at = models.DateTimeField()
+    source_hash = models.CharField(max_length=64)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['hevy_account', 'resource'], name='unique_provider_snapshot')]

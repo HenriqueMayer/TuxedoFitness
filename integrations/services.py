@@ -11,6 +11,7 @@ from integrations.hevy import HevyClient, HevyError
 from integrations.models import (
     HevyAccount,
     IntegrationState,
+    ProviderSnapshot,
     SyncCursor,
     SyncLock,
     SyncRun,
@@ -18,8 +19,8 @@ from integrations.models import (
 from training.models import ExerciseTemplate, Routine, RoutineFolder, Workout
 from training.repositories import TrainingRepository
 
-ADAPTER_VERSION = '1.0'
-PROVIDER_SCHEMA_VERSION = '2026-08-29'
+ADAPTER_VERSION = '2.0'
+PROVIDER_SCHEMA_VERSION = '2026-09-05'
 WORKOUT_EVENT_STREAM = 'workout-events'
 
 
@@ -30,6 +31,9 @@ class FullImportService:
 
     def validate_account(self, user) -> HevyAccount:
         dto = self.client.user_info()
+        current = HevyAccount.objects.filter(user=user).first()
+        if current is not None and current.external_user_id != dto.external_id:
+            raise HevyError('ACCOUNT_MISMATCH', 'This key belongs to a different Hevy account.')
         account, _ = HevyAccount.objects.update_or_create(
             user=user,
             defaults={
@@ -66,6 +70,7 @@ class FullImportService:
             templates, folders, routines, workouts, pages = self.client.full_import_payload()
             self._validate_references(templates, folders, routines, workouts)
             with transaction.atomic():
+                IncrementalSyncService._assert_lock(account)
                 item_counts = self.repository.persist_full_import(
                     account,
                     templates=templates,
@@ -75,6 +80,7 @@ class FullImportService:
                     synced_at=run_started,
                     provider_schema_version=PROVIDER_SCHEMA_VERSION,
                 )
+                self.persist_snapshots(account, run_started)
                 removed_at = timezone.now()
                 item_counts['removed'] = sum([
                     self.repository.mark_missing_inactive(ExerciseTemplate, account, {dto.external_id for dto in templates}, removed_at),
@@ -100,6 +106,8 @@ class FullImportService:
                     status=IntegrationState.Status.CONNECTED,
                     last_success_at=finished,
                     last_full_refresh_at=finished,
+                    last_plans_at=finished,
+                    last_catalog_at=finished,
                     is_stale=False,
                 )
             return SyncRun.objects.get(pk=run.pk)
@@ -127,6 +135,16 @@ class FullImportService:
             raise
         finally:
             IncrementalSyncService._release_lock(account)
+
+    def persist_snapshots(self, account, synced_at):
+        from integrations.dtos import payload_hash
+        for resource, pages in getattr(self.client, 'captured_pages', {}).items():
+            if resource == 'workouts':
+                continue
+            ProviderSnapshot.objects.update_or_create(
+                hevy_account=account, resource=resource,
+                defaults={'pages': pages, 'source_hash': payload_hash(pages), 'synced_at': synced_at},
+            )
 
     @staticmethod
     def _validate_references(templates, folders, routines, workouts) -> None:
@@ -177,6 +195,7 @@ class PlanRefreshService(FullImportService):
             templates, folders, routines, pages = self.client.plans_payload()
             self._validate_references(templates, folders, routines, ())
             with transaction.atomic():
+                IncrementalSyncService._assert_lock(account)
                 counts = self.repository.persist_full_import(
                     account,
                     templates=templates,
@@ -186,6 +205,7 @@ class PlanRefreshService(FullImportService):
                     synced_at=run_started,
                     provider_schema_version=PROVIDER_SCHEMA_VERSION,
                 )
+                self.persist_snapshots(account, run_started)
                 removed_at = timezone.now()
                 counts['removed'] = sum([
                     self.repository.mark_missing_inactive(ExerciseTemplate, account, {dto.external_id for dto in templates}, removed_at),
@@ -204,8 +224,12 @@ class PlanRefreshService(FullImportService):
                 IntegrationState.objects.filter(hevy_account=account).update(
                     status=IntegrationState.Status.CONNECTED,
                     last_success_at=finished,
+                    last_plans_at=finished,
+
                     is_stale=False,
                 )
+                if getattr(self.client, 'cached_catalog_pages', None) is None:
+                    IntegrationState.objects.filter(hevy_account=account).update(last_catalog_at=finished)
             return SyncRun.objects.get(pk=run.pk)
         except (DatabaseError, HevyError, ValueError, KeyError) as error:
             finished = timezone.now()
@@ -288,6 +312,7 @@ class IncrementalSyncService:
                         if event.needs_repair else event.workout
                     )
             with transaction.atomic():
+                self._assert_lock(account)
                 locked_cursor = SyncCursor.objects.select_for_update().get(pk=cursor.pk)
                 counts = self.repository.persist_incremental_workouts(
                     account,
@@ -369,6 +394,12 @@ class IncrementalSyncService:
                     lock.acquired_at is None or lock.acquired_at < stale_before
                 )
                 if stale:
+                    from planning.models import RoutineProposal
+                    for proposal in RoutineProposal.objects.filter(account=account, state='submitting'):
+                        proposal.state = 'unknown'
+                        proposal.local_refresh_pending = any(item['state'] == 'succeeded' for item in proposal.results)
+                        proposal.results = [{**item, 'state': 'unknown'} if item['state'] == 'submitting' else item for item in proposal.results]
+                        proposal.save(update_fields=['state', 'results', 'local_refresh_pending'])
                     SyncRun.objects.filter(
                         hevy_account=account,
                         state=SyncRun.State.RUNNING,
@@ -389,12 +420,19 @@ class IncrementalSyncService:
                     acquired_at=now,
                 ):
                     raise HevyError('SYNC_IN_PROGRESS', 'A workout synchronization is already running.')
+                account._sync_lock_acquired_at = now
         except IntegrityError as error:
             raise HevyError('SYNC_IN_PROGRESS', 'A workout synchronization is already running.') from error
 
     @staticmethod
+    def _assert_lock(account: HevyAccount) -> None:
+        token = getattr(account, '_sync_lock_acquired_at', None)
+        if token is None or not SyncLock.objects.filter(hevy_account=account, is_active=True, acquired_at=token).exists():
+            raise HevyError('SYNC_LOCK_LOST', 'The execution lock expired; local publication was cancelled.')
+
+    @staticmethod
     def _release_lock(account: HevyAccount) -> None:
-        SyncLock.objects.filter(hevy_account=account).update(
+        SyncLock.objects.filter(hevy_account=account, acquired_at=getattr(account, '_sync_lock_acquired_at', None)).update(
             is_active=False,
             acquired_at=None,
         )

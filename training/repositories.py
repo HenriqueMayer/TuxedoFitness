@@ -16,6 +16,7 @@ from training.models import (
     WorkoutExercise,
     WorkoutSet,
 )
+from training.translations import CATALOG_VERSION, translated_title
 
 
 class TrainingRepository:
@@ -50,6 +51,8 @@ class TrainingRepository:
                 defaults={
                     'title': dto.title,
                     'exercise_type': dto.exercise_type,
+                    'title_pt_br': translated_title(dto.title, dto.is_custom),
+                    'translation_version': CATALOG_VERSION,
                     'equipment_category': dto.equipment_category,
                     'primary_muscle': dto.primary_muscle,
                     'is_custom': dto.is_custom,
@@ -60,6 +63,7 @@ class TrainingRepository:
                     'removed_at': None,
                     'provider_schema_version': provider_schema_version,
                     'source_payload_hash': dto.source_hash,
+                    'raw_payload': dto.raw_payload,
                 },
             )
             result['created' if created else 'updated'] += 1
@@ -84,6 +88,7 @@ class TrainingRepository:
                     'removed_at': None,
                     'provider_schema_version': provider_schema_version,
                     'source_payload_hash': dto.source_hash,
+                    'raw_payload': dto.raw_payload,
                 },
             )
             result['created' if created else 'updated'] += 1
@@ -95,6 +100,7 @@ class TrainingRepository:
                 external_id=dto.external_id,
                 defaults={
                     'folder': folder_map.get(dto.folder_id),
+                    'notes': dto.raw_payload.get('notes') or '',
                     'title': dto.title,
                     'external_created_at': dto.created_at,
                     'external_updated_at': dto.updated_at,
@@ -103,6 +109,7 @@ class TrainingRepository:
                     'removed_at': None,
                     'provider_schema_version': provider_schema_version,
                     'source_payload_hash': dto.source_hash,
+                    'raw_payload': dto.raw_payload,
                 },
             )
             result['created' if created else 'updated'] += 1
@@ -149,6 +156,7 @@ class TrainingRepository:
                     'removed_at': None,
                     'provider_schema_version': provider_schema_version,
                     'source_payload_hash': dto.source_hash,
+                    'raw_payload': dto.raw_payload,
                 },
             )
             result['created' if created else 'updated'] += 1
@@ -217,6 +225,7 @@ class TrainingRepository:
                     'removed_at': None,
                     'provider_schema_version': provider_schema_version,
                     'source_payload_hash': dto.source_hash,
+                    'raw_payload': dto.raw_payload,
                 },
             )
             result['created' if created else 'updated'] += 1

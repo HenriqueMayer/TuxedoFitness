@@ -1,141 +1,81 @@
 const { test, expect } = require('@playwright/test');
-const pageErrors = new WeakMap();
-
 async function login(page) {
-  await page.goto('/conta/entrar/');
-  await page.getByLabel('Usuário').fill('e2e-owner');
-  await page.getByLabel('Senha').fill('Synthetic-e2e-password-274');
-  await page.getByRole('button', { name: 'Entrar' }).click();
-  await expect(page.getByRole('heading', { name: /Olá, e2e-owner/ })).toBeVisible();
+  await page.goto('/accounts/login/');
+  await page.locator('#id_username').fill('e2e-owner');
+  await page.locator('#id_password').fill(process.env.E2E_PASSWORD);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page).toHaveURL(/dashboard/);
 }
-
-async function expectNoOverflow(page) {
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-  );
-  expect(overflow).toBe(false);
+async function fits(page) {
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth+1)).toBeTruthy();
 }
-
-test.describe('public surfaces', () => {
-  test('landing page explains the local product without personal data', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: /Seu histórico de treino/ })).toBeVisible();
-    await expect(page.getByLabel('Prévia sintética do painel')).toBeVisible();
-    await expect(page.getByText('nenhum dado pessoal', { exact: false })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Entrar' }).first()).toBeVisible();
-    await expectNoOverflow(page);
-  });
-
-  test('login offers public account creation by default', async ({ page }) => {
-    await page.goto('/conta/entrar/');
-    await expect(page.getByRole('heading', { name: 'Entrar.' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Criar conta', exact: true }).last()).toBeVisible();
-    await page.goto('/conta/cadastro/');
-    await expect(page.getByRole('heading', { name: 'Crie sua conta.' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Criar conta' })).toBeVisible();
-    await expectNoOverflow(page);
-  });
-});
-
-test.describe('authenticated surfaces', () => {
-  test.beforeEach(async ({ page }) => {
-    const errors = [];
-    pageErrors.set(page, errors);
-    page.on('console', message => {
-      if (message.type() === 'error') errors.push(message.text());
-    });
-    page.on('pageerror', error => errors.push(error.message));
+for (const language of ['en', 'pt-br']) {
+  test(`${language} full local journey, themes, menus, profile and immutable prompt`, async ({ page }, testInfo) => {
+    const errors=[];page.on('pageerror', error=>errors.push(error.message));
     await login(page);
-  });
-
-  test.afterEach(async ({ page }) => {
-    expect(pageErrors.get(page)).toEqual([]);
-  });
-
-  test('overview is responsive, local, and accessible', async ({ page }) => {
-    await expect(page.getByRole('region', { name: 'Indicadores principais' })).toBeVisible();
-    await expect(page.getByRole('img', { name: /Treinos por semana/ })).toBeVisible();
-    await expect(page.getByText('tabela equivalente', { exact: false }).first()).toBeAttached();
-    await expect(page.getByText('Atualizando indicadores…')).toHaveAttribute('aria-hidden', 'true');
-    await expectNoOverflow(page);
-  });
-
-  test('Hevy workspace exposes the five guided actions without a stored key', async ({ page }) => {
-    await page.goto('/sincronizacao/');
-    await expect(page.getByRole('heading', { name: 'Ferramentas Hevy' })).toBeVisible();
-    await expect(page.getByText('Sessão desconectada').first()).toBeVisible();
-    await expect(page.getByLabel('API key do Hevy')).toHaveAttribute('type', 'password');
-    await expect(page.getByRole('heading', { name: 'Coletar e analisar histórico' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Exportar exercícios' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Exportar rotinas' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Criar rotina via JSON' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Gerar prompt de análise' })).toBeVisible();
-    await expectNoOverflow(page);
-  });
-
-  test('boosted primary navigation preserves the document and has no overflow', async ({ page }, testInfo) => {
-    const routes = [
-      ['Histórico', 'Histórico'],
-      ['Exercícios', 'Exercícios'],
-      ['Rotinas', 'Rotinas'],
-      ['Sincronização', 'Ferramentas Hevy'],
-      ['Configurações', 'Configurações'],
-    ];
-    await page.evaluate(() => { window.__tuxedoNavigationMarker = 'preserved'; });
-    for (const [link, heading] of routes) {
-      if (testInfo.project.name === 'desktop') {
-        await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('link', { name: link, exact: true }).click();
-      } else {
-        await page.getByRole('button', { name: 'Abrir menu' }).click();
-        await page.getByRole('dialog', { name: 'Menu de navegação' }).getByRole('link', { name: link, exact: true }).click();
+    await page.locator('[data-language]').selectOption(language);
+    await expect(page.locator('html')).toHaveAttribute('lang',language);
+    for (const theme of ['light','dark']) {
+      if (theme==='dark') await page.locator('[data-theme-toggle]').click();
+      for (const route of ['/dashboard/','/dashboard/reports/?panel=effort','/history/','/routines/','/exercises/','/planning/','/planning/generations/','/accounts/settings/','/sync/']) {
+        await page.goto(route);await expect(page.locator('h1')).toBeVisible();await fits(page);
+        if(route==='/dashboard/') await page.screenshot({path:testInfo.outputPath(`${language}-${theme}.png`)});
       }
-      await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
-      await expect.poll(() => page.evaluate(() => window.__tuxedoNavigationMarker)).toBe('preserved');
-      await expectNoOverflow(page);
     }
-  });
-
-  test('theme and mobile menu keep keyboard behavior', async ({ page }, testInfo) => {
-    if (testInfo.project.name !== 'desktop') {
-      const trigger = page.getByRole('button', { name: 'Abrir menu' });
-      await trigger.click();
-      const dialog = page.getByRole('dialog', { name: 'Menu de navegação' });
-      await expect(dialog).toHaveAttribute('aria-hidden', 'false');
-      await expect(page.getByRole('button', { name: 'Fechar menu' })).toBeFocused();
-      await dialog.getByRole('button', { name: 'Alternar tema de cores' }).click();
-      await expect(page.locator('html')).toHaveClass(/dark/);
-      await page.keyboard.press('Escape');
-      await expect(trigger).toBeFocused();
-    } else {
-      await page.getByRole('navigation').getByRole('button', { name: 'Alternar tema de cores' }).click();
-      await expect(page.locator('html')).toHaveClass(/dark/);
+    await page.goto('/dashboard/reports/');
+    await page.getByText(language==='en'?'Customize panels and favorites':'Personalizar painéis e favoritos',{exact:true}).click();
+    await page.locator('#id_position_1').selectOption('effort');
+    await page.locator('#id_position_3').selectOption('frequency');
+    await page.getByRole('button',{name:language==='en'?'Save preferences':'Salvar preferências',exact:true}).click();
+    await page.getByText(language==='en'?'Customize panels and favorites':'Personalizar painéis e favoritos',{exact:true}).click();
+    await expect(page.locator('#id_position_1')).toHaveValue('effort');
+    await page.goto('/planning/');
+    await page.locator('#id_comments').fill('Synthetic request: keep familiar exercises.');
+    await page.locator('#id_period_mode').selectOption('workouts');
+    await expect(page.locator('#id_count')).toBeVisible();
+    await expect(page.locator('#id_start')).toBeHidden();
+    await page.locator('#id_count').fill('5');
+    await page.getByRole('button',{name:language==='en'?'Preview complete prompt':'Conferir prompt completo'}).click();
+    await expect(page.locator('textarea[readonly]')).toContainText('synthetic-workout');
+    await page.getByRole('button',{name:language==='en'?'Save this generation':'Salvar esta geração'}).click();
+    await expect(page).toHaveURL(/generations\/[-a-f0-9]+\//);
+    await expect(page.locator('textarea')).toContainText('{{HEVY_API_KEY}}');
+    await fits(page);
+    const menu=page.locator('#menu-btn');
+    if (await menu.isVisible()) {
+      await menu.click();await expect(page.locator('#mobile-menu')).toHaveAttribute('aria-hidden','false');
+      await page.keyboard.press('Escape');await expect(menu).toBeFocused();
     }
+    expect(errors).toEqual([]);
   });
-
-  test('empty states and GET filters remain explicit', async ({ page }) => {
-    await page.getByLabel('Início').fill('2030-01-01');
-    await page.getByLabel('Fim').fill('2030-01-28');
-    await page.getByRole('button', { name: 'Aplicar período' }).click();
-    await expect(page).toHaveURL(/inicio=2030-01-01/);
-    await expect(page.getByText('Atualizando indicadores…')).toHaveAttribute('aria-hidden', 'true');
-    await expect(page.getByText('O gráfico será exibido quando houver treinos confirmados neste período.').first()).toBeVisible();
-    await expect(page.getByRole('table', { name: /tabela equivalente/ }).first()).toBeVisible();
-    await expect(page.getByRole('row', { name: /31\/12 0/ })).toBeVisible();
-  });
-
-  test('filters submit without JavaScript', async ({ browser, baseURL }) => {
-    const context = await browser.newContext({ javaScriptEnabled: false });
-    const page = await context.newPage();
-    await page.goto(`${baseURL}/conta/entrar/`);
-    await page.getByLabel('Usuário').fill('e2e-owner');
-    await page.getByLabel('Senha').fill('Synthetic-e2e-password-274');
-    await page.getByRole('button', { name: 'Entrar' }).click();
-    await page.getByLabel('Início').fill('2030-02-01');
-    await page.getByLabel('Fim').fill('2030-02-28');
-    await page.getByRole('button', { name: 'Aplicar período' }).click();
-    await expect(page).toHaveURL(/inicio=2030-02-01/);
-    await expect(page.getByRole('table', { name: /tabela equivalente/ }).first()).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Olá, e2e-owner/ })).toBeVisible();
-    await context.close();
-  });
+}
+test('same-path filters preserve focus and scroll, SVG has keyboard data table', async ({page})=>{
+  await login(page);
+  await page.goto('/history/');
+  await page.locator('#history-query').fill('Strength');
+  await page.locator('button').filter({hasText:'Apply filters'}).focus();
+  const before=await page.evaluate(()=>window.scrollY);
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/q=Strength/);
+  await expect(page.getByRole('button',{name:'Apply filters',exact:true})).toBeFocused();
+  expect(Math.abs(await page.evaluate(()=>window.scrollY)-before)).toBeLessThan(5);
+  await page.goto('/dashboard/reports/?panel=effort');
+  await expect(page.locator('svg [tabindex="0"]').first()).toBeAttached();
+  await page.locator('svg [tabindex="0"]').first().focus();
+  await expect(page.locator('svg [tabindex="0"]').first()).toBeFocused();
+  await page.getByText('Data table and definition',{exact:true}).first().click();
+  await expect(page.locator('table').first()).toBeVisible();
+});
+test('no JavaScript: login, filters, prompt, native language form and connection fallback', async ({browser,baseURL},testInfo)=>{
+  const context=await browser.newContext({javaScriptEnabled:false,baseURL,viewport:testInfo.project.use.viewport});
+  const page=await context.newPage();await login(page);
+  await page.goto('/history/?set_type=normal');await expect(page.locator('h1')).toContainText('Training history');
+  if (testInfo.project.name !== 'desktop') { await page.locator('noscript nav').getByRole('link',{name:'Generate prompt',exact:true}).click(); } else { await page.goto('/planning/'); }
+  await page.locator('#id_period_mode').selectOption('last_7_days');
+  await page.getByRole('button',{name:'Preview complete prompt'}).click();
+  await expect(page.locator('textarea[readonly]')).toContainText('synthetic-workout');
+  await page.locator('[data-language]').selectOption('pt-br');
+  await page.getByRole('button',{name:'Apply',exact:true}).click();
+  await expect(page.locator('html')).toHaveAttribute('lang','pt-br');
+  await context.close();
 });

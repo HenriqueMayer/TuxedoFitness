@@ -24,10 +24,10 @@ class IntegrationReadViewTests(TestCase):
         response = self.client.get(reverse('integrations:sync'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Estado local')
+        self.assertContains(response, 'Hevy connection')
         self.assertNotContains(response, 'HEVY_API_KEY')
         self.assertNotContains(response, 'api-key')
-        self.assertContains(response, 'Sessão desconectada')
+        self.assertContains(response, 'Disconnected')
         self.assertContains(response, 'type="password"')
 
     @patch('integrations.views._client_for_request')
@@ -41,11 +41,11 @@ class IntegrationReadViewTests(TestCase):
     def test_full_refresh_requires_confirmation(self):
         response = self.client.get(reverse('integrations:full-refresh'))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Confirme apenas')
+        self.assertContains(response, 'Complete synchronization')
 
         response = self.client.post(reverse('integrations:full-refresh'), {})
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Marque a confirmação para continuar.')
+        self.assertContains(response, 'This field is required.')
 
     def test_sync_mutations_require_csrf(self):
         client = Client(enforce_csrf_checks=True)
@@ -68,7 +68,7 @@ class IntegrationReadViewTests(TestCase):
     def test_database_failure_does_not_render_internal_detail(self, run_sync, client_factory):
         response = self.client.post(reverse('integrations:incremental'), follow=True)
 
-        self.assertContains(response, 'DATABASE_ERROR: Falha ao persistir os dados locais.')
+        self.assertContains(response, 'DATABASE_ERROR: Local persistence failed.')
         self.assertNotContains(response, 'private database detail')
 
     @patch('integrations.views.FullImportService.validate_account')
@@ -82,7 +82,7 @@ class IntegrationReadViewTests(TestCase):
         self.assertRedirects(response, reverse('integrations:sync'))
         validate.assert_called_once_with(self.account.user)
         follow = self.client.get(reverse('integrations:sync'))
-        self.assertContains(follow, 'Sessão conectada')
+        self.assertContains(follow, 'Connected')
         self.assertNotContains(follow, 'synthetic-key')
 
     @patch('integrations.views._client_for_request')
@@ -149,8 +149,8 @@ class IntegrationReadViewTests(TestCase):
 
         response = self.client.get(reverse('integrations:run-detail', args=[run.pk]))
 
-        self.assertContains(response, 'Parcial')
-        self.assertContains(response, 'Repetir sincronização')
+        self.assertContains(response, 'Partial')
+        self.assertContains(response, 'Retry synchronization')
         self.assertNotContains(response, 'succeeded')
 
     def test_retry_rejects_ineligible_run(self):
@@ -163,7 +163,7 @@ class IntegrationReadViewTests(TestCase):
 
         response = self.client.post(reverse('integrations:retry', args=[run.pk]), follow=True)
 
-        self.assertContains(response, 'Somente execuções incrementais')
+        self.assertContains(response, 'Only failed or partial incremental')
 
     @patch('integrations.views._client_for_request')
     @patch('integrations.views.IncrementalSyncService.run')

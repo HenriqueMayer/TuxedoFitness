@@ -8,7 +8,8 @@ import json
 from django.http import HttpResponse
 from django.utils import timezone
 
-from training.models import ExerciseTemplate, Routine
+from integrations.models import ProviderSnapshot
+from training.models import ExerciseTemplate, Routine, Workout
 
 
 def _filename(stem, extension):
@@ -17,12 +18,9 @@ def _filename(stem, extension):
 
 def _download(content, *, content_type, filename):
     response = HttpResponse(content, content_type=content_type)
+    response['Cache-Control'] = 'private, no-store'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
-
-
-def _decimal(value):
-    return None if value is None else float(value)
 
 
 def exercise_catalog_data(account):
@@ -76,51 +74,9 @@ def exercise_catalog_csv(account):
     return response
 
 
-def routine_data(account):
-    routines = Routine.objects.filter(hevy_account=account).select_related(
-        'folder'
-    ).prefetch_related('exercises__exercise_template', 'exercises__sets')
-    result = []
-    for routine in routines:
-        exercises = []
-        for exercise in routine.exercises.all():
-            sets = []
-            for item in exercise.sets.all():
-                sets.append({
-                    'type': item.set_type,
-                    'weight_kg': _decimal(item.weight_kg),
-                    'reps': _decimal(item.reps),
-                    'distance_meters': _decimal(item.distance_meters),
-                    'duration_seconds': _decimal(item.duration_seconds),
-                    'custom_metric': _decimal(item.custom_metric),
-                    'rep_range': (
-                        {'start': item.rep_range_start, 'end': item.rep_range_end}
-                        if item.rep_range_start is not None or item.rep_range_end is not None
-                        else None
-                    ),
-                })
-            exercises.append({
-                'exercise_template_id': exercise.exercise_template.external_id,
-                'title': exercise.title_snapshot,
-                'superset_id': exercise.superset_group,
-                'rest_seconds': exercise.rest_seconds,
-                'notes': exercise.notes,
-                'sets': sets,
-            })
-        result.append({
-            'id': routine.external_id,
-            'title': routine.title,
-            'folder_id': routine.folder.external_id if routine.folder else None,
-            'folder_title': routine.folder.title if routine.folder else None,
-            'exercises': exercises,
-        })
-    return result
-
-
 def routines_json(account):
-    body = json.dumps(
-        {'routines': routine_data(account)}, ensure_ascii=False, indent=2,
-    )
+    snapshot = ProviderSnapshot.objects.filter(hevy_account=account, resource='routines').first()
+    body = json.dumps({'pages': snapshot.pages if snapshot else []}, ensure_ascii=False, indent=2)
     return _download(
         body,
         content_type='application/json; charset=utf-8',
@@ -167,3 +123,8 @@ def routines_csv(account):
                     item.rep_range_end if item.rep_range_end is not None else '',
                 ])
     return response
+
+
+def workouts_json(account):
+    body = json.dumps({'workouts': list(Workout.objects.filter(hevy_account=account).values_list('raw_payload', flat=True))}, ensure_ascii=False, indent=2)
+    return _download(body, content_type='application/json; charset=utf-8', filename=_filename('workouts', 'json'))

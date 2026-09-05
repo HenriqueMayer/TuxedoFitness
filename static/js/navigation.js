@@ -1,73 +1,45 @@
-/* Stable HTMX navigation and focused dashboard-island continuity. */
+/* Shared Tuxedo contract: query changes preserve viewport and keyboard focus. */
 (function () {
     'use strict';
-
-    var preservedResultsView = null;
-
-    function finishRequest() {
-        var body = document.body;
-        if (body) body.removeAttribute('aria-busy');
-        document.querySelectorAll('[data-request-status]').forEach(function (status) {
-            status.setAttribute('aria-hidden', 'true');
-        });
-    }
-
-    function announceFailure() {
-        finishRequest();
-        var status = document.getElementById('navigation-status');
-        if (status) status.textContent = 'Não foi possível atualizar a página. Tente novamente.';
-    }
-
-    document.addEventListener('htmx:beforeRequest', function (event) {
-        var target = event.detail.target;
-        if (target === document.body) {
-            document.body.setAttribute('aria-busy', 'true');
-            return;
+    var view = null;
+    function focusSelector(element) {
+        if (!element || element === document.body) return null;
+        var parts = [];
+        while (element && element !== document.body) {
+            if (element.id) { parts.unshift('#' + CSS.escape(element.id)); break; }
+            var tag = element.tagName.toLowerCase();
+            var siblings = Array.from(element.parentElement.children).filter(function (item) { return item.tagName === element.tagName; });
+            parts.unshift(tag + ':nth-of-type(' + (siblings.indexOf(element) + 1) + ')');
+            element = element.parentElement;
         }
-        if (!target || target.id !== 'overview-results') return;
-
+        return parts.join(' > ');
+    }
+    document.addEventListener('htmx:beforeSwap', function (event) {
+        var target = event.detail.target;
+        if (!target) return;
+        var response = event.detail.xhr && event.detail.xhr.responseURL;
+        var same = !response || new URL(response, location.href).pathname === location.pathname;
         var active = document.activeElement;
-        preservedResultsView = {
-            top: window.scrollY,
-            focusId: active && active.id ? active.id : null,
-        };
-        target.setAttribute('aria-busy', 'true');
-        document.querySelectorAll('[data-request-status]').forEach(function (status) {
-            status.setAttribute('aria-hidden', 'false');
-        });
+        view = {same: same, x: scrollX, y: scrollY, focus: focusSelector(active)};
+        if (same) event.detail.swapOverride = 'innerHTML show:none';
     });
-
-    document.addEventListener('htmx:afterSwap', function (event) {
-        var target = event.detail.target;
-        if (target === document.body) {
-            finishRequest();
-            window.requestAnimationFrame(function () {
-                var heading = document.querySelector('main h1');
-                if (!heading) return;
-                heading.setAttribute('tabindex', '-1');
-                heading.focus({preventScroll: true});
-                heading.addEventListener('blur', function () {
-                    heading.removeAttribute('tabindex');
-                }, {once: true});
-            });
-            return;
+    document.addEventListener('htmx:afterSettle', function () {
+        if (!view) return;
+        var saved = view; view = null;
+        if (saved.same) {
+            scrollTo(saved.x, saved.y);
+            var control = saved.focus && document.querySelector(saved.focus);
+            if (control) control.focus({preventScroll: true});
+        } else {
+            var heading = document.querySelector('main h1');
+            if (heading) { heading.tabIndex = -1; heading.focus({preventScroll: true}); }
+            scrollTo(0, 0);
         }
-        if (!target || target.id !== 'overview-results' || !preservedResultsView) return;
-
-        var view = preservedResultsView;
-        preservedResultsView = null;
-        target.removeAttribute('aria-busy');
-        finishRequest();
-        window.requestAnimationFrame(function () {
-            window.scrollTo(0, view.top);
-            if (!view.focusId) return;
-            var field = document.getElementById(view.focusId);
-            if (field) field.focus({preventScroll: true});
+    });
+    ['htmx:responseError', 'htmx:sendError', 'htmx:timeout'].forEach(function (name) {
+        document.addEventListener(name, function () {
+            var status = document.getElementById('navigation-status');
+            if (status) status.textContent = document.documentElement.lang === 'pt-br' ? 'Não foi possível atualizar a página.' : 'Unable to update the page.';
         });
     });
-
-    ['htmx:responseError', 'htmx:sendError', 'htmx:timeout'].forEach(function (name) {
-        document.addEventListener(name, announceFailure);
-    });
-    document.addEventListener('htmx:beforeHistorySave', finishRequest);
 })();

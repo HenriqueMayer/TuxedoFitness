@@ -1,6 +1,7 @@
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
 from django import template
+from django.utils import formats
 
 register = template.Library()
 
@@ -17,7 +18,7 @@ def _decimal(value):
 
 def _format(value):
     rounded = value.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-    return format(rounded, 'f').rstrip('0').rstrip('.').replace('.', ',')
+    return formats.number_format(rounded, decimal_pos=2)
 
 
 @register.filter

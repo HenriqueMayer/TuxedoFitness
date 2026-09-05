@@ -2,21 +2,10 @@
 
 from __future__ import annotations
 
-import hashlib
-import json
-from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
-from django.db import transaction
-from django.utils import timezone
+from django.utils.translation import gettext as _
 
-from integrations.hevy import HevyClient, HevyError
-from integrations.models import RoutineWriteIntent, SyncRun
-from integrations.services import (
-    ADAPTER_VERSION,
-    PROVIDER_SCHEMA_VERSION,
-    IncrementalSyncService,
-)
 from training.models import ExerciseTemplate, RoutineFolder
 
 
@@ -51,7 +40,7 @@ COMPATIBLE_FIELDS = {
 
 def _object(value, label):
     if not isinstance(value, dict):
-        raise RoutineValidationError(f'{label} deve ser um objeto JSON.')
+        raise RoutineValidationError(f'{label}: ' + _('Expected a JSON object.'))
     return value
 
 
@@ -59,7 +48,7 @@ def _reject_unknown(value, allowed, label):
     unknown = set(value) - allowed
     if unknown:
         raise RoutineValidationError(
-            f'{label} contém campo(s) não permitido(s): {", ".join(sorted(unknown))}.'
+            f'{label}: ' + _('Unknown fields: ') + ', '.join(sorted(unknown))
         )
 
 
@@ -67,24 +56,26 @@ def _text(value, label, *, required=False, maximum=2_000):
     if value is None and not required:
         return None
     if not isinstance(value, str) or (required and not value.strip()):
-        raise RoutineValidationError(f'{label} deve ser um texto válido.')
+        raise RoutineValidationError(f'{label}: ' + _('Expected valid text.'))
     if len(value) > maximum:
-        raise RoutineValidationError(f'{label} excede {maximum} caracteres.')
+        raise RoutineValidationError(f'{label}: ' + _('Maximum characters: %(count)s.') % {'count': maximum})
     return value.strip()
 
 
 def _number(value, label, *, integer=False):
     if value is None:
         return None
-    if isinstance(value, bool):
-        raise RoutineValidationError(f'{label} deve ser numérico.')
+    if isinstance(value, bool) or not isinstance(value, (int, float, Decimal)):
+        raise RoutineValidationError(f'{label}: ' + _('Expected a number.'))
     try:
         parsed = Decimal(str(value))
     except (InvalidOperation, ValueError):
-        raise RoutineValidationError(f'{label} deve ser numérico.') from None
+        raise RoutineValidationError(f'{label}: ' + _('Expected a number.')) from None
     if not parsed.is_finite() or parsed < 0 or (integer and parsed != parsed.to_integral_value()):
-        kind = 'inteiro não negativo' if integer else 'número não negativo'
-        raise RoutineValidationError(f'{label} deve ser um {kind}.')
+        kind = _('nonnegative integer') if integer else _('nonnegative number')
+        raise RoutineValidationError(f'{label}: {kind}.')
+    if parsed > Decimal('1000000000'):
+        raise RoutineValidationError(f'{label}: value exceeds 1000000000.')
     return int(parsed) if integer else float(parsed)
 
 
@@ -102,10 +93,10 @@ class RoutinePayloadValidator:
         )
 
     def validate(self, payload):
-        root = _object(payload, 'O payload')
-        _reject_unknown(root, {'routine'}, 'O payload')
+        root = _object(payload, 'payload')
+        _reject_unknown(root, {'routine'}, 'payload')
         if set(root) != {'routine'}:
-            raise RoutineValidationError('O payload deve conter somente a chave routine.')
+            raise RoutineValidationError(_('The payload must contain only routine.'))
         routine = _object(root['routine'], 'routine')
         _reject_unknown(routine, {'title', 'folder_id', 'notes', 'exercises'}, 'routine')
         title = _text(routine.get('title'), 'routine.title', required=True, maximum=255)
@@ -114,12 +105,12 @@ class RoutinePayloadValidator:
         if folder_id is not None:
             folder_id = _number(folder_id, 'routine.folder_id', integer=True)
             if folder_id not in self.folder_ids:
-                raise RoutineValidationError('routine.folder_id não existe no catálogo local.')
+                raise RoutineValidationError('routine.folder_id: ' + _('Unknown local catalogue ID.'))
         exercises = routine.get('exercises')
         if not isinstance(exercises, list) or not 1 <= len(exercises) <= 50:
-            raise RoutineValidationError('routine.exercises deve conter entre 1 e 50 itens.')
+            raise RoutineValidationError('routine.exercises: ' + _('Expected between 1 and 50 items.'))
         cleaned_exercises = [
-            self._exercise(item, index) for index, item in enumerate(exercises, 1)
+            self._exercise(item, index) for index, item in enumerate(exercises)
         ]
         return {
             'routine': {
@@ -144,7 +135,7 @@ class RoutinePayloadValidator:
         template = self.templates.get(template_id)
         if template is None:
             raise RoutineValidationError(
-                f'{label}.exercise_template_id não existe no catálogo local.'
+                f'{label}.exercise_template_id: ' + _('Unknown local catalogue ID.')
             )
         superset_id = _number(
             exercise.get('superset_id'), f'{label}.superset_id', integer=True
@@ -155,7 +146,7 @@ class RoutinePayloadValidator:
         notes = _text(exercise.get('notes'), f'{label}.notes')
         sets = exercise.get('sets')
         if not isinstance(sets, list) or not 1 <= len(sets) <= 20:
-            raise RoutineValidationError(f'{label}.sets deve conter entre 1 e 20 itens.')
+            raise RoutineValidationError(f'{label}.sets: ' + _('Expected between 1 and 20 items.'))
         return {
             'exercise_template_id': template_id,
             'superset_id': superset_id,
@@ -163,7 +154,7 @@ class RoutinePayloadValidator:
             'notes': notes,
             'sets': [
                 self._set(item, template, f'{label}.sets[{set_index}]')
-                for set_index, item in enumerate(sets, 1)
+                for set_index, item in enumerate(sets)
             ],
         }
 
@@ -171,8 +162,8 @@ class RoutinePayloadValidator:
         training_set = _object(value, label)
         _reject_unknown(training_set, SET_FIELDS, label)
         set_type = training_set.get('type')
-        if set_type not in SET_TYPES:
-            raise RoutineValidationError(f'{label}.type não é permitido.')
+        if not isinstance(set_type, str) or set_type not in SET_TYPES:
+            raise RoutineValidationError(f'{label}.type: ' + _('Unsupported set type.'))
         cleaned = {'type': set_type}
         integer_fields = {'reps', 'distance_meters', 'duration_seconds'}
         populated = set()
@@ -192,7 +183,7 @@ class RoutinePayloadValidator:
             end = _number(rep_range.get('end'), f'{label}.rep_range.end', integer=True)
             if start is None or end is None or start < 1 or end < start:
                 raise RoutineValidationError(
-                    f'{label}.rep_range deve ter início positivo e fim igual ou maior.'
+                    f'{label}.rep_range: ' + _('Use a positive start and an end greater than or equal to start.')
                 )
             cleaned['rep_range'] = {'start': start, 'end': end}
             populated.add('rep_range')
@@ -200,11 +191,10 @@ class RoutinePayloadValidator:
         incompatible = populated - compatible
         if incompatible:
             raise RoutineValidationError(
-                f'{label} usa métrica incompatível com {template.title}: '
-                f'{", ".join(sorted(incompatible))}.'
+                f'{label}: ' + _('Incompatible metric: ') + ', '.join(sorted(incompatible))
             )
         if not populated:
-            raise RoutineValidationError(f'{label} precisa de uma prescrição mensurável.')
+            raise RoutineValidationError(f'{label}: ' + _('A measurable prescription is required.'))
         return cleaned
 
     def preview(self, payload):
@@ -225,95 +215,3 @@ class RoutinePayloadValidator:
             'set_count': sum(item['set_count'] for item in exercises),
             'exercises': exercises,
         }
-
-
-class RoutineWriteService:
-    INTENT_LIFETIME = timedelta(minutes=30)
-
-    def create_intent(self, account, payload):
-        canonical = json.dumps(
-            payload, ensure_ascii=False, sort_keys=True, separators=(',', ':'),
-        )
-        return RoutineWriteIntent.objects.create(
-            hevy_account=account,
-            payload=payload,
-            payload_hash=hashlib.sha256(canonical.encode()).hexdigest(),
-            expires_at=timezone.now() + self.INTENT_LIFETIME,
-        )
-
-    def submit(self, account, intent_id, client: HevyClient):
-        now = timezone.now()
-        IncrementalSyncService._acquire_lock(account)
-        try:
-            with transaction.atomic():
-                intent = RoutineWriteIntent.objects.select_for_update().get(
-                    pk=intent_id, hevy_account=account
-                )
-                if intent.state != RoutineWriteIntent.State.PREVIEWED:
-                    raise RoutineValidationError('Esta confirmação já foi consumida.')
-                expired = intent.expires_at <= now
-                if expired:
-                    intent.state = RoutineWriteIntent.State.EXPIRED
-                    intent.finished_at = now
-                    intent.save(update_fields=['state', 'finished_at'])
-                else:
-                    intent.state = RoutineWriteIntent.State.SUBMITTING
-                    intent.submitted_at = now
-                    intent.save(update_fields=['state', 'submitted_at'])
-            if expired:
-                raise RoutineValidationError(
-                    'A prévia expirou. Valide o JSON novamente.'
-                )
-
-            run = SyncRun.objects.create(
-                hevy_account=account,
-                mode=SyncRun.Mode.ROUTINE_CREATE,
-                trigger=SyncRun.Trigger.WEB,
-                state=SyncRun.State.RUNNING,
-                started_at=now,
-                adapter_version=ADAPTER_VERSION,
-                provider_schema_version=PROVIDER_SCHEMA_VERSION,
-            )
-            try:
-                routine = client.create_routine(intent.payload)
-            except HevyError as error:
-                finished = timezone.now()
-                intent_state = (
-                    RoutineWriteIntent.State.UNKNOWN
-                    if error.code == 'WRITE_UNKNOWN'
-                    else RoutineWriteIntent.State.FAILED
-                )
-                RoutineWriteIntent.objects.filter(pk=intent.pk).update(
-                    state=intent_state,
-                    finished_at=finished,
-                    error_code=error.code,
-                    sanitized_error=str(error)[:500],
-                )
-                SyncRun.objects.filter(pk=run.pk).update(
-                    state=(
-                        SyncRun.State.PARTIAL
-                        if error.code == 'WRITE_UNKNOWN'
-                        else SyncRun.State.FAILED
-                    ),
-                    finished_at=finished,
-                    duration_ms=int((finished - now).total_seconds() * 1000),
-                    error_code=error.code,
-                    sanitized_error=str(error)[:500],
-                )
-                raise
-            else:
-                finished = timezone.now()
-                RoutineWriteIntent.objects.filter(pk=intent.pk).update(
-                    state=RoutineWriteIntent.State.SUCCEEDED,
-                    finished_at=finished,
-                    external_routine_id=routine.external_id,
-                )
-                SyncRun.objects.filter(pk=run.pk).update(
-                    state=SyncRun.State.SUCCEEDED,
-                    finished_at=finished,
-                    duration_ms=int((finished - now).total_seconds() * 1000),
-                    item_counts={'routines_created': 1},
-                )
-                return routine
-        finally:
-            IncrementalSyncService._release_lock(account)

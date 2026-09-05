@@ -1,87 +1,19 @@
-# Hevy integration contract
+# Hevy integration · adapter review 2026-09-05
 
-## Verification record
+Primary source: [official Hevy API documentation](https://api.hevyapp.com/docs/). Local source notes are in [Hevy](Hevy/README.md). Hevy Pro is required. The public contract does not expose an exercise-language query parameter.
 
-The official public Swagger bootstrap at
-<https://api.hevyapp.com/docs/swagger-ui-init.js> was fetched without a
-credential on 2026-08-30. Its SHA-256 value is:
+Reads are restricted to the official HTTPS host and allowlisted paths. Redirects are not followed, preventing forwarding of `api-key`. The bounded HTTP client retries transient reads, respects bounded Retry-After, validates JSON/page metadata and preserves original pages. Known read aliases are `equipment` / `equipment_category` and `superset_id` / `supersets_id`; contradictory values fail validation. Writes emit `superset_id` only.
 
-```text
-03f51bdc17537d1a530114d2ae47327d3e2863dde0d9224d2b1aa083da1e8438
-```
+Full connection imports exercise templates, routine folders, routines and workouts. Collection pagination starts at 1 and ends at page_count; routine folders use the response key `routines`. Incomplete/changing pagination must not publish a collection or advance the event cursor. Original routine pages are persisted atomically with normalized routines. Latest original workout objects follow the normalized workout update.
 
-The privately retained source capture had the same hash. The raw provider
-bundle is intentionally excluded from the public repository. The
-Sprint 9 release check found no contract drift. Revalidate the public bootstrap
-before every release that changes the adapter.
+After-load `POST /sync/auto/` reserves the next automatic attempt and performs due work in a separate request. Workouts/routines: 15 minutes; catalogue: 24 hours. The manual header form uses the same service, including without JS. No distributed job system is needed. Records render immediately from SQLite; a provider failure preserves the last valid local state. Filters do not force fresh network collection while the reservation/data remains current.
 
-## MVP read allowlist
+Incremental workout events overlap the previous high-water time and deduplicate upserts/deletes. Routines/folders use complete collections because workout events do not cover them. An account lock prevents sync/write overlap. Calls are outside canonical persistence transactions; validation precedes publication. Stale locks are recovered after the installation-configured lifetime, and interrupted writes become unknown.
 
-Only these Hevy operations are approved for the MVP adapter:
+One HevyAccount belongs to each user. Credentials are encrypted using an installation MultiFernet key ring. Saving a replacement validates the remote identity; a different account is rejected before data can mix. Disconnect clears ciphertext and stops access-triggered synchronization, preserving local records. CLI `sync_hevy --username ...` uses the same stored credential.
 
-| Purpose | Method and path |
-| --- | --- |
-| Validate account | `GET /v1/user/info` |
-| Exercise templates | `GET /v1/exercise_templates` |
-| Routine folders | `GET /v1/routine_folders` |
-| Routines | `GET /v1/routines` |
-| Workouts | `GET /v1/workouts` |
-| Retrieve one workout | `GET /v1/workouts/{workoutId}` |
-| Workout events | `GET /v1/workouts/events` |
+Provider writes are only reachable through a reviewed, owner-scoped proposal. POST creates; PUT updates by ID. The Fitness envelope is never sent remotely. Header `api-key` is injected in the backend, and the body is only `{"routine": ...}`. Response-only fields and RPE are excluded. No writes are retried automatically, including timeouts and invalid successful confirmations. Read the [complete proposal contract](planning.md).
 
-All collection and event pages must be fetched from page 1 through
-`page_count`, including the final page. Exercise templates use at most 100
-items per page; the other paginated allowlisted resources use at most 10.
-The routine-folder endpoint currently exposes its collection under the
-provider's `routines` response key; the adapter maps that key explicitly to
-local routine-folder DTOs.
+## Portuguese catalogue
 
-Body measurements and every Hevy `POST`, `PUT`, or delete operation are
-outside the MVP. Workout events apply only to workouts; plans and templates
-use explicit complete refreshes.
-
-## Secret boundary
-
-Hevy authentication uses the backend-only `api-key` header. The key is never
-stored in Git or sent in an URL. Automated tests use synthetic credentials and
-mock transport; they never call the real API.
-
-## Implemented complete import
-
-`integrations.hevy.HevyClient` exposes only the validation and complete-import
-GET paths. It starts pagination at page 1, sends the documented maximum page
-size, validates `page` and `page_count`, and includes the final page. The
-client retries only transient failures, with a 30-second per-request timeout
-and at most three attempts.
-
-`FullImportService` validates all DTOs and cross-resource references before
-opening the canonical SQLite transaction. The repository upserts templates,
-folders, routines, workouts, and their ordered children. Only a confirmed
-complete collection refresh can mark absent rows inactive. The initial
-`workout-events` cursor is the full-run start time; later incremental event
-processing uses the workflow below.
-
-## Incremental workout events
-
-`IncrementalSyncService` requests `/v1/workouts/events` from the confirmed
-cursor minus its five-minute overlap. It fetches every page, retains events at
-or before the run high-water mark, deduplicates their type, workout ID, and
-source timestamp, and applies them in ascending source order. A delete wins
-when an update and delete share a timestamp.
-
-Updated events persist their complete workout payload. A syntactically
-incomplete update uses `GET /v1/workouts/{workoutId}` for repair. Deleted events
-soft-delete only the matching local workout. Canonical writes and cursor
-advancement share one SQLite transaction. Failed or partial retrieval leaves
-the prior cursor and canonical data unchanged. A per-account local advisory
-lock rejects a concurrent writer.
-
-Run a connection check or explicit full import with:
-
-```bash
-uv run python manage.py sync_hevy --validate-only --username your-username
-uv run python manage.py sync_hevy --mode=full --confirm-full-refresh \
-  --username your-username
-uv run python manage.py sync_hevy --mode=incremental --username your-username
-uv run python manage.py sync_hevy --mode=plans --username your-username
-```
+Reviewed terminology lives in `training/translations.py`. Exact known standard exercise titles are matched during import, and the resulting display translation is stored against that account's provider exercise ID with a review version. Original payloads/IDs remain unchanged. Custom exercises and unmatched names keep their original titles. Search includes both names. This initial vocabulary is intentionally finite; new exercises remain usable until a reviewed mapping is added. This is local terminology, not an official Hevy translation service.

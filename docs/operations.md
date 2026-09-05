@@ -1,229 +1,49 @@
-# Local operations
+# Operations · 0.2.0
 
-## Native installation
+## Clean installation and reset
 
-Install from the lockfiles and keep the environment file private:
+Install Python 3.12+ and uv. `uv sync --locked` includes the developer tools; use `uv sync --locked --no-dev` for runtime only. No Node is needed to run the app. `uv run python scripts/init_local.py` creates `.env` with mode 0600 and independent random Django/Fernet keys, without printing them. It refuses to overwrite existing configuration. Run `manage.py migrate`, then `manage.py runserver 127.0.0.1:8000`.
 
-```bash
-uv python install 3.12
-uv venv --python 3.12 .venv
-uv sync --locked
-npm ci
-npm run build
-install -m 600 .env.example .env
-```
+Version 0.2.0 deliberately starts with a new database. For an existing installation: stop Django, preserve the old SQLite database and its configuration, then select a new empty path using `TUXEDO_DATA_DIR=var/private/v020` (remove/replace an old `TUXEDO_FITNESS_DB` override). Add a newly generated Fernet key to HEVY_ENCRYPTION_KEYS using a private editor. Run migrations and recreate local accounts. Do not copy legacy tables into the new database. Old source and database backups provide the rollback path.
 
-Generate a Django secret with the following command, then paste it into
-`SECRET_KEY` in `.env` using a local editor. Do not `source` the file.
+`TUXEDO_ENV_FILE` selects a private configuration file. Process environment overrides that file; never source an untrusted .env in a shell. Local defaults bind loopback. Production uses HTTPS, secure cookies, explicit hosts/origins, a reverse proxy serving collected static files and a WSGI server. Keep CSRF/CSP protections enabled. No email password-reset service is configured; owners can use `manage.py changepassword USER`. `ALLOW_SIGNUPS=False` disables new registrations without disabling login.
+
+## Credential lifecycle
+
+Connect in Hevy connection after login. The API key is masked on input, validated server-side, encrypted and never displayed again. It survives logout/restart. Disconnect removes the stored credential, preserving local training records. Replacing it requires the same remote identity. Keep installation keys separate from SQLite and SECRET_KEY.
+
+For rotation, securely generate a fresh Fernet key; place it first in the comma-separated `HEVY_ENCRYPTION_KEYS`, followed by old keys. Restart processes and run:
 
 ```bash
-uv run python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+uv run python manage.py rotate_hevy_keys
 ```
 
-Set the rotated Hevy credential only in `HEVY_API_KEY`. Process variables take
-priority over `.env`; `TUXEDO_ENV_FILE` selects another environment file.
+The command re-encrypts stored credentials atomically and does not print secrets. Verify the connection in an isolated restore before removing old keys. Historical backups still require their original encryption keys. Never remove keys needed by retained backups. Lost keys cannot decrypt old credentials; reconnect to the same account using a valid key if necessary. [Fernet/MultiFernet reference](https://cryptography.io/en/latest/fernet/).
 
-Initialize the local database and start it on loopback:
+## Backup and restore
+
+Before running these commands, set `TUXEDO_FITNESS_BACKUP_DIR` in the private environment to an absolute directory outside the source checkout. The application deliberately requires an explicit destination; it does not silently put backups beside the live database.
 
 ```bash
-uv run python manage.py migrate
-uv run python manage.py check
-uv run python manage.py runserver 127.0.0.1:8000
-```
-
-Open `http://127.0.0.1:8000/`. Signup is available from the landing and login
-pages by default; set `ALLOW_SIGNUPS=False` to close new registration without
-disabling login. Alternatively, create the first owner with
-`uv run python manage.py create_owner your-username`. The command prompts for a password and is
-intended only for an empty database. For
-unattended local initialization, expose `TUXEDO_OWNER_PASSWORD` only to that
-process and pass `--no-input`. Recover a forgotten password locally with:
-
-```bash
-uv run python manage.py changepassword your-username
-```
-
-The MVP has no email recovery flow or application-level login throttler. Keep
-the service on the intended owner network; if it is exposed, enforce request
-rate limits at the reverse proxy in addition to HTTPS.
-
-The private database defaults to `var/private/tuxedo-fitness.sqlite3`.
-`TUXEDO_DATA_DIR` changes the directory; `TUXEDO_FITNESS_DB` selects an exact
-file. Restrict private paths to the owner account.
-
-## Quality pipeline
-
-```bash
-uv lock --check
-uv sync --locked
-uv run python scripts/check_version.py
-uv run python manage.py check
-uv run python manage.py makemigrations --check --dry-run
-uv run coverage erase
-uv run coverage run manage.py test
-uv run coverage report --fail-under=80
-uv run coverage report --include='integrations/*' --fail-under=90
-uv run coverage report --include='analytics/*' --fail-under=90
-uv run ruff check .
-uv run python scripts/security/scan_secrets.py
-uv run python scripts/security/scan_secrets.py --history
-npm ci
-npm run build
-npm audit --audit-level=high
-npm run test:e2e
-git diff --check
-```
-
-All tests use synthetic local data and mocked Hevy transports. The secret scan
-checks the tracked tree and fails for credential-like assignments or tracked
-personal-fixture paths.
-
-## Read-only synchronization
-
-```bash
-uv run python manage.py sync_hevy --validate-only --username your-username
-uv run python manage.py sync_hevy --mode=full --confirm-full-refresh --username your-username
-uv run python manage.py sync_hevy --mode=incremental --username your-username
-uv run python manage.py sync_hevy --mode=plans --username your-username
-```
-
-The command reports a sanitized run summary only after commit. Failures leave
-the cursor unchanged. Run a complete import before the first incremental run.
-A lock older than `SYNC_LOCK_STALE_SECONDS` is recovered and its interrupted
-run is audited as failed. Exit codes are 2 for configuration/authentication, 3 for
-transient provider failures, 4 for payload/validation/partial failures, 5 for a
-writer conflict, and 6 for database failure.
-
-## Scheduling
-
-Cron can run the incremental command every 30 minutes and plan refresh weekly:
-
-```cron
-*/30 * * * * cd /path/to/TuxedoFitness && /path/to/uv run python manage.py sync_hevy --mode=incremental --username=your-username
-15 3 * * 1 cd /path/to/TuxedoFitness && /path/to/uv run python manage.py sync_hevy --mode=plans --username=your-username
-30 3 * * * cd /path/to/TuxedoFitness && /path/to/uv run python manage.py prune_runtime_data
-```
-
-Equivalent systemd service:
-
-```ini
-[Unit]
-Description=Tuxedo Fitness incremental Hevy synchronization
-After=network-online.target
-
-[Service]
-Type=oneshot
-User=tuxedofitness
-WorkingDirectory=/srv/TuxedoFitness
-EnvironmentFile=/srv/TuxedoFitness/.env
-ExecStart=/usr/local/bin/uv run python manage.py sync_hevy --mode=incremental --username=your-username
-```
-
-Timer:
-
-```ini
-[Unit]
-Description=Run Tuxedo Fitness synchronization
-
-[Timer]
-OnBootSec=5min
-OnUnitActiveSec=30min
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-```
-
-The environment file must be readable only by the service account. Never put
-the API key in a unit, timer, cron line, or shell history.
-
-## Backup, verification, and restore
-
-Configure an absolute backup directory outside the checkout:
-
-```bash
-export TUXEDO_FITNESS_BACKUP_DIR=/absolute/path/to/tuxedo-fitness-backups
-mkdir -p "$TUXEDO_FITNESS_BACKUP_DIR"
-chmod 700 "$TUXEDO_FITNESS_BACKUP_DIR"
 uv run python manage.py backup_database
-```
-
-The command uses SQLite's online backup API, writes a mode-`0600` file, and
-requires `integrity_check=ok` plus an empty foreign-key check. Settings deletion
-uses the same verified backup gate. Validate any selected database without
-changing it:
-
-```bash
 uv run python manage.py check_database
-uv run python manage.py check_database --database /absolute/path/to/selected-backup.sqlite3
-```
-
-The non-destructive rehearsal creates a new verified backup, copies it to an
-isolated temporary directory, validates the copy, and removes only that
-temporary restored copy:
-
-```bash
 uv run python scripts/rehearse_restore.py
 ```
 
-For a real restore, stop the web process and schedulers, preserve the current
-database as a rollback copy, choose one exact backup, and then:
+The SQLite online-backup API produces a consistent copy with integrity/foreign-key checks; do not copy a running WAL database using a plain file copy. Backups use owner-only storage. Choose an external private backup destination through `TUXEDO_FITNESS_BACKUP_DIR` and separately back up the private installation key ring. Database encryption is limited to provider credentials; training/profile/prompt data remains readable to the installation owner and should be protected by filesystem/full-disk encryption as needed.
+
+To restore, stop Django, preserve the current DB, restore the verified SQLite backup to a new path and supply the corresponding installation key ring. Run `check_database --database PATH`. Start a disposable instance using a private TUXEDO_ENV_FILE and that restored DB, verify login/local data and decryptability, then switch the production path. Never point a preview/E2E runner at a real backup. The rehearsal script checks SQLite integrity; credential decryption/rotation is additionally covered by synthetic tests and should be rehearsed with the owner's key backup.
+
+## Sync, recovery and maintenance
 
 ```bash
-cp /absolute/path/to/selected-backup.sqlite3 "$TUXEDO_FITNESS_DB"
-chmod 600 "$TUXEDO_FITNESS_DB"
-uv run python manage.py migrate
-uv run python manage.py check
-uv run python manage.py check_database
+uv run python manage.py sync_hevy --username USER --validate-only
+uv run python manage.py sync_hevy --username USER --mode=full --confirm-full-refresh
+uv run python manage.py sync_hevy --username USER --mode=incremental
+uv run python manage.py sync_hevy --username USER --mode=plans
+uv run python manage.py prune_runtime_data
 ```
 
-Restart only after both checks pass. Never restore over a running writer.
+The CLI uses that user's encrypted stored credential. First import must be full. The browser automatically reserves 15-minute retry intervals; manual refresh remains available. Incomplete collections preserve the prior cursor/base. A stale lock is recovered after SYNC_LOCK_STALE_SECONDS (default six hours); stop the original worker before forcing an earlier recovery. Unknown writes require checking Hevy and synchronizing, never blind resubmission. Partial batches retain their successful operations and do not roll back remotely. After a successful remote write with failed local refresh, refresh plans rather than applying the write again.
 
-## Optional Docker Compose topology
-
-Container packaging is optional and does not change the architecture. A
-Compose deployment has one application service, no database service, and no
-queue. Its equivalent shape is:
-
-```yaml
-services:
-  app:
-    build: .
-    command: uv run gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 1 --threads 2
-    env_file: .env
-    volumes:
-      - fitness-data:/app/var/private
-      - fitness-backups:/backups
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://127.0.0.1:8000/ready/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
-volumes:
-  fitness-data:
-  fitness-backups:
-```
-
-The operator-provided image must run `uv sync --locked`, build static assets,
-and never copy `.env` or runtime data. Keep one application replica because
-SQLite has a one-writer deployment contract.
-
-## Optional single-instance VPS
-
-Use one service account, one local SQLite volume, and one Gunicorn instance:
-
-```bash
-uv run python manage.py collectstatic --noinput
-uv run gunicorn core.wsgi:application --bind 127.0.0.1:8000 --workers 1 --threads 2
-```
-
-Terminate HTTPS at a local reverse proxy. Set `DEBUG=False`, `HTTPS=True`, an
-exact `ALLOWED_HOSTS`, and exact HTTPS origins in `CSRF_TRUSTED_ORIGINS`.
-Restrict the proxy to the intended owner network or access layer, serve
-`STATIC_ROOT`, schedule verified off-checkout backups, and rehearse restores.
-Do not add replicas, shared-network SQLite, Redis, Celery, or an internal queue.
-SQLite WAL permits reads while one synchronization writer is active; two
-threads prevent that slow request from occupying the only request slot. Prefer
-the management command for the first large import and configure the reverse
-proxy timeout accordingly.
+Routine JSON preview has a 15-minute expiry and single consumption. Saved prompt generations are immutable and deletable by their owner. Synchronization never edits an old prompt. Research datasets are not used at runtime.

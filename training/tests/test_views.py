@@ -40,7 +40,7 @@ class TrainingReadViewTests(TestCase):
         warmup.save()
 
         response = self.client.get(reverse('training:history'), {
-            'inicio': '2026-01-01', 'fim': '2026-01-03', 'tipo': 'normal',
+            'start': '2026-01-01', 'end': '2026-01-03', 'set_type': 'normal',
         })
 
         self.assertContains(response, included.title)
@@ -85,7 +85,7 @@ class TrainingReadViewTests(TestCase):
         self.assertNotContains(response, self.template.title)
 
         response = self.client.get(reverse('training:exercise-detail', args=[duration.pk]))
-        self.assertContains(response, 'Métricas de carga não compatíveis')
+        self.assertContains(response, 'Load estimates do not apply')
         self.assertNotContains(response, '1RM estimado')
 
     def test_exercise_catalog_paginates_fifty_templates(self):
@@ -101,7 +101,7 @@ class TrainingReadViewTests(TestCase):
 
         self.assertEqual(len(first.context['page_obj']), 50)
         self.assertEqual(len(second.context['page_obj']), 1)
-        self.assertContains(first, 'Próxima')
+        self.assertContains(first, 'Next')
 
     def test_workout_detail_uses_owner_mass_unit(self):
         OwnerPreference.objects.create(user=self.account.user, mass_unit='lb')
@@ -111,7 +111,7 @@ class TrainingReadViewTests(TestCase):
             reverse('training:workout-detail', args=[workout.pk])
         )
 
-        self.assertContains(response, '93,7 lb')
+        self.assertContains(response, '93.70 lb')
 
     def test_routines_show_planned_sets_and_no_write_controls(self):
         routine = create_routine(self.account, self.template)
@@ -119,11 +119,11 @@ class TrainingReadViewTests(TestCase):
         response = self.client.get(reverse('training:routines'))
 
         self.assertContains(response, routine.title)
-        self.assertContains(response, 'Rotina é planejamento. Treino concluído é execução.')
+        self.assertContains(response, 'Your training plans')
         self.assertNotContains(response, 'Excluir')
 
         detail = self.client.get(reverse('training:routine-detail', args=[routine.pk]))
-        self.assertContains(detail, '40,000')
+        self.assertContains(detail, '40.00 kg')
         self.assertContains(detail, '90 s')
         self.assertNotContains(detail, 'Salvar')
 
@@ -137,20 +137,20 @@ class TrainingReadViewTests(TestCase):
         warmup_set.set_type = SetType.WARMUP
         warmup_set.save()
 
-        response = self.client.get(reverse('training:workout-export'), {'tipo': 'warmup'})
+        response = self.client.get(reverse('training:workout-export'), {'set_type': 'warmup'})
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'text/csv; charset=utf-8')
         rows = list(csv.DictReader(StringIO(response.content.decode())))
         self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0]['treino_titulo'], 'Warmup export')
-        self.assertEqual(rows[0]['peso_kg'], '42.500')
+        self.assertEqual(rows[0]['workout_title'], 'Warmup export')
+        self.assertEqual(rows[0]['weight_kg'], '42.500')
 
         all_rows = list(csv.DictReader(StringIO(
             self.client.get(reverse('training:workout-export')).content.decode()
         )))
-        normal_row = next(row for row in all_rows if row['treino_titulo'] == 'Normal export')
-        self.assertEqual(normal_row['peso_kg'], '')
+        normal_row = next(row for row in all_rows if row['workout_title'] == 'Normal export')
+        self.assertEqual(normal_row['weight_kg'], '')
 
         removed = create_workout(self.account, self.template, title='Removed export')
         removed.is_active = False
@@ -159,6 +159,4 @@ class TrainingReadViewTests(TestCase):
         removed_rows = list(csv.DictReader(StringIO(
             self.client.get(reverse('training:workout-export')).content.decode()
         )))
-        removed_row = next(row for row in removed_rows if row['treino_titulo'] == 'Removed export')
-        self.assertEqual(removed_row['estado'], 'removido')
-        self.assertTrue(removed_row['removido_em'].startswith('2026-01-04T12:00:00'))
+        self.assertFalse(any(row['workout_title'] == 'Removed export' for row in removed_rows))
