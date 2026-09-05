@@ -1,57 +1,11 @@
-# Testing and release verification
+# Verification
 
-All tests use synthetic users, credentials, provider payloads, and isolated
-SQLite databases. No automated test calls Hevy.
+`uv run coverage run manage.py test` uses synthetic data and mock Hevy transports. Combined line/branch coverage must stay at least 80%; CI additionally monitors critical integration/analytics coverage. No test applies real provider changes.
 
-## Python and coverage
+Contract tests cover pagination and aliases; incomplete event collection does not advance cursors. Credential tests cover persistent ciphertext, separate sessions/users, logout/disconnect, identity mismatch, missing/wrong key rings and rotation. Metrics use manually calculated fixtures for nulls, warmups, modality eligibility, RPE, Epley, timezones and equal periods.
 
-```bash
-uv lock --check
-uv run python scripts/check_version.py
-uv run python manage.py check
-uv run python manage.py makemigrations --check --dry-run
-uv run coverage erase
-uv run coverage run manage.py test
-uv run coverage report --fail-under=80
-uv run coverage report --include='integrations/*' --fail-under=90
-uv run coverage report --include='analytics/*' --fail-under=90
-uv run ruff check .
-```
+Planning tests exercise original routine-page/workout-object fidelity, exact date boundaries, last-N chronological ordering, no-history cases, explicit limits, immutable generations, real-key rejection, fenced JSON, whole-batch validation and shared examples. Write tests include duplicate/expired confirmation, external conflicts, partial success, ambiguous timeout, interruption and remote-success/local-failure states.
 
-## Security and dependencies
+`npm run test:e2e` runs the real local UI against isolated synthetic storage across desktop/tablet/mobile, EN/PT-BR, light/dark, keyboard navigation, focus preservation and no-JavaScript workflows. `npm run preview:capture` creates a synthetic static screenshot tour. `npm run test:preview` checks explicit filenames and static browser access. These are local tests, not production deployment or live Hevy evidence.
 
-```bash
-uv run python scripts/security/scan_secrets.py
-uv run python scripts/security/scan_secrets.py --history
-uv export --locked --no-dev --format requirements-txt > /tmp/tuxedo-fitness-requirements.txt
-uvx --from 'pip-audit>=2.7,<3' pip-audit --strict -r /tmp/tuxedo-fitness-requirements.txt
-npm audit --audit-level=high
-```
-
-The history scan reports object IDs and paths but never prints suspected secret
-values. It rejects environment files, private runtime paths, SQLite, old Hevy
-exports, credential-like assignments, and personal fixture paths.
-
-## Frontend and browser
-
-```bash
-npm ci
-npm run build
-git diff --exit-code -- static/css/app.css static/fonts/
-node --check static/js/navigation.js
-npm run test:e2e
-```
-
-Playwright runs serially against a unique disposable database and three
-viewports: 1440×900, 768×1024, and 390×844. Console/CSP monitoring starts before
-the first login navigation. Tests cover the closed-signup default, boosted
-navigation continuity, SVG/table accessibility, idle/busy state, theme, mobile
-focus/Escape, filters with and without JavaScript, empty periods, URL history,
-and horizontal overflow.
-
-## Release-only remote verification
-
-After the sanitized history is pushed while the repository remains private,
-clone the remote as a fresh mirror and rerun the history scanner. Confirm old
-personal paths and object IDs are unavailable before changing repository
-visibility. Any reachable old object blocks publication.
+Run `scripts/benchmark_reference_corpus.py` for 10,000 workouts/200,000 sets. Report local p95 and provider latency separately. Never use real owner data for public screenshots or benchmark artifacts.

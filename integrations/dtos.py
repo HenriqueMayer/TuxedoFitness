@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass
-from datetime import datetime
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
@@ -18,6 +18,12 @@ class PayloadError(ValueError):
 def payload_hash(payload: dict[str, Any]) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(',', ':'))
     return hashlib.sha256(encoded.encode()).hexdigest()
+
+
+def alias_payload(payload, primary, legacy):
+    if primary in payload and legacy in payload and payload[primary] != payload[legacy]:
+        raise PayloadError(f'Conflicting {primary} aliases.')
+    return {**payload, primary: payload.get(primary, payload.get(legacy))}
 
 
 def required_string(payload: dict[str, Any], field: str) -> str:
@@ -47,7 +53,7 @@ def nullable_datetime(payload: dict[str, Any], field: str) -> datetime | None:
         raise PayloadError(f'{field} must be an ISO 8601 timestamp.')
     if timezone.is_naive(parsed):
         raise PayloadError(f'{field} must include a timezone.')
-    return parsed.astimezone(timezone.UTC)
+    return parsed.astimezone(UTC)
 
 
 def nullable_decimal(payload: dict[str, Any], field: str) -> Decimal | None:
@@ -60,7 +66,7 @@ def nullable_decimal(payload: dict[str, Any], field: str) -> Decimal | None:
         decimal = Decimal(str(value))
     except InvalidOperation as error:
         raise PayloadError(f'{field} must be numeric or null.') from error
-    if decimal < 0:
+    if not decimal.is_finite() or decimal < 0:
         raise PayloadError(f'{field} must not be negative.')
     return decimal
 
@@ -175,7 +181,7 @@ def exercise_dto(payload: dict[str, Any], *, routine: bool) -> ExerciseDTO:
         template_id=required_string(payload, 'exercise_template_id'),
         title=required_string(payload, 'title'),
         notes=nullable_string(payload, 'notes'),
-        superset_group=nullable_integer(payload, 'supersets_id'),
+        superset_group=nullable_integer(alias_payload(payload, 'superset_id', 'supersets_id'), 'superset_id'),
         rest_seconds=rest,
         sets=tuple(set_dto(item, routine=routine) for item in required_list(payload, 'sets')),
     )
@@ -193,6 +199,7 @@ class ExerciseTemplateDTO:
     created_at: datetime | None
     updated_at: datetime | None
     source_hash: str
+    raw_payload: dict = field(default_factory=dict, compare=False)
 
     @classmethod
     def from_payload(cls, payload: dict[str, Any]) -> ExerciseTemplateDTO:
@@ -205,11 +212,11 @@ class ExerciseTemplateDTO:
         return cls(
             external_id=required_string(payload, 'id'), title=required_string(payload, 'title'),
             exercise_type=required_string(payload, 'type'),
-            equipment_category=nullable_string(payload, 'equipment_category'),
+            equipment_category=nullable_string(alias_payload(payload, 'equipment', 'equipment_category'), 'equipment'),
             primary_muscle=nullable_string(payload, 'primary_muscle_group'),
             secondary_muscles=tuple(sorted(set(secondaries))), is_custom=custom,
             created_at=nullable_datetime(payload, 'created_at'),
-            updated_at=nullable_datetime(payload, 'updated_at'), source_hash=payload_hash(payload),
+            updated_at=nullable_datetime(payload, 'updated_at'), source_hash=payload_hash(payload), raw_payload=payload,
         )
 
 
@@ -221,12 +228,13 @@ class RoutineFolderDTO:
     created_at: datetime | None
     updated_at: datetime | None
     source_hash: str
+    raw_payload: dict = field(default_factory=dict, compare=False)
 
     @classmethod
     def from_payload(cls, payload: dict[str, Any]) -> RoutineFolderDTO:
         return cls(required_integer(payload, 'id'), required_integer(payload, 'index'),
                    required_string(payload, 'title'), nullable_datetime(payload, 'created_at'),
-                   nullable_datetime(payload, 'updated_at'), payload_hash(payload))
+                   nullable_datetime(payload, 'updated_at'), payload_hash(payload), payload)
 
 
 @dataclass(frozen=True)
@@ -238,6 +246,7 @@ class RoutineDTO:
     created_at: datetime | None
     updated_at: datetime | None
     source_hash: str
+    raw_payload: dict = field(default_factory=dict, compare=False)
 
     @classmethod
     def from_payload(cls, payload: dict[str, Any]) -> RoutineDTO:
@@ -245,7 +254,7 @@ class RoutineDTO:
                    required_string(payload, 'title'),
                    tuple(exercise_dto(item, routine=True) for item in required_list(payload, 'exercises')),
                    nullable_datetime(payload, 'created_at'), nullable_datetime(payload, 'updated_at'),
-                   payload_hash(payload))
+                   payload_hash(payload), payload)
 
 
 @dataclass(frozen=True)
@@ -260,6 +269,7 @@ class WorkoutDTO:
     created_at: datetime | None
     updated_at: datetime | None
     source_hash: str
+    raw_payload: dict = field(default_factory=dict, compare=False)
 
     @classmethod
     def from_payload(cls, payload: dict[str, Any]) -> WorkoutDTO:
@@ -273,7 +283,7 @@ class WorkoutDTO:
                    required_string(payload, 'title'), nullable_string(payload, 'description'), start, end,
                    tuple(exercise_dto(item, routine=False) for item in required_list(payload, 'exercises')),
                    nullable_datetime(payload, 'created_at'), nullable_datetime(payload, 'updated_at'),
-                   payload_hash(payload))
+                   payload_hash(payload), payload)
 
 
 @dataclass(frozen=True)

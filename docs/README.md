@@ -1,30 +1,26 @@
 # Tuxedo Fitness documentation
 
-Technical and product documentation for Tuxedo Fitness.
+Current 0.2.0 product and implementation documentation. English technical documentation; bilingual root READMEs and interface. Finance reference: `90cfe53`.
 
-| Path | Purpose |
-| --- | --- |
-| [`ProductRequirementsDocument.md`](ProductRequirementsDocument.md) | Approved scope and acceptance criteria. |
-| [`implementation-status.md`](implementation-status.md) | Sprint status and verification evidence. |
-| [`architecture.md`](architecture.md) | Runtime shape, boundaries, and dependencies. |
-| [`backend.md`](backend.md) | Django configuration and backend conventions. |
-| [`frontend.md`](frontend.md) | Design system, assets, behavior, and accessibility. |
-| [`data-model.md`](data-model.md) | Implemented models, fields, and constraints. |
-| [`analytics.md`](analytics.md) | Metric formulas, eligibility, and limitations. |
-| [`hevy-integration.md`](hevy-integration.md) | Verified read-only contract baseline. |
-| [`operations.md`](operations.md) | Installation and local operation. |
-| [`testing.md`](testing.md) | Current test layers and commands. |
-| [`performance.md`](performance.md) | Disposable reference corpus, method, targets, and measurements. |
-| [`release-notes.md`](release-notes.md) | MVP release scope, limits, and operator duties. |
-| [`versioning.md`](versioning.md) | Semantic version and release workflow. |
-| [`apps/`](apps/) | Implemented Django app responsibilities. |
-| [`Hevy/`](Hevy/) | Maintained integration guides and private-source provenance. |
-| [`legacy/`](legacy/) | Historical concepts excluded from the MVP architecture. |
+| Document | Responsibility |
+|---|---|
+| [Product requirements](product-requirements.md) | Scope, journeys, delivery contract and exclusions |
+| [Family parity](tuxedo-parity.md) | Reference commit, shared architecture/design and exceptions |
+| [Architecture](architecture.md) | Boundaries, sources of truth and transactions |
+| [Data model](data-model.md) | Ownership, snapshots, profiles and write lifecycle |
+| [Frontend](frontend.md) | Tokens, progressive disclosure, navigation and accessibility |
+| [Design system](design-system.html) | Family token/component reference |
+| [Hevy integration](hevy-integration.md) | Read aliases, synchronization and confirmed writes |
+| [Analytics](analytics.md) | Definitions, eligibility and comparison rules |
+| [Planning](planning.md) | Prompt fidelity, dates, envelope and proposal contract |
+| [Operations](operations.md) | Fresh installation, encryption, backup, restore and rotation |
+| [0.2.0 verification](verification-0.2.0.md) | Dated test, audit, operational and performance evidence |
+| [Testing](testing.md) | Synthetic tests, coverage and browser isolation |
+| [Performance](performance.md) | Reproducible 10,000-workout corpus |
+| [Versioning](versioning.md) | Release/check contract |
+| [Contributing](../CONTRIBUTING.md) | Canonical development commands |
+| [Preview maintenance](../.github/preview/README.md) | Disposable synthetic screenshot capture |
 
-Documentation changes with authoritative implementation. Analytics formulas,
-synchronization operations, exports, backups, and deletion safeguards are
-recorded in the linked guides and app notes.
+Domain reference: [apps](apps/README.md). Provider research: [Hevy](Hevy/README.md). Material in `legacy/` records previous requirements and must not be treated as the current product contract. Research data has no runtime dependency.
 
-Sprint 9 security, quality, backup, restore, and delivery evidence is recorded
-in [`testing.md`](testing.md), [`operations.md`](operations.md), and
-[`implementation-status.md`](implementation-status.md).
+Runtime code lives in domain apps; shared build configurations remain at the repository root. `assets/` contains source CSS; `static/` contains compiled assets and local libraries; `locale/` contains PO/MO translations; `tests/` contains browser tests. `preview/` is self-contained, and `.github/preview/` holds its isolated capture tooling.

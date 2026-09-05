@@ -13,11 +13,11 @@ from training.views import (
 app_name = 'training'
 
 urlpatterns = [
-    path('historico/', HistoryView.as_view(), name='history'),
-    path('historico/<int:pk>/', WorkoutDetailView.as_view(), name='workout-detail'),
-    path('exercicios/', ExerciseView.as_view(), name='exercises'),
-    path('exercicios/<int:pk>/', ExerciseDetailView.as_view(), name='exercise-detail'),
-    path('rotinas/', RoutineView.as_view(), name='routines'),
-    path('rotinas/<int:pk>/', RoutineDetailView.as_view(), name='routine-detail'),
-    path('exportacoes/treinos.csv', WorkoutExportView.as_view(), name='workout-export'),
+    path('history/', HistoryView.as_view(), name='history'),
+    path('history/<int:pk>/', WorkoutDetailView.as_view(), name='workout-detail'),
+    path('exercises/', ExerciseView.as_view(), name='exercises'),
+    path('exercises/<int:pk>/', ExerciseDetailView.as_view(), name='exercise-detail'),
+    path('routines/', RoutineView.as_view(), name='routines'),
+    path('routines/<int:pk>/', RoutineDetailView.as_view(), name='routine-detail'),
+    path('exports/workouts.csv', WorkoutExportView.as_view(), name='workout-export'),
 ]

@@ -1,0 +1,7 @@
+{% load i18n %}
+<a class="nav-link" href="{% url 'dashboard:index' %}" {% if request.resolver_match.url_name == 'index' %}aria-current="page"{% endif %}>{% translate "Overview" %}</a>
+<a class="nav-link" href="{% url 'dashboard:reports' %}" {% if request.resolver_match.url_name == 'reports' %}aria-current="page"{% endif %}>{% translate "Analysis" %}</a>
+<a class="nav-link" href="{% url 'training:history' %}" {% if request.resolver_match.url_name == 'history' %}aria-current="page"{% endif %}>{% translate "History" %}</a>
+<a class="nav-link" href="{% url 'training:routines' %}">{% translate "Routines" %}</a>
+<a class="nav-link" href="{% url 'training:exercises' %}">{% translate "Exercises" %}</a>
+<a class="nav-link" href="{% url 'planning:generate' %}">{% translate "Generate prompt" %}</a>

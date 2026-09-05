@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models import F, Q
+from django.utils.translation import gettext_lazy as _
 
 from core.validators import validate_aware_datetime
 
@@ -30,6 +31,7 @@ class ActiveSynchronizedManager(models.Manager):
 
 
 class SynchronizedModel(models.Model):
+    raw_payload = models.JSONField(default=dict, blank=True)
     external_created_at = models.DateTimeField(
         validators=[validate_aware_datetime],
         null=True,
@@ -65,49 +67,51 @@ class SynchronizedModel(models.Model):
 
 
 class ExerciseTemplate(SynchronizedModel):
+    title_pt_br = models.CharField(max_length=255, blank=True)
+    translation_version = models.CharField(max_length=32, blank=True)
     class ExerciseType(models.TextChoices):
-        WEIGHT_REPS = 'weight_reps', 'Weight and reps'
-        REPS_ONLY = 'reps_only', 'Reps only'
-        BODYWEIGHT_REPS = 'bodyweight_reps', 'Bodyweight reps'
-        BODYWEIGHT_ASSISTED_REPS = 'bodyweight_assisted_reps', 'Assisted reps'
-        DURATION = 'duration', 'Duration'
-        WEIGHT_DURATION = 'weight_duration', 'Weight and duration'
-        DISTANCE_DURATION = 'distance_duration', 'Distance and duration'
-        SHORT_DISTANCE_WEIGHT = 'short_distance_weight', 'Distance and weight'
-        CUSTOM = 'custom', 'Custom'
+        WEIGHT_REPS = 'weight_reps', _('Weight and reps')
+        REPS_ONLY = 'reps_only', _('Reps only')
+        BODYWEIGHT_REPS = 'bodyweight_reps', _('Bodyweight reps')
+        BODYWEIGHT_ASSISTED_REPS = 'bodyweight_assisted_reps', _('Assisted reps')
+        DURATION = 'duration', _('Duration')
+        WEIGHT_DURATION = 'weight_duration', _('Weight and duration')
+        DISTANCE_DURATION = 'distance_duration', _('Distance and duration')
+        SHORT_DISTANCE_WEIGHT = 'short_distance_weight', _('Distance and weight')
+        CUSTOM = 'custom', _('Custom')
 
     class EquipmentCategory(models.TextChoices):
-        NONE = 'none', 'None'
-        BARBELL = 'barbell', 'Barbell'
-        DUMBBELL = 'dumbbell', 'Dumbbell'
-        KETTLEBELL = 'kettlebell', 'Kettlebell'
-        MACHINE = 'machine', 'Machine'
-        PLATE = 'plate', 'Plate'
-        RESISTANCE_BAND = 'resistance_band', 'Resistance band'
-        SUSPENSION = 'suspension', 'Suspension'
-        OTHER = 'other', 'Other'
+        NONE = 'none', _('None')
+        BARBELL = 'barbell', _('Barbell')
+        DUMBBELL = 'dumbbell', _('Dumbbell')
+        KETTLEBELL = 'kettlebell', _('Kettlebell')
+        MACHINE = 'machine', _('Machine')
+        PLATE = 'plate', _('Plate')
+        RESISTANCE_BAND = 'resistance_band', _('Resistance band')
+        SUSPENSION = 'suspension', _('Suspension')
+        OTHER = 'other', _('Other')
 
     class MuscleGroup(models.TextChoices):
-        ABDOMINALS = 'abdominals', 'Abdominals'
-        SHOULDERS = 'shoulders', 'Shoulders'
-        BICEPS = 'biceps', 'Biceps'
-        TRICEPS = 'triceps', 'Triceps'
-        FOREARMS = 'forearms', 'Forearms'
-        QUADRICEPS = 'quadriceps', 'Quadriceps'
-        HAMSTRINGS = 'hamstrings', 'Hamstrings'
-        CALVES = 'calves', 'Calves'
-        GLUTES = 'glutes', 'Glutes'
-        ABDUCTORS = 'abductors', 'Abductors'
-        ADDUCTORS = 'adductors', 'Adductors'
-        LATS = 'lats', 'Lats'
-        UPPER_BACK = 'upper_back', 'Upper back'
-        TRAPS = 'traps', 'Traps'
-        LOWER_BACK = 'lower_back', 'Lower back'
-        CHEST = 'chest', 'Chest'
-        CARDIO = 'cardio', 'Cardio'
-        NECK = 'neck', 'Neck'
-        FULL_BODY = 'full_body', 'Full body'
-        OTHER = 'other', 'Other'
+        ABDOMINALS = 'abdominals', _('Abdominals')
+        SHOULDERS = 'shoulders', _('Shoulders')
+        BICEPS = 'biceps', _('Biceps')
+        TRICEPS = 'triceps', _('Triceps')
+        FOREARMS = 'forearms', _('Forearms')
+        QUADRICEPS = 'quadriceps', _('Quadriceps')
+        HAMSTRINGS = 'hamstrings', _('Hamstrings')
+        CALVES = 'calves', _('Calves')
+        GLUTES = 'glutes', _('Glutes')
+        ABDUCTORS = 'abductors', _('Abductors')
+        ADDUCTORS = 'adductors', _('Adductors')
+        LATS = 'lats', _('Lats')
+        UPPER_BACK = 'upper_back', _('Upper back')
+        TRAPS = 'traps', _('Traps')
+        LOWER_BACK = 'lower_back', _('Lower back')
+        CHEST = 'chest', _('Chest')
+        CARDIO = 'cardio', _('Cardio')
+        NECK = 'neck', _('Neck')
+        FULL_BODY = 'full_body', _('Full body')
+        OTHER = 'other', _('Other')
 
     hevy_account = models.ForeignKey(
         'integrations.HevyAccount',
@@ -199,6 +203,7 @@ class RoutineFolder(SynchronizedModel):
 
 
 class Routine(SynchronizedModel):
+    notes = models.TextField(blank=True)
     hevy_account = models.ForeignKey(
         'integrations.HevyAccount',
         on_delete=models.CASCADE,
@@ -280,10 +285,10 @@ class RoutineExercise(models.Model):
 
 
 class SetType(models.TextChoices):
-    WARMUP = 'warmup', 'Warmup'
-    NORMAL = 'normal', 'Normal'
-    FAILURE = 'failure', 'Failure'
-    DROPSET = 'dropset', 'Dropset'
+    WARMUP = 'warmup', _('Warmup')
+    NORMAL = 'normal', _('Normal')
+    FAILURE = 'failure', _('Failure')
+    DROPSET = 'dropset', _('Dropset')
 
 
 class RoutineSet(models.Model):

@@ -7,7 +7,6 @@ from io import StringIO
 from pathlib import Path
 from unittest import mock
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -98,8 +97,12 @@ class AuthenticationTests(TestCase):
 
 
 class SignupTests(TestCase):
-    def test_registration_is_closed_by_default(self):
-        self.assertFalse(settings.ALLOW_SIGNUPS)
+    @override_settings(ALLOW_SIGNUPS=True)
+    def test_login_offers_registration_when_available(self):
+        response = self.client.get(reverse('accounts:login'))
+
+        self.assertContains(response, 'Create account')
+        self.assertContains(response, reverse('accounts:signup'))
 
     @override_settings(ALLOW_SIGNUPS=True)
     def test_user_can_register_and_is_logged_in(self):
@@ -134,7 +137,7 @@ class SignupTests(TestCase):
         response = self.client.get(reverse('accounts:signup'))
 
         self.assertEqual(response.status_code, 403)
-        self.assertContains(response, 'Novos cadastros estão desativados.', status_code=403)
+        self.assertContains(response, 'Registration is disabled for this installation.', status_code=403)
 
 
 class OwnerPreferenceTests(TestCase):
@@ -166,7 +169,7 @@ class OwnerPreferenceTests(TestCase):
         self.client.force_login(user)
 
         response = self.client.post(reverse('accounts:settings'), {
-            'presentation_timezone': 'UTC',
+            'presentation_timezone': 'UTC', 'date_format': 'DMY',
             'weekly_session_target': '4',
             'mass_unit': 'lb',
             'distance_unit': 'mi',
@@ -188,7 +191,7 @@ class OwnerPreferenceTests(TestCase):
         client.force_login(user)
 
         response = client.post(reverse('accounts:settings'), {
-            'presentation_timezone': 'UTC',
+            'presentation_timezone': 'UTC', 'date_format': 'DMY',
         })
 
         self.assertEqual(response.status_code, 403)
@@ -207,7 +210,7 @@ class OwnerPreferenceTests(TestCase):
         })
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'fuso horário IANA válido')
+        self.assertContains(response, 'valid IANA timezone')
 
     def test_settings_rejects_snapshot_retention_above_limit(self):
         user = get_user_model().objects.create_user('settings-retention-owner')
@@ -215,7 +218,7 @@ class OwnerPreferenceTests(TestCase):
         self.client.force_login(user)
 
         response = self.client.post(reverse('accounts:settings'), {
-            'presentation_timezone': 'UTC',
+            'presentation_timezone': 'UTC', 'date_format': 'DMY',
             'weekly_session_target': '',
             'mass_unit': 'kg',
             'distance_unit': 'km',
@@ -401,11 +404,20 @@ class RuntimeRetentionTests(TestCase):
 
 class PresentationUnitTests(TestCase):
     def test_mass_volume_and_distance_follow_presentation_units(self):
-        self.assertEqual(display_mass('42.5', 'lb'), '93,7 lb')
-        self.assertEqual(display_volume('340', 'lb'), '749,57 lb·rep')
-        self.assertEqual(display_distance('5000', 'mi'), '3,11 mi')
-        self.assertEqual(display_distance('5000', 'km'), '5 km')
+        self.assertEqual(display_mass('42.5', 'lb'), '93.70 lb')
+        self.assertEqual(display_volume('340', 'lb'), '749.57 lb·rep')
+        self.assertEqual(display_distance('5000', 'mi'), '3.11 mi')
+        self.assertEqual(display_distance('5000', 'km'), '5.00 km')
 
     def test_invalid_presentation_value_is_not_coerced_to_zero(self):
         self.assertEqual(display_mass(None), '—')
         self.assertEqual(display_distance('invalid'), '—')
+
+class NavigationQueryTests(TestCase):
+    def test_query_links_replace_values_instead_of_accumulating_them(self):
+        from django.test import RequestFactory
+
+        from accounts.templatetags.fitness_ui import querystring
+        request=RequestFactory().get('/dashboard/reports/?panel=effort&page=2')
+        self.assertEqual(querystring({'request':request},panel='volume',page=None),'panel=volume')
+        self.assertEqual(request.GET['page'],'2')

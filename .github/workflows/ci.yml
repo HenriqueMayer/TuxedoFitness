@@ -40,6 +40,9 @@ jobs:
           uv sync --locked
           npm ci
 
+      - name: Install gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext
+
       - name: Validate versions and lockfile
         run: |
           uv lock --check
@@ -48,6 +51,7 @@ jobs:
       - name: Validate repository and Django
         env:
           SECRET_KEY: synthetic-ci-secret-key
+          HEVY_ENCRYPTION_KEYS: a2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2s=
         run: |
           uv run python scripts/security/scan_secrets.py --history
           uv run python manage.py check
@@ -62,10 +66,13 @@ jobs:
           node --check static/js/mobile-menu.js
           node --check static/js/sync-actions.js
           node --check static/js/theme.js
+          node --check static/js/fitness.js
+          uv run python scripts/check_translations.py
 
       - name: Run Python tests and coverage gates
         env:
           SECRET_KEY: synthetic-ci-secret-key
+          HEVY_ENCRYPTION_KEYS: a2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2s=
         run: |
           uv run coverage run manage.py test
           uv run coverage report --fail-under=80
@@ -81,10 +88,13 @@ jobs:
       - name: Install browser
         run: npx playwright install --with-deps chrome
 
-      - name: Run browser tests
-        env:
-          TUXEDO_FITNESS_DB: ${{ runner.temp }}/tuxedo-fitness-e2e.sqlite3
-        run: npm run test:e2e
+      - name: Run isolated browser and static preview tests
+        run: |
+          npm run test:e2e
+          npm run test:preview
+
+      - name: Reproduce local performance corpus
+        run: uv run python scripts/benchmark_reference_corpus.py
 
       - name: Upload browser failure artifacts
         if: failure()

@@ -1,27 +1,58 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.decorators import method_decorator
+from django.utils.translation import gettext as _
 from django.views import View
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import TemplateView
 
-from integrations.forms import FullRefreshConfirmationForm
+from integrations.credentials import session_credentials
+from integrations.exports import (
+    exercise_catalog_csv,
+    exercise_catalog_json,
+    routines_csv,
+    routines_json,
+    workouts_json,
+)
+from integrations.forms import (
+    FullRefreshConfirmationForm,
+    HevyConnectionForm,
+)
 from integrations.hevy import HevyClient, HevyError
-from integrations.models import IntegrationState, SyncCursor, SyncRun
+from integrations.models import (
+    IntegrationState,
+    SyncCursor,
+    SyncRun,
+)
 from integrations.services import (
     ADAPTER_VERSION,
     FullImportService,
     IncrementalSyncService,
+    PlanRefreshService,
 )
+from training.models import Workout
 
 
 def _account(user):
     return getattr(user, 'hevy_account', None)
 
 
+def _client_for_request(request):
+    api_key = session_credentials.get(request)
+    if api_key is None:
+        raise HevyError(
+            'CONFIG_MISSING_KEY',
+            _('Connect your Hevy account in Settings.'),
+        )
+    return HevyClient(api_key)
+
+
 def _failure_message(request, error):
     if isinstance(error, DatabaseError):
-        messages.error(request, 'DATABASE_ERROR: Falha ao persistir os dados locais.')
+        messages.error(request, _('DATABASE_ERROR: Local persistence failed.'))
         return
     code = error.code if isinstance(error, HevyError) else 'SYNC_INVALID'
     messages.error(request, f'{code}: {error}')
@@ -55,18 +86,49 @@ class SyncView(LoginRequiredMixin, TemplateView):
             'last_run': runs[0] if runs else None,
             'active_run': active_run,
             'adapter_version': ADAPTER_VERSION,
-            'hevy_documentation_date': '2026-08-30',
+            'hevy_documentation_date': '2026-09-04',
+            'connection_form': HevyConnectionForm(),
+            'session_connected': bool(account and account.encrypted_api_key),
+            'history_ready': bool(account and (
+                (state and state.last_full_refresh_at)
+                or Workout.all_objects.filter(hevy_account=account).exists()
+            )),
         })
         return context
 
 
+@method_decorator(sensitive_post_parameters('api_key'), name='dispatch')
 class ValidateConnectionView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
+        form = HevyConnectionForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, _('Enter a valid Hevy API key.'))
+            return redirect('integrations:sync')
+        client = HevyClient(form.cleaned_data['api_key'])
         try:
-            FullImportService(HevyClient.from_environment()).validate_account(request.user)
-            messages.success(request, 'Conexão com o Hevy validada. Os dados locais não foram alterados.')
+            from integrations.credentials import cipher
+            cipher()
+            FullImportService(client).validate_account(request.user)
+            session_credentials.put(request, form.cleaned_data['api_key'])
+            messages.success(
+                request,
+                _('Connection saved with encryption. History will synchronize automatically.'),
+            )
         except (DatabaseError, HevyError, ValueError) as error:
             _failure_message(request, error)
+        return redirect('integrations:sync')
+
+
+class DisconnectView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        session_credentials.delete(request)
+        account = _account(request.user)
+        if account is not None:
+            IntegrationState.objects.filter(hevy_account=account).update(
+                status=IntegrationState.Status.DISCONNECTED,
+                is_stale=True,
+            )
+        messages.success(request, _('Disconnected. Local history was preserved.'))
         return redirect('integrations:sync')
 
 
@@ -74,11 +136,11 @@ class IncrementalSyncView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         account = _account(request.user)
         if account is None:
-            messages.error(request, 'Valide a conexão com o Hevy antes de sincronizar treinos.')
+            messages.error(request, _('Validate the Hevy connection before synchronizing workouts.'))
             return redirect('integrations:sync')
         try:
             run = IncrementalSyncService(
-                HevyClient.from_environment()
+                _client_for_request(request)
             ).run(request.user, trigger=SyncRun.Trigger.WEB)
         except (DatabaseError, HevyError, ValueError) as error:
             _failure_message(request, error)
@@ -104,7 +166,7 @@ class FullRefreshView(LoginRequiredMixin, View):
             return render(request, 'integrations/full_refresh_confirm.html', {'form': form})
         try:
             run = FullImportService(
-                HevyClient.from_environment()
+                _client_for_request(request)
             ).run(request.user, trigger=SyncRun.Trigger.WEB)
         except (DatabaseError, HevyError, ValueError) as error:
             _failure_message(request, error)
@@ -145,11 +207,11 @@ class RetrySyncView(LoginRequiredMixin, View):
             prior_run.mode != SyncRun.Mode.INCREMENTAL
             or prior_run.state not in {SyncRun.State.FAILED, SyncRun.State.PARTIAL}
         ):
-            messages.error(request, 'Somente execuções incrementais com falha ou parciais podem ser repetidas.')
+            messages.error(request, _('Only failed or partial incremental runs can be retried.'))
             return redirect('integrations:run-detail', pk=prior_run.pk)
         try:
             run = IncrementalSyncService(
-                HevyClient.from_environment()
+                _client_for_request(request)
             ).run(
                 request.user,
                 prior_run=prior_run,
@@ -159,3 +221,33 @@ class RetrySyncView(LoginRequiredMixin, View):
             _failure_message(request, error)
             return redirect('integrations:run-detail', pk=prior_run.pk)
         return redirect('integrations:run-detail', pk=run.pk)
+
+
+class PlanRefreshView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        try:
+            run = PlanRefreshService(_client_for_request(request)).run(
+                request.user, trigger=SyncRun.Trigger.WEB
+            )
+        except (DatabaseError, HevyError, ValueError) as error:
+            _failure_message(request, error)
+            return redirect('integrations:sync')
+        messages.success(request, _('Catalogue and routines were refreshed.'))
+        return redirect('integrations:run-detail', pk=run.pk)
+
+
+class LocalExportView(LoginRequiredMixin, View):
+    exporters = {
+        ('workouts', 'json'): workouts_json,
+        ('exercises', 'csv'): exercise_catalog_csv,
+        ('exercises', 'json'): exercise_catalog_json,
+        ('routines', 'csv'): routines_csv,
+        ('routines', 'json'): routines_json,
+    }
+
+    def get(self, request, kind, extension, *args, **kwargs):
+        account = _account(request.user)
+        exporter = self.exporters.get((kind, extension))
+        if account is None or exporter is None:
+            raise Http404
+        return exporter(account)

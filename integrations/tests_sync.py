@@ -88,7 +88,7 @@ class HevyClientTests(TestCase):
 
         client = HevyClient('synthetic-key', transport=lambda *_: response({}))
         with self.assertRaises(HevyError) as endpoint:
-            client._get('/v1/routines/unsafe')
+            client._get('/v1/body_measurements/unsafe')
         self.assertEqual(endpoint.exception.code, 'HTTP_PERMANENT')
 
     def test_fetches_each_page_including_last(self):
@@ -201,7 +201,7 @@ class FullImportServiceTests(TestCase):
 
     def hevy_client(self, *, invalid_reference=False, invalid_plan_reference=False):
         data = {
-            '/v1/user/info': {'data': {'id': 'hevy-owner', 'name': 'Synthetic Owner', 'url': 'https://hevy.com/u/synthetic'}},
+            '/v1/user/info': {'data': {'id': self.account.external_user_id, 'name': 'Synthetic Owner', 'url': 'https://hevy.com/u/synthetic'}},
             '/v1/exercise_templates': {'page': 1, 'page_count': 1, 'exercise_templates': [template()]},
             '/v1/routine_folders': {'page': 1, 'page_count': 1, 'routines': [folder()]},
             '/v1/routines': {'page': 1, 'page_count': 1, 'routines': [routine()]},
@@ -271,7 +271,7 @@ class FullImportServiceTests(TestCase):
         def failing_transport(url, headers, timeout):
             status = next(statuses)
             return response(
-                {'data': {'id': 'hevy-owner', 'name': 'Synthetic Owner'}},
+                {'data': {'id': self.account.external_user_id, 'name': 'Synthetic Owner'}},
                 status,
             )
 
@@ -427,7 +427,7 @@ class SyncCommandTests(TestCase):
     def setUp(self):
         self.account = create_account('command-owner')
 
-    @patch('integrations.management.commands.sync_hevy.HevyClient.from_environment')
+    @patch('integrations.management.commands.sync_hevy.HevyClient.for_user')
     def test_validate_and_all_sync_modes_use_sanitized_output(self, client_factory):
         run = SimpleNamespace(
             id='synthetic-run',

@@ -1,6 +1,6 @@
 # Analytics formulas
 
-Sprint 5 provides the deterministic, local-only metric boundary in
+Version `fitness-2.0` provides the deterministic, local-only metric boundary in
 `analytics/services.py`. It reads active normalized workouts and never calls
 Hevy or raw snapshot files. The dashboard can consume these results without
 reimplementing formulas.
@@ -51,3 +51,13 @@ zero activity while missing metric inputs elsewhere remain `None`.
 null handling, volume, RPE, Epley eligibility, modality separation, muscles,
 period comparison, and local timezone boundaries. These fixtures are local
 database tests; they do not perform network I/O.
+
+## Report topics and preferences
+
+The six report topics use the same local analytics boundary. Common filters are inclusive dates, exercise, routine, primary muscle, equipment and set type. Preferences store visible/order topic IDs, owner-scoped favorites and filters. There is no formula editor or arbitrary chart builder.
+
+Frequency charts include empty weeks and label boundary weeks as potentially incomplete. Weekly target completion considers complete weeks, including inactive weeks. Streaks describe active weeks, not adherence to an inferred historical plan. Distribution counts each working set once for its primary muscle. Current routines must never be used as evidence of historical prescription compliance.
+
+Progression requires a selected exercise. Load, repetitions at exact load, eligible volume and Epley estimates remain exercise-specific. Assistance remains assistance; larger values are not labelled positive. Distance, time and custom metrics retain distinct units. Presentation converts kg/lb and m/km/mi only after calculation; CSV/JSON retains canonical API units.
+
+Every chart has a definition, unit, observation provenance and table. Empty/missing data stays explicit. Default overview/report period is 28 local dates; history defaults to all active records. Comparisons use the immediately preceding equally long period.

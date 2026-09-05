@@ -1,22 +1,23 @@
-{% load static %}
+{% load static i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <!doctype html>
-<html lang="pt-BR">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Tuxedo Fitness{% endblock %}</title>
-    <meta name="description" content="Análises locais e privadas do seu histórico de treino.">
+    <meta name="description" content="{% translate 'Local, private analysis of your training history.' %}">
     <meta name="htmx-config" content='{"allowEval":false,"allowScriptTags":false,"includeIndicatorStyles":false}'>
     <link rel="icon" type="image/png" href="{% static 'brand/tuxedo-fitness-emblem-128.png' %}">
-    <script src="{% static 'js/theme-bootstrap.js' %}?v=1"></script>
-    <link rel="stylesheet" href="{% static 'css/app.css' %}?v=1">
+    <script src="{% static 'js/theme-bootstrap.js' %}?v=020"></script>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}?v=020">
     <script src="{% static 'js/htmx-2.0.10.min.js' %}?v=2.0.10" defer></script>
-    <script src="{% static 'js/navigation.js' %}?v=1" defer></script>
-    <script src="{% static 'js/theme.js' %}?v=1" defer></script>
-    <script src="{% static 'js/mobile-menu.js' %}?v=1" defer></script>
-    <script src="{% static 'js/sync-actions.js' %}?v=1" defer></script>
+    <script src="{% static 'js/navigation.js' %}?v=020" defer></script>
+    <script src="{% static 'js/theme.js' %}?v=020" defer></script>
+    <script src="{% static 'js/mobile-menu.js' %}?v=020" defer></script>
+    <script src="{% static 'js/sync-actions.js' %}?v=020" defer></script>
 </head>
-<body hx-boost="true" hx-request='{"noHeaders":true}' hx-target="body" hx-swap="innerHTML show:window:top" class="flex min-h-screen flex-col bg-cream font-sans text-forest antialiased selection:bg-caramel selection:text-forest-deep dark:bg-forest-deep dark:text-cream">
+<body hx-boost="true" hx-target="body" hx-swap="innerHTML show:none" class="flex min-h-screen flex-col bg-cream font-sans text-forest antialiased selection:bg-caramel selection:text-forest-deep dark:bg-night dark:text-cream">
     {% if request.user.is_authenticated %}
         {% include 'partials/navbar.html' %}
     {% else %}
@@ -24,11 +25,12 @@
     {% endif %}
     <main id="main-content" class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <p id="navigation-status" class="sr-only" role="status" aria-live="polite"></p>
-        {% if messages %}<div class="mb-6 space-y-2" aria-live="polite">{% for message in messages %}<p class="rounded-2xl border border-forest/10 bg-white p-4 text-sm dark:border-cream/10 dark:bg-forest" role="{% if 'error' in message.tags %}alert{% else %}status{% endif %}">{{ message }}</p>{% endfor %}</div>{% endif %}
+        {% if messages %}<div class="mb-6 space-y-2" aria-live="polite">{% for message in messages %}<p class="rounded-2xl border border-forest/10 bg-white p-4 text-sm dark:border-cream/10 dark:bg-night-surface" role="{% if 'error' in message.tags %}alert{% else %}status{% endif %}">{{ message }}</p>{% endfor %}</div>{% endif %}
         {% block content %}{% endblock %}
     </main>
-    <footer class="border-t border-forest/10 px-4 py-6 text-center text-sm text-forest/60 dark:border-cream/10 dark:text-cream/60">
-        Tuxedo Fitness · seus dados, no seu ritmo.
+    <script src="{% static 'js/fitness.js' %}?v=020" defer></script>
+    <footer class="border-t border-forest/10 px-4 py-6 text-center text-sm text-forest/60 dark:border-cream/10 dark:text-night-muted">
+        Tuxedo Fitness · 0.2.0 · {% translate "Your data, at your pace." %}
     </footer>
 </body>
 </html>

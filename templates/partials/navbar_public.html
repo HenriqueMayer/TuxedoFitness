@@ -1,15 +1,2 @@
-{% load static %}
-<a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-caramel focus:px-4 focus:py-2">Ir para o conteúdo</a>
-<header class="border-b border-forest/10 bg-cream/95 dark:border-cream/10 dark:bg-forest-deep/95">
-    <nav class="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8" aria-label="Navegação pública">
-        <a href="{% url 'pages:landing' %}" class="flex items-center gap-3 rounded-xl">
-            <img src="{% static 'brand/tuxedo-fitness-emblem-128.png' %}" alt="" class="h-10 w-10 rounded-xl object-cover ring-1 ring-forest/10 dark:ring-cream/20">
-            <span class="leading-tight"><span class="block text-sm font-medium uppercase tracking-[0.2em]">Tuxedo</span><span class="block text-xs font-medium uppercase tracking-[0.15em] text-caramel-ink dark:text-caramel-light">Fitness</span></span>
-        </a>
-        <div class="flex items-center gap-2 sm:gap-3">
-            {% include 'partials/theme_toggle.html' %}
-            {% if signup_available %}<a href="{% url 'accounts:signup' %}" class="hidden rounded-full bg-caramel px-4 py-2 text-xs font-semibold uppercase tracking-wider text-forest-deep sm:inline-flex">Criar conta</a>{% endif %}
-            <a href="{% url 'accounts:login' %}" class="rounded-full border border-forest/30 px-4 py-2 text-xs font-semibold uppercase tracking-wider dark:border-cream/30">Entrar</a>
-        </div>
-    </nav>
-</header>
+{% load static i18n %}
+<header class="border-b border-forest/10 dark:border-cream/10"><nav class="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8" aria-label="{% translate 'Main navigation' %}"><a href="{% url 'pages:landing' %}" class="flex items-center gap-3"><img src="{% static 'brand/tuxedo-fitness-emblem-128.png' %}" alt="" class="h-12 w-12 rounded-xl"><span><span class="block text-sm uppercase tracking-[0.2em]">Tuxedo</span><span class="eyebrow">Fitness</span></span></a><div class="flex flex-wrap items-center gap-3">{% include 'partials/language_selector.html' %}{% include 'partials/theme_toggle.html' %}<a class="btn-secondary" href="{% url 'accounts:login' %}">{% translate "Sign in" %}</a>{% if signup_available %}<a class="btn" href="{% url 'accounts:signup' %}">{% translate "Create account" %}</a>{% endif %}</div></nav></header>

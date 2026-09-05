@@ -25,7 +25,7 @@ if not SECRET_KEY:
     raise ImproperlyConfigured('SECRET_KEY must be set in the environment.')
 
 DEBUG = env_flag('DEBUG', False)
-ALLOW_SIGNUPS = env_flag('ALLOW_SIGNUPS', False)
+ALLOW_SIGNUPS = env_flag('ALLOW_SIGNUPS', True)
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get(
@@ -34,7 +34,7 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-DATA_DIR = local_path('TUXEDO_DATA_DIR', 'var/private')
+DATA_DIR = local_path('TUXEDO_DATA_DIR', 'var/private/v020')
 DATA_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
 if os.name == 'posix':
     DATA_DIR.chmod(0o700)
@@ -55,12 +55,14 @@ INSTALLED_APPS = [
     'training',
     'analytics',
     'dashboard',
+    'planning',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.csp.ContentSecurityPolicyMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -116,7 +118,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'pt-br'
+LANGUAGE_CODE = 'en'
+LANGUAGES = [('en', 'English'), ('pt-br', 'Português (Brasil)')]
+LOCALE_PATHS = [BASE_DIR / 'locale']
+HEVY_ENCRYPTION_KEYS = os.environ.get('HEVY_ENCRYPTION_KEYS', '')
+DATA_UPLOAD_MAX_MEMORY_SIZE = 8 * 1024 * 1024
 TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True

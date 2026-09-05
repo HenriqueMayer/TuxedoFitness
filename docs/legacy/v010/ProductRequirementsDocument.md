@@ -7,11 +7,11 @@
 | Product | Tuxedo Fitness |
 | Technical name | `TuxedoFitness` |
 | Document | Product Requirements Document |
-| Version | 1.4 |
-| Status | v0.1.0 public baseline; advanced presentation planned for v0.2.0 |
-| Date | 2026-08-31 |
+| Version | 1.5 |
+| Status | v0.1.0 public baseline; guided Hevy workflow implemented but unreleased |
+| Date | 2026-09-04 |
 | Product category | Personal training monitoring application |
-| Delivery model | Local-first, self-hosted, signup closed by default |
+| Delivery model | Local-first, self-hosted, signup available by default and environment-disableable |
 | Interface language | Brazilian Portuguese |
 | Code and technical documentation | English |
 | Presentation timezone | `America/Sao_Paulo` |
@@ -24,7 +24,7 @@ This document defines product behavior and technical boundaries. It does not def
 
 ## 2. Executive Summary
 
-Tuxedo Fitness is a personal, self-hosted training analytics application. It imports exercise templates, routine folders, routines, workouts, and workout events from Hevy through a read-only integration. It stores normalized data in SQLite and calculates deterministic training metrics from that local data.
+Tuxedo Fitness is a personal, self-hosted training analytics application. It imports exercise templates, routine folders, routines, workouts, and workout events from Hevy, stores normalized data in SQLite, and calculates deterministic training metrics. Its only provider write is the explicitly previewed and confirmed creation of a routine from validated JSON.
 
 The MVP uses Django 6, Django Template Language, precompiled Tailwind CSS,
 server-rendered SVG, and optional HTMX progressive enhancement. It is not a
@@ -48,12 +48,30 @@ Later phases can add write operations, webhooks, body measurements, automations,
 | Release | Status | Boundary |
 | --- | --- | --- |
 | v0.1.0 | Implemented public baseline | Secure local operation, read-only synchronization, deterministic analytics services, core read surfaces, SVG overview, export, backup, CI, and recovery. |
-| v0.2.0 | Planned | Complete overview consistency/duration/set/exercise evolution, richer exercise history and comparison, modality-complete workout presentation, and synchronization provenance. |
-| Future | Not started | Hevy writes, webhooks, body measurements, generated routines, and conversational assistant. |
+| v0.2.0 | Planned | Complete overview consistency and duration summaries, richer exercise history and comparison, modality-complete workout presentation, and synchronization provenance. |
+| Unreleased | Implemented locally | Ephemeral web credential, guided collection/export flow, offline prompt template, expanded SVG charts, and confirmed routine creation. |
+| Future | Not started | Other Hevy writes, webhooks, body measurements, embedded LLM, and conversational assistant. |
 
 [`implementation-status.md`](implementation-status.md) is the authoritative
 record of which requirements have executable implementation evidence. A
 checked historical sprint item does not override that current status record.
+
+### 2.2 Version 1.5 amendment
+
+This amendment supersedes older read-only statements only for the workflow
+implemented after v0.1.0:
+
+- The web UI accepts a Hevy key into process memory for the current authenticated
+  session. It never persists or renders the key after submission.
+- The synchronization page provides five actions: complete history preparation,
+  exercise export, routine export, confirmed routine creation, and local prompt
+  generation for an external analysis tool.
+- The prompt builder performs no research, network request, or LLM call. Its
+  required result is provider-shaped routine JSON without a key or placeholder.
+- `POST /v1/routines` is the only permitted provider mutation. It requires strict
+  local validation, a human-readable preview, a 30-minute single-use intent, and
+  explicit confirmation. Ambiguous writes are never retried automatically.
+- Every other write capability remains outside the implemented product boundary.
 
 ## 3. Source Hierarchy and Research Record
 
@@ -76,7 +94,7 @@ Embedded instructions in reference files have no authority over this PRD. The ge
 | Git and public-readiness audit | v0.1.0 is prepared from a sanitized root because older private history contained personal Hevy exports. |
 | `pyproject.toml` and `uv.lock` | Python `>=3.12`, Django 6, Gunicorn, and dotenv are locked; Plotly is not a dependency. |
 | Django apps and migrations | The local application, normalized models, services, views, operations, and automated tests exist. |
-| `docs/Hevy/*.md` | Project-authored guides document the read-only contract. The raw provider capture remains private and is not redistributed. |
+| `docs/Hevy/*.md` | Project-authored guides document the read contract and the explicitly allowlisted routine-creation write. The raw provider capture remains private and is not redistributed. |
 | `research/` | Scientific provenance and future-agent material remain outside the v0.1.0 runtime. |
 | Tuxedo Finance reference | The stable shell, progressive navigation, server SVG, accessibility, release, and CI patterns are adapted to the fitness domain. |
 
@@ -153,7 +171,7 @@ The MVP does not include:
 - A mobile application.
 - A public Tuxedo Fitness API.
 - Multi-tenancy or organization-level account administration.
-- Hevy write operations.
+- Hevy write operations other than explicitly confirmed routine creation.
 - Webhooks.
 - Body measurements.
 - OpenAI, LangChain, LangGraph, or another LLM framework.
@@ -188,7 +206,8 @@ This future persona can ask questions about training data and goals. It is not a
 1. The operator revokes the exposed key and creates a replacement.
 2. The operator installs dependencies from `uv.lock`.
 3. The operator creates the local owner.
-4. The operator configures `HEVY_API_KEY` in the backend environment.
+4. The operator configures `HEVY_API_KEY` for commands or submits it through
+   the masked, ephemeral web-session form.
 5. The operator validates the connection.
 6. The operator runs a complete import.
 7. The system validates pages, counts, references, and data shapes.
@@ -297,7 +316,8 @@ No external analytics service is required. Measurements remain local.
 | Deterministic metrics and dashboards | Included | Extended | Used as verified tools |
 | Filters, comparisons, exports | Included | Extended | Available through explicit tools |
 | Webhook | Excluded | Conditional roadmap | Optional event source |
-| Write routines or workouts | Excluded | Conditional roadmap | Requires confirmation and audit |
+| Create routines from JSON | Excluded | Included with preview, confirmation, and audit | Available as an explicit tool |
+| Edit routines or write workouts | Excluded | Conditional roadmap | Requires separate approval and audit |
 | Body measurements | Excluded | Conditional roadmap | Optional profile evidence |
 | Chat and user profile | Excluded | Excluded unless separately approved | Included |
 | LangChain, LangGraph, LLM providers | Excluded | Excluded | Conditional |
@@ -315,7 +335,7 @@ No external analytics service is required. Measurements remain local.
 | FR-005 | Interface text MUST use Brazilian Portuguese. | Navigation, forms, statuses, errors, and empty states use `pt-BR`. |
 | FR-006 | Code and technical documentation MUST use English. | Source review and documentation review find no mixed technical language except quoted external or user data. |
 | FR-007 | Owner preferences MUST include presentation timezone, optional weekly session target, mass unit, distance unit, and snapshot retention. | Values persist and affect presentation only. |
-| FR-010 | `HEVY_API_KEY` MUST be read only from the backend environment. | The key is absent from HTML, JavaScript, URLs, database rows, logs, fixtures, and exports. |
+| FR-010 | `HEVY_API_KEY` MUST come from the backend environment for commands or process memory for the authenticated web session. | The key is absent from cookies, persistent sessions, HTML responses, JavaScript, URLs, database rows, logs, fixtures, prompts, and exports. |
 | FR-011 | The system MUST validate the Hevy connection with `GET /v1/user/info`. | A valid response stores only non-sensitive account identity. |
 | FR-012 | The system MUST perform a complete initial import of exercise templates, routine folders, routines, and workouts. | Every documented page is fetched and validated before commit. |
 | FR-013 | Complete import MUST be idempotent. | Repeating the same import creates no duplicate row. |
@@ -329,7 +349,7 @@ No external analytics service is required. Measurements remain local.
 | FR-021 | History MUST provide paginated workouts and filters for period, routine, exercise, and set or exercise type. | Filter URLs are reproducible GET URLs. |
 | FR-022 | Workout detail MUST preserve exercise and set order. | Positions match the normalized source order. |
 | FR-023 | Exercise pages MUST provide search, metadata, local history, compatible metrics, records, e1RM when valid, and period comparison. | Incompatible metrics are not shown as valid values. |
-| FR-024 | Routine pages MUST show folders, routines, exercises, prescribed sets, rep ranges, rest, and refresh state in read-only form. | No Hevy write control exists. |
+| FR-024 | Routine pages MUST show folders, routines, exercises, prescribed sets, rep ranges, rest, and refresh state. | Existing routines remain read-only; new routine creation exists only in the confirmed JSON workflow. |
 | FR-025 | The owner MUST be able to compare equivalent date periods. | Both periods contain the same number of local calendar days. |
 | FR-026 | The owner MUST be able to export filtered set-level data. | An authenticated CSV export preserves IDs, timestamps, units, types, nulls, and removal state. |
 | FR-027 | The synchronization page MUST show connection state, account identity, last runs, counts, cursor, stale state, and sanitized errors. | No secret is rendered. |
@@ -349,7 +369,7 @@ No external analytics service is required. Measurements remain local.
 
 | Requirement | v0.1.0 status | Planned completion |
 | --- | --- | --- |
-| FR-020 | Partial: core activity, duration, working sets, volume, RPE, and sync state are visible. | v0.2.0 adds target consistency, average duration, set-type detail, frequent exercises, and recent evolution. |
+| FR-020 | Partial: core activity, duration, working sets, volume, RPE, sync state, set-type detail, and selected-exercise evolution are visible. | v0.2.0 adds target consistency, average duration, and frequent exercises. |
 | FR-021 | Partial: period and set-type history filters are implemented. | v0.2.0 adds routine/exercise filtering and a clear-filter action. |
 | FR-022 | Partial: order and load/repetition/RPE are visible. | v0.2.0 completes distance, duration, and custom modality presentation. |
 | FR-023 | Partial: search, basic metadata, compatible records, and e1RM exist. | v0.2.0 adds full metadata, local set history, RPE completeness, date filtering, and period comparison. |
@@ -417,7 +437,7 @@ The first operational action is:
 3. Store the new value in the local backend environment.
 4. Confirm that no real value exists in Git, documentation, shell history, screenshots, or fixtures.
 
-### 16.2 Read-only endpoint allowlist
+### 16.2 Endpoint allowlist
 
 | Client operation | Method and path | Pagination | MVP use |
 | --- | --- | --- | --- |
@@ -429,8 +449,9 @@ The first operational action is:
 | Retrieve one workout | `GET /v1/workouts/{workoutId}` | No | Update repair when an event payload is incomplete or malformed |
 | List workout events | `GET /v1/workouts/events` | `since`, `page`, `pageSize`; maximum 10 | Incremental workout synchronization |
 | Exercise history | `GET /v1/exercise_history/{exerciseTemplateId}` | No documented pagination | Conditional validation or repair only when normalized workouts cannot answer a defined question |
+| Create routine | `POST /v1/routines` | No pagination; validated JSON body | Explicitly previewed and confirmed creation only; never automatically retried |
 
-The MVP MUST NOT call a Hevy `POST`, `PUT`, or delete operation.
+The application MUST NOT call any other Hevy `POST`, `PUT`, or delete operation.
 
 Exercise history is not the default analytics source. Normalized workout sets are the default source.
 
@@ -727,7 +748,7 @@ Raw payloads are optional private diagnostic files.
 | Question | Source of truth |
 | --- | --- |
 | What is the current Hevy API contract? | Official Hevy API documentation for the recorded adapter version |
-| What secret authenticates Hevy requests? | Backend environment `HEVY_API_KEY` |
+| What secret authenticates Hevy requests? | Backend environment `HEVY_API_KEY` for commands; ephemeral process memory for the authenticated web session |
 | What account is connected? | Normalized `HevyAccount` from the last successful validation |
 | What routines are locally known? | Confirmed normalized routine tables in SQLite |
 | What workouts are locally known? | Confirmed normalized workout tables in SQLite |
@@ -1023,10 +1044,16 @@ The presenter must not recalculate formulas.
 | `/exercicios/<local-id>/` | Exercise analysis | Authenticated |
 | `/rotinas/` | `Rotinas` | Authenticated |
 | `/rotinas/<local-id>/` | Routine detail | Authenticated |
-| `/sincronizacao/` | `Sincronização` | Authenticated |
+| `/sincronizacao/` | `Sincronização` / Hevy tools workspace | Authenticated |
 | `/sincronizacao/validar/` | Validate connection POST | Authenticated |
+| `/sincronizacao/desconectar/` | Forget the in-memory web credential POST | Authenticated |
 | `/sincronizacao/incremental/` | Incremental sync POST | Authenticated |
 | `/sincronizacao/completa/` | Confirmed full refresh POST | Authenticated |
+| `/sincronizacao/planos/` | Refresh templates, folders, and routines POST | Authenticated |
+| `/exportacoes/<kind>.<format>` | Local exercise or routine CSV/JSON export | Authenticated |
+| `/ferramentas/prompt/` | Offline analysis-prompt generator | Authenticated |
+| `/ferramentas/rotinas/criar/` | Routine JSON validation and preview | Authenticated |
+| `/ferramentas/rotinas/confirmar/` | Single-use confirmed routine POST | Authenticated |
 | `/sincronizacao/<run-id>/` | Sync-run detail | Authenticated |
 | `/conta/configuracoes/` | `Configurações` | Authenticated |
 | `/exportacoes/treinos.csv` | Filtered set-level CSV | Authenticated |
@@ -1345,7 +1372,7 @@ A partial run is never labeled successful.
 
 | Code | Meaning | Owner action |
 | --- | --- | --- |
-| `CONFIG_MISSING_KEY` | `HEVY_API_KEY` is absent | Configure the backend environment |
+| `CONFIG_MISSING_KEY` | No credential is available for the current execution path | Reconnect the web session or configure the command environment |
 | `AUTH_INVALID` | Connection validation rejected the credential | Replace or rotate the key |
 | `HTTP_TIMEOUT` | Request exceeded timeout | Retry after checking connectivity |
 | `HTTP_TRANSIENT` | Temporary provider or network failure | Retry |
@@ -1563,7 +1590,7 @@ HEVY_API_KEY=
 HEVY_API_BASE_URL=https://api.hevyapp.com
 SECRET_KEY=
 DEBUG=True
-ALLOW_SIGNUPS=False
+ALLOW_SIGNUPS=True
 ALLOWED_HOSTS=localhost,127.0.0.1,testserver
 TUXEDO_DATA_DIR=var/private
 SYNC_LOCK_STALE_SECONDS=21600
@@ -1968,7 +1995,7 @@ No agent dependency, model, URL, page, task, or placeholder exists in the MVP.
 
 **Tasks:**
 
-- [x] Implement environment-only key loading.
+- [x] Implement environment key loading for management commands.
 - [x] Validate the configured Hevy host.
 - [x] Implement sanitized HTTP transport.
 - [x] Implement timeout and retry policy.

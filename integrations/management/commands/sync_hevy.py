@@ -37,7 +37,7 @@ class Command(BaseCommand):
                 returncode=4,
             )
         try:
-            client = HevyClient.from_environment()
+            client = HevyClient.for_user(user)
             service = FullImportService(client)
             if options['validate_only']:
                 account = service.validate_account(user)

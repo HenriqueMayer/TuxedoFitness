@@ -10,7 +10,7 @@ from django.utils import timezone
 from accounts.models import OwnerPreference
 from training.models import ExerciseTemplate, SetType, Workout
 
-FORMULA_VERSION = 'sprint-5-v1'
+FORMULA_VERSION = 'fitness-2.0'
 DEFAULT_TIMEZONE = 'America/Sao_Paulo'
 WORKING_TYPES = frozenset({SetType.NORMAL, SetType.FAILURE, SetType.DROPSET})
 E1RM_TYPES = frozenset({SetType.NORMAL, SetType.FAILURE})
@@ -177,7 +177,7 @@ class AnalyticsService:
             hevy_account=self.account,
             start_time__gte=period.start_at,
             start_time__lt=period.end_at,
-        ).prefetch_related(
+        ).select_related('routine').prefetch_related(
             'exercises__sets',
             'exercises__exercise_template__secondary_muscles',
         )
@@ -441,7 +441,11 @@ class AnalyticsService:
                            'completed sessions / weekly target.', valid=False, limitation='Weekly target is not configured.')
         workouts = self._workouts(period)
         counts = Counter(timezone.localtime(item.start_time, self.zone).date() - timedelta(days=timezone.localtime(item.start_time, self.zone).date().weekday()) for item in workouts)
-        complete = {week: count for week, count in counts.items() if week + timedelta(days=6) <= period.end and week >= period.start}
+        complete = {}
+        cursor = period.start + timedelta(days=(-period.start.weekday()) % 7)
+        while cursor + timedelta(days=6) <= period.end:
+            complete[cursor] = counts[cursor]
+            cursor += timedelta(days=7)
         complete_weeks = len(complete)
         completed_weeks = sum(count >= target for count in complete.values())
         completed_sessions = sum(complete.values())

@@ -1,0 +1,3 @@
+{% load i18n %}
+{% if form.errors %}<div role="alert" class="mb-5 rounded-2xl border border-negative/30 p-4 text-negative dark:text-negative-light"><p>{% translate "Check the highlighted fields." %}</p>{{ form.non_field_errors }}</div>{% endif %}
+{% for field in form %}<div class="mb-5">{% if field.field.widget.input_type == 'checkbox' %}<div class="flex items-center gap-3">{{ field }}{{ field.label_tag }}</div>{% else %}{{ field.label_tag }}{{ field }}{% endif %}{{ field.errors }}{% if field.help_text %}<p class="muted mt-2">{{ field.help_text }}</p>{% endif %}</div>{% endfor %}

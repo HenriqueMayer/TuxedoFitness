@@ -48,7 +48,7 @@
     document.addEventListener('click', function (event) {
         if (event.target.closest('#menu-btn')) setOpen(true, false);
         if (event.target.closest('#close-menu-btn')) setOpen(false, true);
-        if (event.target.closest('#mobile-menu .mobile-link')) setOpen(false, false);
+        if (event.target.closest('#mobile-menu a')) setOpen(false, false);
     });
 
     document.addEventListener('keydown', function (event) {

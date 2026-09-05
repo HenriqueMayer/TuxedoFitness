@@ -18,7 +18,7 @@ def secret_lines(content: bytes) -> set[int]:
     for pattern in (ASSIGNMENT, HEADER_VALUE):
         for match in pattern.finditer(content):
             value = match.group(1)
-            if value and not value.startswith(PLACEHOLDERS):
+            if value and value not in {b'""', b"''", b'"",', b"'',"} and not value.startswith(PLACEHOLDERS):
                 matches.append(match.start())
     canary = CANARY.encode()
     matches.extend(match.start() for match in re.finditer(re.escape(canary), content))

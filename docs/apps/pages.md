@@ -1,8 +1,5 @@
-# Pages app
+# pages
 
-`pages` owns the public root landing page. It contains product explanation,
-Tuxedo-family presentation, a synthetic dashboard preview, login links, and the
-environment-controlled signup call to action.
+Factual public product page, login/signup availability and static synthetic tour.
 
-It reads no Hevy or training record. The shared accounts context processor
-exposes only whether signup is enabled through `ALLOW_SIGNUPS`.
+See [architecture](../architecture.md), [data model](../data-model.md) and [current product requirements](../product-requirements.md). Tests live with the application; browser acceptance paths are in `tests/e2e/`.

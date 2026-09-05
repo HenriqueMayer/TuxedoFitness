@@ -6,6 +6,7 @@ from django.core.paginator import Paginator
 from django.db.models import Exists, OuterRef, Prefetch, Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.views.generic import TemplateView
 
 from analytics.services import AnalyticsService
@@ -14,6 +15,7 @@ from training.models import (
     ExerciseTemplate,
     Routine,
     RoutineFolder,
+    SetType,
     Workout,
     WorkoutExercise,
 )
@@ -53,7 +55,7 @@ def _account(user):
 
 def _period(form, service):
     if form.is_valid():
-        return service.period(form.cleaned_data.get('inicio'), form.cleaned_data.get('fim'))
+        return service.period(form.cleaned_data.get('start'), form.cleaned_data.get('end'))
     return service.period()
 
 
@@ -64,14 +66,16 @@ def _history_queryset(request, account, *, include_removed=False):
     manager = Workout.all_objects if include_removed else Workout.objects
     queryset = manager.filter(
         hevy_account=account,
-        start_time__gte=period.start_at,
-        start_time__lt=period.end_at,
     ).select_related('routine').prefetch_related(
         'exercises__exercise_template', 'exercises__sets'
     )
-    routine_id = request.GET.get('rotina')
-    exercise_id = request.GET.get('exercicio')
-    set_type = request.GET.get('tipo')
+    if request.GET.get('start') or request.GET.get('end'):
+        queryset = queryset.filter(start_time__gte=period.start_at, start_time__lt=period.end_at)
+    if request.GET.get('q'):
+        queryset = queryset.filter(title__icontains=request.GET['q'])
+    routine_id = request.GET.get('routine')
+    exercise_id = request.GET.get('exercise')
+    set_type = request.GET.get('set_type')
     if routine_id and routine_id.isdigit():
         queryset = queryset.filter(routine_id=int(routine_id))
     valid_exercise_id = int(exercise_id) if exercise_id and exercise_id.isdigit() else None
@@ -96,7 +100,7 @@ def _history_queryset(request, account, *, include_removed=False):
 
 
 class TrainingSectionView(LoginRequiredMixin, TemplateView):
-    template_name = 'section_placeholder.html'
+    pass
 
 
 class HistoryView(TrainingSectionView):
@@ -105,11 +109,11 @@ class HistoryView(TrainingSectionView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         account = _account(self.request.user)
-        context.update({'period_form': PeriodForm(), 'page_obj': None, 'account': account, 'routines': [], 'exercise_templates': []})
+        context.update({'set_types': SetType.choices, 'period_form': PeriodForm(), 'page_obj': None, 'account': account, 'routines': [], 'exercise_templates': []})
         if account is None:
             return context
         form, period, queryset = _history_queryset(
-            self.request, account, include_removed=True
+            self.request, account, include_removed=False
         )
         context['routines'] = Routine.objects.filter(hevy_account=account)
         context['exercise_templates'] = ExerciseTemplate.objects.filter(hevy_account=account)
@@ -136,7 +140,15 @@ class ExerciseView(TrainingSectionView):
         query = self.request.GET.get('q', '').strip()
         templates = ExerciseTemplate.objects.filter(hevy_account=account) if account else ExerciseTemplate.objects.none()
         if query:
-            templates = templates.filter(Q(title__icontains=query) | Q(external_id__icontains=query))
+            templates = templates.filter(Q(title__icontains=query) | Q(title_pt_br__icontains=query) | Q(external_id__icontains=query))
+        for param, field in [('muscle', 'primary_muscle'), ('equipment', 'equipment_category'), ('type', 'exercise_type')]:
+            if self.request.GET.get(param):
+                templates = templates.filter(**{field: self.request.GET[param]})
+        from dashboard.models import DashboardPreference
+        preference = DashboardPreference.objects.filter(user=self.request.user).first()
+        if self.request.GET.get('favorites') == '1':
+            templates = templates.filter(pk__in=preference.favorites.values('pk')) if preference else templates.none()
+        context.update({'muscles': ExerciseTemplate.MuscleGroup.choices, 'equipment': ExerciseTemplate.EquipmentCategory.choices, 'types': ExerciseTemplate.ExerciseType.choices})
         paginator = Paginator(templates.order_by('title'), 50)
         context.update({
             'account': account,
@@ -221,19 +233,21 @@ class WorkoutExportView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         account = _account(request.user)
         response = HttpResponse(content_type='text/csv; charset=utf-8')
-        response['Content-Disposition'] = 'attachment; filename="treinos.csv"'
+        response['Content-Disposition'] = (
+            f'attachment; filename="workout-history-{timezone.localdate():%Y%m%d}.csv"'
+        )
         writer = csv.writer(response, lineterminator='\n')
         writer.writerow([
-            'treino_id', 'treino_titulo', 'inicio_utc', 'fim_utc', 'rotina',
-            'exercicio_id', 'exercicio', 'tipo_set', 'peso_kg', 'repeticoes',
-            'distancia_m', 'duracao_s', 'rpe', 'metrica_customizada',
-            'estado', 'removido_em',
+            'workout_id', 'workout_title', 'start_time_utc', 'end_time_utc', 'routine',
+            'exercise_template_id', 'exercise', 'set_type', 'weight_kg', 'reps',
+            'distance_meters', 'duration_seconds', 'rpe', 'custom_metric',
+            'status', 'removed_at',
         ])
         if account is None:
             return response
-        _, _, queryset = _history_queryset(request, account, include_removed=True)
-        exercise_id = request.GET.get('exercicio') or ''
-        set_type = request.GET.get('tipo')
+        _, _, queryset = _history_queryset(request, account, include_removed=False)
+        exercise_id = request.GET.get('exercise') or ''
+        set_type = request.GET.get('set_type')
         for workout in queryset:
             for exercise in workout.exercises.all():
                 if exercise_id.isdigit() and exercise.exercise_template_id != int(exercise_id):
@@ -256,7 +270,7 @@ class WorkoutExportView(LoginRequiredMixin, TemplateView):
                         recorded_set.duration_seconds if recorded_set.duration_seconds is not None else '',
                         recorded_set.rpe if recorded_set.rpe is not None else '',
                         recorded_set.custom_metric if recorded_set.custom_metric is not None else '',
-                        'removido' if not workout.is_active else 'ativo',
+                        'removed' if not workout.is_active else 'active',
                         workout.removed_at.isoformat() if workout.removed_at else '',
                     ])
         return response

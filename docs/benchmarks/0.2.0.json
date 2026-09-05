@@ -1,0 +1,50 @@
+{
+  "corpus": {
+    "workouts": 10000,
+    "workout_sets": 200000
+  },
+  "dashboard": {
+    "p95_seconds": 0.6415158050003811,
+    "response_bytes": 27223
+  },
+  "history_filter": {
+    "p95_seconds": 0.7949286570001277,
+    "response_bytes": 20216
+  },
+  "exercise_filter": {
+    "p95_seconds": 0.02750859800107719,
+    "response_bytes": 22046
+  },
+  "reports": {
+    "frequency": {
+      "p95_seconds": 0.2564479049997317,
+      "response_bytes": 37845
+    },
+    "progression": {
+      "p95_seconds": 0.09568621099970187,
+      "response_bytes": 43189
+    },
+    "effort": {
+      "p95_seconds": 0.2518844240003091,
+      "response_bytes": 95852
+    },
+    "volume": {
+      "p95_seconds": 0.17371078199903423,
+      "response_bytes": 97779
+    },
+    "distribution": {
+      "p95_seconds": 0.18207965799956582,
+      "response_bytes": 35123
+    },
+    "duration": {
+      "p95_seconds": 0.17077021099976264,
+      "response_bytes": 93888
+    }
+  },
+  "targets_seconds": {
+    "dashboard": 1.5,
+    "filters": 1.0
+  },
+  "page_size_limit_bytes": 1572864,
+  "passed": true
+}

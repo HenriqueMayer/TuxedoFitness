@@ -1,60 +1,22 @@
 # Architecture
 
-## Runtime shape
+A local-first Django monolith, independently deployable with SQLite WAL. No Celery, Redis, LLM proxy, remote frontend assets or sibling-checkout dependencies.
 
-Tuxedo Fitness is a single-instance, local-first Django application. It uses
-server-rendered templates, native authentication, SQLite, local static assets,
-strict CSP, and optional HTMX progressive enhancement. Browser code never
-contacts Hevy.
+| App | Owns |
+|---|---|
+| core | Settings, environment permissions, database setup, health/readiness |
+| pages | Public product page |
+| accounts | Native authentication, presentation preferences, verified backup/delete workflows |
+| integrations | Hevy credentials/client/DTOs, raw snapshots, sync state, locking, HTTP writes |
+| training | Normalized catalogue, folders, routines, workouts and ordered sets |
+| analytics | Deterministic metrics and eligibility |
+| dashboard | Preferences, filters, report assembly and SVG presentation |
+| planning | Training profile, prompt construction/history, routine proposals |
 
-```text
-pages/accounts/dashboard/training views
-                  |
-                  v
-       analytics services + local repositories
-                  |
-                  v
-       normalized training/integration models
+Hevy is authoritative for existing workouts/routines. Only a successful validated collection publishes its normalized entities and corresponding raw payloads in one local transaction. Network requests happen outside that transaction. Deleted records are inactive locally; old prompt generations retain their original context.
 
-Hevy HTTP -> integrations adapter -> validated DTOs -> training persistence
-```
+Analytics derives from normalized records. Preferences/profile come from the user. LLM output remains a proposal until explicitly confirmed. Views enforce authentication/ownership and coordinate forms; templates never calculate workout metrics. JavaScript enhances language selection, theme, navigation, copying and after-load synchronization.
 
-| App | Responsibility |
-| --- | --- |
-| `core` | Settings, security checks, root routing, liveness/readiness, ASGI/WSGI. |
-| `pages` | Public landing page containing synthetic presentation only. |
-| `accounts` | Authentication, signup policy, preferences, backup and local deletion controls. |
-| `integrations` | Provider client, DTOs, synchronization coordination, state, cursor and run audit. |
-| `training` | Normalized persistence, repositories, and read-only training pages. |
-| `analytics` | Deterministic formulas, eligibility, comparisons and metric metadata. |
-| `dashboard` | Overview composition and presentation-only SVG read models. |
+Credentials are MultiFernet ciphertext on HevyAccount; the encryption keys live outside SQLite in private installation configuration. Logout does not disconnect. Stored raw snapshots, exports and prompts contain no application-injected secret. No provider writes are triggered by GET or by prompt generation.
 
-The implementation has deliberate cross-app application-service dependencies:
-training views may consume analytics read services, integration orchestration
-persists validated training entities, and dashboards read account/integration
-freshness. Documentation does not claim a strict linear dependency graph that
-the code does not enforce.
-
-## Data and security boundaries
-
-- SQLite, `.env`, backups, exports, diagnostics, and provider snapshots remain
-  outside the tracked public tree. POSIX environment files must be mode `0600`.
-- Secrets enter through a selected environment file or process environment and
-  never enter models, responses, URLs, logs, fixtures, or exports.
-- Canonical timestamps are aware; canonical mass/distance storage remains in
-  provider units and presentation conversion happens at the template boundary.
-- Synchronization validates complete provider responses before canonical
-  mutation and advances cursors only in the successful write transaction.
-- `research/` is provenance for a future phase and is not imported at runtime.
-
-## Browser contract
-
-The base body boosts ordinary GET navigation and requests complete documents;
-HTMX swaps the body only after a successful response. POSTs and downloads opt
-out. Dashboard filters explicitly send HTMX headers and receive
-`#overview-results` only. JavaScript listeners are document-delegated so they
-remain valid after a body swap.
-
-The SVG presentation model is created from analytics read models and contains
-geometry, localized labels, summaries, and table rows only. It performs no
-domain calculation, persistence, or external I/O.
+Synchronization and confirmed writes share an account lock. Full reads validate references before marking missing rows inactive. Incremental reads overlap the prior high-water time, deduplicate events and advance the cursor only after successful persistence. Proposals track each operation before dispatch; interrupted submissions are recovered as unknown rather than assumed successful.

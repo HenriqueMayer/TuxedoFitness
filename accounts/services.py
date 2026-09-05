@@ -31,7 +31,7 @@ def sqlite_checks(database: Path | str) -> tuple[str, tuple[tuple, ...]]:
 def _backup_directory() -> Path:
     configured = os.environ.get('TUXEDO_FITNESS_BACKUP_DIR', '').strip()
     if not configured:
-        raise BackupError('Configure TUXEDO_FITNESS_BACKUP_DIR before deletion.')
+        raise BackupError('Configure TUXEDO_FITNESS_BACKUP_DIR before creating a backup.')
     path = Path(configured).expanduser()
     if not path.is_absolute():
         raise BackupError('The backup directory must be an absolute path.')

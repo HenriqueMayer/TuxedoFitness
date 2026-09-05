@@ -37,7 +37,15 @@ def measure(client, url, samples=20):
 def run(database_path):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
-    os.environ.setdefault('SECRET_KEY', 'synthetic-reference-corpus-only')
+    env_file = database_path.parent / '.env'
+    env_file.touch(mode=0o600)
+    os.environ['TUXEDO_ENV_FILE'] = str(env_file)
+    os.environ['TUXEDO_DATA_DIR'] = str(database_path.parent)
+    os.environ['SECRET_KEY'] = 'synthetic-reference-corpus-only'
+    os.environ['HTTPS'] = 'False'
+    os.environ['ALLOWED_HOSTS'] = 'testserver'
+    os.environ['HEVY_API_KEY'] = ''
+    os.environ['HEVY_ENCRYPTION_KEYS'] = ''
     os.environ['TUXEDO_FITNESS_DB'] = str(database_path)
     os.environ['DEBUG'] = 'False'
 
@@ -139,7 +147,7 @@ def run(database_path):
 
     client = Client()
     client.force_login(user)
-    history_url = f'{reverse("training:history")}?tipo=normal'
+    history_url = f'{reverse("training:history")}?set_type=normal'
     results = {
         'corpus': {'workouts': 10_000, 'workout_sets': 200_000},
         'dashboard': measure(client, reverse('dashboard:index')),
@@ -148,11 +156,13 @@ def run(database_path):
             client,
             f'{reverse("training:exercises")}?q=Exercise',
         ),
+        'reports': {panel: measure(client, reverse('dashboard:reports') + f'?panel={panel}' + (f'&exercise={template_ids[0]}' if panel == 'progression' else '')) for panel in ['frequency','progression','effort','volume','distribution','duration']},
         'targets_seconds': {'dashboard': 1.5, 'filters': 1.0},
         'page_size_limit_bytes': 1_572_864,
     }
     results['passed'] = (
-        results['dashboard']['p95_seconds'] <= 1.5
+        all(result['p95_seconds'] <= 1.5 and result['response_bytes'] <= 1_572_864 for result in results['reports'].values())
+        and results['dashboard']['p95_seconds'] <= 1.5
         and results['history_filter']['p95_seconds'] <= 1.0
         and results['exercise_filter']['p95_seconds'] <= 1.0
         and all(
