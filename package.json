@@ -2,7 +2,7 @@
   "name": "tuxedo-fitness-frontend",
   "private": true,
   "engines": {
-    "node": ">=20 <21"
+    "node": ">=24 <25"
   },
   "scripts": {
     "build": "npm run build:fonts && npm run build:css",

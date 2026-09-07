@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version-file: .python-version
 
@@ -32,7 +32,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version-file: .node-version
           cache: npm
 
       - name: Install locked dependencies
@@ -67,6 +67,7 @@ jobs:
           node --check static/js/sync-actions.js
           node --check static/js/theme.js
           node --check static/js/fitness.js
+          node --check static/js/charts.js
           uv run python scripts/check_translations.py
 
       - name: Run Python tests and coverage gates

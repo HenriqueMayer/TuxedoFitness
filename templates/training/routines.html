@@ -1,1 +1,46 @@
-{% extends 'base.html' %}{% load i18n %}{% block content %}<div data-read-surface><p class="eyebrow">{% translate "Your training plans" %}</p><h1 class="page-title mt-3">{% translate "Routines" %}</h1><div class="my-6 flex flex-wrap gap-3"><a class="btn" href="{% url 'planning:import' %}">{% translate "Import routine JSON" %}</a><a class="btn-secondary" href="{% url 'planning:generate' %}">{% translate "Generate prompt" %}</a><a class="btn-secondary" hx-boost="false" href="{% url 'integrations:local-export' 'routines' 'json' %}">{% translate "Export JSON" %}</a><a class="btn-secondary" hx-boost="false" href="{% url 'integrations:local-export' 'routines' 'csv' %}">{% translate "Export CSV" %}</a></div>{% for folder in folders %}<section class="mb-8"><h2 class="mb-4 text-xl font-semibold">{{ folder.title }}</h2><div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{% for routine in folder.visible_routines %}<a class="panel block" href="{% url 'training:routine-detail' routine.pk %}"><h3 class="font-semibold">{{ routine.title }}</h3><p class="muted mt-2">{{ routine.exercises.count }} {% translate "exercises" %} →</p></a>{% empty %}<p class="muted">{% translate "No routines in this folder." %}</p>{% endfor %}</div></section>{% endfor %}<section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{% for routine in unfiled_routines %}<a class="panel block" href="{% url 'training:routine-detail' routine.pk %}"><h2 class="font-semibold">{{ routine.title }}</h2><p class="muted mt-2">{{ routine.exercises.count }} {% translate "exercises" %} →</p></a>{% endfor %}</section>{% if not folders and not unfiled_routines %}<p class="panel muted">{% translate "No synchronized routines yet." %}</p>{% endif %}</div>{% endblock %}
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <div data-read-surface>
+        <p class="eyebrow">{% translate "Your training plans" %}</p>
+        <h1 class="page-title mt-3">{% translate "Routines" %}</h1>
+        <div class="my-6 flex flex-wrap gap-3">
+            <a class="btn" href="{% url 'planning:import' %}">{% translate "Import routine JSON" %}</a>
+            <a class="btn-secondary" href="{% url 'planning:generate' %}">{% translate "Generate prompt" %}</a>
+            <a class="btn-secondary"
+               hx-boost="false"
+               href="{% url 'integrations:local-export' 'routines' 'json' %}">{% translate "Export JSON" %}</a>
+            <a class="btn-secondary"
+               hx-boost="false"
+               href="{% url 'integrations:local-export' 'routines' 'csv' %}">{% translate "Export CSV" %}</a>
+        </div>
+        {% for folder in folders %}
+            <section class="mb-8">
+                <h2 class="mb-4 text-xl font-semibold">{{ folder.title }}</h2>
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {% for routine in folder.visible_routines %}
+                        <a class="panel block"
+                           href="{% url 'training:routine-detail' routine.pk %}">
+                            <h3 class="font-semibold">{{ routine.title }}</h3>
+                            <p class="muted mt-2">{{ routine.exercises.count }} {% translate "exercises" %} →</p>
+                        </a>
+                    {% empty %}
+                        <p class="muted">{% translate "No routines in this folder." %}</p>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endfor %}
+        <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% for routine in unfiled_routines %}
+                <a class="panel block"
+                   href="{% url 'training:routine-detail' routine.pk %}">
+                    <h2 class="font-semibold">{{ routine.title }}</h2>
+                    <p class="muted mt-2">{{ routine.exercises.count }} {% translate "exercises" %} →</p>
+                </a>
+            {% endfor %}
+        </section>
+        {% if not folders and not unfiled_routines %}
+            <p class="panel muted">{% translate "No synchronized routines yet." %}</p>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Tuxedo Fitness 0.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-05 13:13-0300\n"
+"POT-Creation-Date: 2026-09-07 20:10-0300\n"
 "PO-Revision-Date: 2026-09-05 13:00-0300\n"
 "Last-Translator: Tuxedo maintainers\n"
 "Language-Team: Tuxedo\n"
@@ -138,7 +138,7 @@ msgstr "Contagem de treinos por intervalo do calendário local."
 msgid "Count workouts by local weekday."
 msgstr "Contagem de treinos por dia da semana local."
 
-#: accounts/ui_labels.py:17 templates/training/sets.html:2
+#: accounts/ui_labels.py:17 templates/training/sets.html:13
 #: training/models.py:77
 msgid "Duration"
 msgstr "Duração"
@@ -151,12 +151,13 @@ msgstr "Séries realizadas por músculo primário"
 msgid "Executed secondary-muscle coverage"
 msgstr "Cobertura de músculos secundários"
 
-#: accounts/ui_labels.py:20 dashboard/reports.py:353
-#: templates/dashboard/_overview_results.html:1
+#: accounts/ui_labels.py:20 analytics/reporting.py:291
+#: templates/dashboard/_overview_results.html:31
 msgid "External-load volume"
 msgstr "Volume de carga externa"
 
-#: accounts/ui_labels.py:21 templates/dashboard/_overview_results.html:1
+#: accounts/ui_labels.py:21 analytics/reporting.py:512
+#: templates/dashboard/_overview_results.html:37
 msgid "Mean RPE"
 msgstr "RPE médio"
 
@@ -168,7 +169,7 @@ msgstr "Mediana de RPE"
 msgid "Median of recorded working-set RPE."
 msgstr "Mediana do RPE registrado nas séries de trabalho."
 
-#: accounts/ui_labels.py:24 templates/dashboard/_overview_results.html:1
+#: accounts/ui_labels.py:24 templates/dashboard/_overview_results.html:39
 msgid "Missing RPE"
 msgstr "RPE ausente"
 
@@ -176,8 +177,8 @@ msgstr "RPE ausente"
 msgid "RPE"
 msgstr "RPE"
 
-#: accounts/ui_labels.py:26 dashboard/presenters.py:223
-#: dashboard/reports.py:286
+#: accounts/ui_labels.py:26 analytics/reporting.py:187
+#: dashboard/presenters.py:251
 msgid "RPE distribution"
 msgstr "Distribuição de RPE"
 
@@ -206,7 +207,7 @@ msgstr "Total de repetições"
 msgid "Total sets"
 msgstr "Total de séries"
 
-#: accounts/ui_labels.py:33 dashboard/reports.py:277
+#: accounts/ui_labels.py:33 analytics/reporting.py:145
 msgid "Training days"
 msgstr "Dias de treino"
 
@@ -214,11 +215,11 @@ msgstr "Dias de treino"
 msgid "Weekday distribution"
 msgstr "Distribuição por dia da semana"
 
-#: accounts/ui_labels.py:35
+#: accounts/ui_labels.py:35 analytics/reporting.py:515
 msgid "Working sets"
 msgstr "Séries de trabalho"
 
-#: accounts/ui_labels.py:36 dashboard/presenters.py:157
+#: accounts/ui_labels.py:36 analytics/reporting.py:504
 msgid "Workouts"
 msgstr "Treinos"
 
@@ -290,10 +291,12 @@ msgstr "segundos"
 msgid "sessions/week"
 msgstr "sessões/semana"
 
-#: accounts/ui_labels.py:54 dashboard/presenters.py:220
-#: dashboard/presenters.py:224 dashboard/reports.py:288
-#: dashboard/reports.py:308 dashboard/reports.py:315 dashboard/reports.py:322
-#: dashboard/reports.py:339
+#: accounts/ui_labels.py:54 analytics/reporting.py:194
+#: analytics/reporting.py:224 analytics/reporting.py:233
+#: analytics/reporting.py:240 analytics/reporting.py:267
+#: analytics/reporting.py:278 analytics/reporting.py:515
+#: analytics/reporting.py:535 dashboard/presenters.py:145
+#: dashboard/presenters.py:246 dashboard/presenters.py:253
 msgid "sets"
 msgstr "séries"
 
@@ -321,9 +324,11 @@ msgstr "atualizar"
 msgid "working sets without RPE / all working sets."
 msgstr "séries de trabalho sem RPE / todas as séries de trabalho."
 
-#: accounts/ui_labels.py:61 dashboard/presenters.py:162
-#: dashboard/reports.py:272 dashboard/reports.py:279 dashboard/reports.py:331
-#: templates/planning/generate.html:6 templates/planning/generations.html:1
+#: accounts/ui_labels.py:61 analytics/reporting.py:140
+#: analytics/reporting.py:160 analytics/reporting.py:177
+#: analytics/reporting.py:249 analytics/reporting.py:504
+#: dashboard/presenters.py:106 dashboard/presenters.py:146
+#: templates/planning/generate.html:52 templates/planning/generations.html:13
 msgid "workouts"
 msgstr "treinos"
 
@@ -352,328 +357,218 @@ msgstr "Digite DELETE para confirmar a remoção local."
 msgid "Local data removed after verified backup (%(filename)s)."
 msgstr "Dados locais removidos após backup verificado (%(filename)s)."
 
-#: analytics/preparation.py:15 training/models.py:288
+#: analytics/preparation.py:16 training/models.py:288
 msgid "Warmup"
 msgstr "Aquecimento"
 
-#: analytics/preparation.py:16 training/models.py:289
+#: analytics/preparation.py:17 training/models.py:289
 msgid "Normal"
 msgstr "Normal"
 
-#: analytics/preparation.py:17 training/models.py:290
+#: analytics/preparation.py:18 training/models.py:290
 msgid "Failure"
 msgstr "Falha"
 
-#: analytics/preparation.py:18
+#: analytics/preparation.py:19
 msgid "Drop set"
 msgstr "Drop set"
 
-#: analytics/preparation.py:100 dashboard/reports.py:377
-#: dashboard/reports.py:452
+#: analytics/preparation.py:113 analytics/reporting.py:315
+#: analytics/reporting.py:391 dashboard/presenters.py:147
 msgid "repetitions"
 msgstr "repetições"
 
-#: analytics/preparation.py:108 dashboard/reports.py:380
+#: analytics/preparation.py:121 analytics/reporting.py:318
 msgid "custom units"
 msgstr "unidades personalizadas"
 
-#: dashboard/forms.py:11 dashboard/reports.py:36 planning/forms.py:103
-#: templates/training/history.html:1
-msgid "Start date"
-msgstr "Data inicial"
-
-#: dashboard/forms.py:21 dashboard/reports.py:41 planning/forms.py:108
-#: templates/training/history.html:1
-msgid "End date"
-msgstr "Data final"
-
-#: dashboard/forms.py:31 dashboard/reports.py:70
-msgid "Compare with previous period"
-msgstr "Comparar com o período anterior"
-
-#: dashboard/forms.py:35
-msgid "Exercise progression"
-msgstr "Evolução por exercício"
-
-#: dashboard/forms.py:36 dashboard/forms.py:52
-msgid "Select an exercise"
-msgstr "Selecione um exercício"
-
-#: dashboard/forms.py:62 dashboard/reports.py:90
-msgid "Choose an end date before 9999-12-31."
-msgstr "Escolha uma data final anterior a 31/12/9999."
-
-#: dashboard/forms.py:64 dashboard/reports.py:97 planning/forms.py:125
-msgid "The end date must not precede the start date."
-msgstr "A data final não pode ser anterior à data inicial."
-
-#: dashboard/presenters.py:125
-msgid "week"
-msgstr "semana"
-
-#: dashboard/presenters.py:125
-msgid "month"
-msgstr "mês"
-
-#: dashboard/presenters.py:126 dashboard/reports.py:270
-msgid "Workouts per week"
-msgstr "Treinos por semana"
-
-#: dashboard/presenters.py:126 dashboard/reports.py:270
+#: analytics/reporting.py:138 dashboard/presenters.py:91
 msgid "Workouts per month"
 msgstr "Treinos por mês"
 
-#: dashboard/presenters.py:127
-#, python-format
-msgid "%(count)s workouts grouped by %(bucket)s."
-msgstr "%(count)s treino(s) agrupado(s) por %(bucket)s."
+#: analytics/reporting.py:138 dashboard/presenters.py:89
+msgid "Workouts per week"
+msgstr "Treinos por semana"
 
-#: dashboard/presenters.py:127
-msgid "No workouts recorded in the selected period."
-msgstr "Nenhum treino registrado no período selecionado."
-
-#: dashboard/presenters.py:157
-msgid "Period"
-msgstr "Período"
-
-#: dashboard/presenters.py:172
-#, python-format
-msgid "%(count)s observations in %(unit)s."
-msgstr "%(count)s observações em %(unit)s."
-
-#: dashboard/presenters.py:172 templates/dashboard/chart.html:5
-msgid "No eligible observations in this period."
-msgstr "Nenhuma observação elegível neste período."
-
-#: dashboard/presenters.py:219 dashboard/reports.py:337
-msgid "Sets by type"
-msgstr "Séries por tipo"
-
-#: dashboard/presenters.py:220
-msgid "Type"
-msgstr "Tipo"
-
-#: dashboard/presenters.py:229
-msgid "Progression"
-msgstr "Evolução"
-
-#: dashboard/presenters.py:231
-msgid "Date"
-msgstr "Data"
-
-#: dashboard/presenters.py:231
-msgid "value"
-msgstr "valor"
-
-#: dashboard/reports.py:19
-msgid "Frequency and consistency"
-msgstr "Frequência e consistência"
-
-#: dashboard/reports.py:20
-msgid "Load and progression"
-msgstr "Carga e progressão"
-
-#: dashboard/reports.py:21
-msgid "Recorded effort"
-msgstr "Esforço registrado"
-
-#: dashboard/reports.py:22
-msgid "Training volume"
-msgstr "Volume de treino"
-
-#: dashboard/reports.py:23
-msgid "Training distribution"
-msgstr "Distribuição do treino"
-
-#: dashboard/reports.py:24
-msgid "Duration and modalities"
-msgstr "Duração e modalidades"
-
-#: dashboard/reports.py:31
-#| msgid "Average frequency"
-msgid "Group frequency by"
-msgstr "Agrupar frequência por"
-
-#: dashboard/reports.py:32
-msgid "Week"
-msgstr "Semana"
-
-#: dashboard/reports.py:32
-#| msgid "month"
-msgid "Month"
-msgstr "Mês"
-
-#: dashboard/reports.py:47 templates/training/history.html:1
-msgid "Exercise"
-msgstr "Exercício"
-
-#: dashboard/reports.py:50 templates/training/history.html:1
-msgid "Routine"
-msgstr "Rotina"
-
-#: dashboard/reports.py:54 templates/training/exercise_detail.html:1
-#: templates/training/exercises.html:1
-msgid "Primary muscle"
-msgstr "Músculo primário"
-
-#: dashboard/reports.py:55 dashboard/reports.py:61 dashboard/reports.py:67
-#: dashboard/reports.py:83 dashboard/reports.py:84
-#: templates/training/exercises.html:1 templates/training/history.html:1
-msgid "All"
-msgstr "Todos"
-
-#: dashboard/reports.py:60 dashboard/reports.py:313
-#: templates/training/exercise_detail.html:1
-#: templates/training/exercises.html:1
-msgid "Equipment"
-msgstr "Equipamento"
-
-#: dashboard/reports.py:66 templates/training/history.html:1
-msgid "Set type"
-msgstr "Tipo de série"
-
-#: dashboard/reports.py:104
-msgid "Visible panels"
-msgstr "Painéis visíveis"
-
-#: dashboard/reports.py:110
-msgid "Panel order"
-msgstr "Ordem dos painéis"
-
-#: dashboard/reports.py:112
-msgid ""
-"Comma-separated panel IDs: frequency, progression, effort, volume, "
-"distribution, duration."
-msgstr ""
-"IDs dos painéis separados por vírgulas: frequency, progression, effort, "
-"volume, distribution, duration."
-
-#: dashboard/reports.py:117
-msgid "Favorite exercises"
-msgstr "Exercícios favoritos"
-
-#: dashboard/reports.py:136
-msgid "Use each known panel ID at most once."
-msgstr "Use cada ID de painel conhecido no máximo uma vez."
-
-#: dashboard/reports.py:217
-msgid "Observation"
-msgstr "Observação"
-
-#: dashboard/reports.py:273
-#| msgid ""
-#| "Distinct workouts by local Monday. Boundary weeks can be incomplete."
+#: analytics/reporting.py:141 dashboard/presenters.py:113
 msgid "Sessions by local calendar period. Boundary periods may be incomplete."
 msgstr ""
 "Sessões por período do calendário local. Os períodos nas extremidades podem "
 "estar incompletos."
 
-#: dashboard/reports.py:280
+#: analytics/reporting.py:150
+msgid "Monday"
+msgstr "Segunda-feira"
+
+#: analytics/reporting.py:151
+msgid "Tuesday"
+msgstr "Terça-feira"
+
+#: analytics/reporting.py:152
+msgid "Wednesday"
+msgstr "Quarta-feira"
+
+#: analytics/reporting.py:153
+msgid "Thursday"
+msgstr "Quinta-feira"
+
+#: analytics/reporting.py:154
+msgid "Friday"
+msgstr "Sexta-feira"
+
+#: analytics/reporting.py:155
+msgid "Saturday"
+msgstr "Sábado"
+
+#: analytics/reporting.py:156
+msgid "Sunday"
+msgstr "Domingo"
+
+#: analytics/reporting.py:161
 msgid "Sessions by local weekday."
 msgstr "Sessões por dia da semana no fuso local."
 
-#: dashboard/reports.py:289
+#: analytics/reporting.py:175
+msgid "Weekly sessions and target"
+msgstr "Sessões semanais e meta"
+
+#: analytics/reporting.py:179
+msgid ""
+"Sessions per local week. Boundary weeks may be partial; only complete weeks "
+"count toward target completion."
+msgstr ""
+"Sessões por semana no fuso local. As semanas das extremidades podem ser "
+"parciais; somente semanas completas contam para o cumprimento da meta."
+
+#: analytics/reporting.py:195
 msgid "Recorded RPE on working sets; missing values are excluded."
 msgstr ""
 "RPE registrado nas séries de trabalho; valores ausentes são excluídos."
 
-#: dashboard/reports.py:298
+#: analytics/reporting.py:203
 msgid "Mean RPE over time"
 msgstr "RPE médio ao longo do tempo"
 
-#: dashboard/reports.py:301
+#: analytics/reporting.py:206
 msgid "Mean recorded RPE per session, with missing observations excluded."
 msgstr "Média do RPE registrado por sessão, excluindo observações ausentes."
 
-#: dashboard/reports.py:306
-msgid "Primary muscles"
-msgstr "Músculos primários"
-
-#: dashboard/reports.py:307 dashboard/reports.py:314
+#: analytics/reporting.py:219
 msgid "Unknown"
 msgstr "Desconhecido"
 
-#: dashboard/reports.py:309
+#: analytics/reporting.py:222
+msgid "Primary muscles"
+msgstr "Músculos primários"
+
+#: analytics/reporting.py:225
 msgid "Each working set contributes once to its primary muscle."
 msgstr "Cada série de trabalho contribui uma vez para seu músculo primário."
 
-#: dashboard/reports.py:316
+#: analytics/reporting.py:229 dashboard/reports.py:57
+#: templates/training/exercise_detail.html:28
+#: templates/training/exercises.html:27
+msgid "Equipment"
+msgstr "Equipamento"
+
+#: analytics/reporting.py:234
 msgid "Working sets by recorded equipment."
 msgstr "Séries de trabalho por equipamento registrado."
 
-#: dashboard/reports.py:320
+#: analytics/reporting.py:238
 msgid "Modalities"
 msgstr "Modalidades"
 
-#: dashboard/reports.py:323
+#: analytics/reporting.py:241
 msgid "Working-set counts, without adding incompatible quantities."
 msgstr "Contagem de séries de trabalho, sem somar grandezas incompatíveis."
 
-#: dashboard/reports.py:327 templates/partials/nav_links.html:5
-#: templates/training/routine_detail.html:1 templates/training/routines.html:1
+#: analytics/reporting.py:245 templates/pages/landing.html:58
+#: templates/partials/nav_links.html:13
+#: templates/training/routine_detail.html:4 templates/training/routines.html:6
 msgid "Routines"
 msgstr "Rotinas"
 
-#: dashboard/reports.py:329
+#: analytics/reporting.py:247
 msgid "Unassigned"
 msgstr "Sem rotina"
 
-#: dashboard/reports.py:332
+#: analytics/reporting.py:250
 msgid "Recorded routine association, not historical prescription compliance."
 msgstr ""
 "Associação registrada com a rotina; não comprova adesão à prescrição "
 "histórica."
 
-#: dashboard/reports.py:340
+#: analytics/reporting.py:261
+msgid "All primary muscles"
+msgstr "Todos os músculos principais"
+
+#: analytics/reporting.py:265
+msgid "Weekly working sets"
+msgstr "Séries efetivas por semana"
+
+#: analytics/reporting.py:269
+msgid ""
+"Each working set counts once for its primary muscle. Select a muscle to "
+"inspect its weekly distribution."
+msgstr ""
+"Cada série efetiva conta uma vez para seu músculo principal. Selecione um "
+"músculo para consultar sua distribuição semanal."
+
+#: analytics/reporting.py:276 dashboard/presenters.py:244
+msgid "Sets by type"
+msgstr "Séries por tipo"
+
+#: analytics/reporting.py:279
 msgid "Warmups remain separate from working sets."
 msgstr "Aquecimentos permanecem separados das séries de trabalho."
 
-#: dashboard/reports.py:356
+#: analytics/reporting.py:294
 msgid "Sum weight × repetitions on compatible working sets."
 msgstr "Soma de carga × repetições nas séries de trabalho compatíveis."
 
-#: dashboard/reports.py:362
+#: analytics/reporting.py:300
 msgid "Session duration"
 msgstr "Duração da sessão"
 
-#: dashboard/reports.py:370
+#: analytics/reporting.py:308
 msgid "minutes"
 msgstr "minutos"
 
-#: dashboard/reports.py:371
+#: analytics/reporting.py:309
 msgid "Elapsed session time is not active exercise time."
 msgstr "O tempo total da sessão não corresponde ao tempo de exercício ativo."
 
-#: dashboard/reports.py:376
+#: analytics/reporting.py:314
 msgid "Recorded load / assistance"
 msgstr "Carga / assistência registrada"
 
-#: dashboard/reports.py:377
+#: analytics/reporting.py:315
 msgid "Recorded repetitions"
 msgstr "Repetições registradas"
 
-#: dashboard/reports.py:378
+#: analytics/reporting.py:316
 msgid "Recorded duration"
 msgstr "Duração registrada"
 
-#: dashboard/reports.py:379
+#: analytics/reporting.py:317
 msgid "Recorded distance"
 msgstr "Distância registrada"
 
-#: dashboard/reports.py:380 templates/training/sets.html:2
+#: analytics/reporting.py:318 templates/training/sets.html:19
 msgid "Custom metric"
 msgstr "Métrica personalizada"
 
-#: dashboard/reports.py:403
+#: analytics/reporting.py:342
 msgid "Maximum recorded value per session for the selected exercise only."
 msgstr ""
 "Maior valor registrado por sessão, somente para o exercício selecionado."
 
-#: dashboard/reports.py:433 templates/training/exercise_detail.html:1
+#: analytics/reporting.py:370 templates/training/exercise_detail.html:35
 msgid "Estimated 1RM"
 msgstr "1RM estimado"
 
-#: dashboard/reports.py:437
+#: analytics/reporting.py:374
 msgid ""
 "Epley estimate: weight × (1 + reps / 30), normal/failure sets, 1–10 integer "
 "repetitions."
@@ -681,23 +576,199 @@ msgstr ""
 "Estimativa de Epley: carga × (1 + repetições / 30), séries normais/até a "
 "falha, de 1 a 10 repetições inteiras."
 
-#: dashboard/reports.py:442
+#: analytics/reporting.py:379
 msgid "Exercise volume"
 msgstr "Volume do exercício"
 
-#: dashboard/reports.py:445
+#: analytics/reporting.py:382
 msgid "External-load working volume for this exercise."
 msgstr "Volume de trabalho com carga externa deste exercício."
 
-#: dashboard/reports.py:450
+#: analytics/reporting.py:389
 msgid "Repetitions at the same load"
 msgstr "Repetições na mesma carga"
 
-#: dashboard/reports.py:453
+#: analytics/reporting.py:392
 msgid "Maximum repetitions at this exact load, per session."
 msgstr "Maior número de repetições nesta carga exata por sessão."
 
-#: integrations/automatic.py:33 templates/partials/navbar.html:17
+#: analytics/reporting.py:507
+msgid "Weekly frequency"
+msgstr "Frequência semanal"
+
+#: analytics/reporting.py:509
+msgid "workouts/week"
+msgstr "treinos/semana"
+
+#: analytics/reporting.py:539
+msgid "Total session duration"
+msgstr "Duração total das sessões"
+
+#: analytics/reporting.py:545
+msgid "Mean session duration"
+msgstr "Duração média das sessões"
+
+#: dashboard/forms.py:11 dashboard/reports.py:33 planning/forms.py:103
+#: templates/training/history.html:15
+msgid "Start date"
+msgstr "Data inicial"
+
+#: dashboard/forms.py:21 dashboard/reports.py:38 planning/forms.py:108
+#: templates/training/history.html:23
+msgid "End date"
+msgstr "Data final"
+
+#: dashboard/forms.py:31 dashboard/reports.py:67
+msgid "Compare with previous period"
+msgstr "Comparar com o período anterior"
+
+#: dashboard/forms.py:35
+msgid "Exercise progression"
+msgstr "Evolução por exercício"
+
+#: dashboard/forms.py:36 dashboard/forms.py:53
+msgid "Select an exercise"
+msgstr "Selecione um exercício"
+
+#: dashboard/forms.py:63 dashboard/reports.py:87
+msgid "Choose an end date before 9999-12-31."
+msgstr "Escolha uma data final anterior a 31/12/9999."
+
+#: dashboard/forms.py:65 dashboard/reports.py:94 planning/forms.py:125
+msgid "The end date must not precede the start date."
+msgstr "A data final não pode ser anterior à data inicial."
+
+#: dashboard/presenters.py:105
+msgid "Period"
+msgstr "Período"
+
+#: dashboard/presenters.py:145
+#| msgid "sets"
+msgid "set"
+msgstr "série"
+
+#: dashboard/presenters.py:146
+#| msgid "workouts"
+msgid "workout"
+msgstr "treino"
+
+#: dashboard/presenters.py:147
+#| msgid "repetitions"
+msgid "repetition"
+msgstr "repetição"
+
+#: dashboard/presenters.py:159 integrations/models.py:93
+#: templates/dashboard/chart.html:13
+msgid "Partial"
+msgstr "Parcial"
+
+#: dashboard/presenters.py:202
+msgid "Recorded observations in the selected period."
+msgstr "Observações registradas no período selecionado."
+
+#: dashboard/presenters.py:217
+msgid "Select a point to inspect its value."
+msgstr "Selecione um ponto para consultar seu valor."
+
+#: dashboard/presenters.py:262 dashboard/reports.py:161
+msgid "Observation"
+msgstr "Observação"
+
+#: dashboard/presenters.py:271
+msgid "Progression"
+msgstr "Evolução"
+
+#: dashboard/presenters.py:275
+msgid "Date"
+msgstr "Data"
+
+#: dashboard/presenters.py:276
+msgid "value"
+msgstr "valor"
+
+#: dashboard/reports.py:16
+msgid "Frequency and consistency"
+msgstr "Frequência e consistência"
+
+#: dashboard/reports.py:17
+msgid "Load and progression"
+msgstr "Carga e progressão"
+
+#: dashboard/reports.py:18
+msgid "Recorded effort"
+msgstr "Esforço registrado"
+
+#: dashboard/reports.py:19
+msgid "Training volume"
+msgstr "Volume de treino"
+
+#: dashboard/reports.py:20
+msgid "Training distribution"
+msgstr "Distribuição do treino"
+
+#: dashboard/reports.py:21
+msgid "Duration and modalities"
+msgstr "Duração e modalidades"
+
+#: dashboard/reports.py:28
+msgid "Group frequency by"
+msgstr "Agrupar frequência por"
+
+#: dashboard/reports.py:29
+msgid "Week"
+msgstr "Semana"
+
+#: dashboard/reports.py:29
+msgid "Month"
+msgstr "Mês"
+
+#: dashboard/reports.py:44 templates/training/history.html:41
+msgid "Exercise"
+msgstr "Exercício"
+
+#: dashboard/reports.py:47 templates/training/history.html:31
+msgid "Routine"
+msgstr "Rotina"
+
+#: dashboard/reports.py:51 templates/training/exercise_detail.html:22
+#: templates/training/exercises.html:17
+msgid "Primary muscle"
+msgstr "Músculo primário"
+
+#: dashboard/reports.py:52 dashboard/reports.py:58 dashboard/reports.py:64
+#: dashboard/reports.py:80 dashboard/reports.py:81
+#: templates/training/exercises.html:19 templates/training/exercises.html:29
+#: templates/training/exercises.html:39 templates/training/history.html:33
+#: templates/training/history.html:43 templates/training/history.html:53
+msgid "All"
+msgstr "Todos"
+
+#: dashboard/reports.py:63 templates/training/history.html:51
+msgid "Set type"
+msgstr "Tipo de série"
+
+#: dashboard/reports.py:101
+msgid "Visible panels"
+msgstr "Painéis visíveis"
+
+#: dashboard/reports.py:107
+msgid "Favorite exercises"
+msgstr "Exercícios favoritos"
+
+#: dashboard/reports.py:123
+#, python-format
+msgid "Panel position %(number)s"
+msgstr "Posição do painel: %(number)s"
+
+#: dashboard/reports.py:125
+msgid "Automatic order"
+msgstr "Ordem automática"
+
+#: dashboard/reports.py:136
+msgid "Choose each panel only once in the order."
+msgstr "Escolha cada painel apenas uma vez na ordenação."
+
+#: integrations/automatic.py:33 templates/partials/navbar.html:101
 msgid "Hevy unavailable; showing local data"
 msgstr "Hevy indisponível; exibindo dados locais"
 
@@ -713,11 +784,11 @@ msgstr "Cole sua chave para salvar a conexão"
 msgid "I confirm the complete synchronization"
 msgstr "Confirmo a sincronização completa"
 
-#: integrations/models.py:35 templates/integrations/sync.html:1
+#: integrations/models.py:35 templates/integrations/sync.html:12
 msgid "Disconnected"
 msgstr "Desconectado"
 
-#: integrations/models.py:36 templates/integrations/sync.html:1
+#: integrations/models.py:36 templates/integrations/sync.html:10
 msgid "Connected"
 msgstr "Conectado"
 
@@ -772,10 +843,6 @@ msgstr "Em andamento"
 #: integrations/models.py:92
 msgid "Succeeded"
 msgstr "Concluída"
-
-#: integrations/models.py:93
-msgid "Partial"
-msgstr "Parcial"
 
 #: integrations/models.py:94
 msgid "Failed"
@@ -918,8 +985,9 @@ msgstr "O que você gostaria de mudar?"
 msgid "Tell us what you enjoy, dislike, or want to improve."
 msgstr "Conte o que gosta, o que não gosta e o que gostaria de melhorar."
 
-#: planning/forms.py:85 templates/planning/generate.html:5
-#: templates/training/history.html:1 templates/training/workout_detail.html:1
+#: planning/forms.py:85 templates/pages/landing.html:52
+#: templates/planning/generate.html:32 templates/training/history.html:6
+#: templates/training/workout_detail.html:4
 msgid "Training history"
 msgstr "Histórico de treino"
 
@@ -1203,7 +1271,7 @@ msgstr ""
 "O prompt completo excede 6 MB. Selecione menos treinos; nenhum dado foi "
 "truncado."
 
-#: planning/proposals.py:34
+#: planning/proposals.py:34 planning/proposals.py:67
 msgid ""
 "Use only the literal API key placeholder. The pasted document was cleared."
 msgstr ""
@@ -1218,53 +1286,53 @@ msgstr "O documento excede 2 MB."
 msgid "Provide exactly one fenced json block."
 msgstr "Informe exatamente um bloco identificado como json entre três crases."
 
-#: planning/proposals.py:61
+#: planning/proposals.py:79
 msgid "Invalid JSON: check syntax, duplicate keys and numeric values."
 msgstr ""
 "JSON inválido: verifique a sintaxe, as chaves duplicadas e os valores "
 "numéricos."
 
-#: planning/proposals.py:72
+#: planning/proposals.py:90
 msgid "The envelope requires only schema_version, api_key and operations."
 msgstr "O envelope exige somente schema_version, api_key e operations."
 
-#: planning/proposals.py:75
+#: planning/proposals.py:93
 msgid "Unsupported schema_version. Use 1."
 msgstr "schema_version não suportada. Use 1."
 
-#: planning/proposals.py:77
+#: planning/proposals.py:95
 msgid "Use only the literal API key placeholder."
 msgstr "Use somente o placeholder literal da chave de API."
 
-#: planning/proposals.py:81
+#: planning/proposals.py:99
 msgid "operations must contain between 1 and 20 items."
 msgstr "operations deve conter entre 1 e 20 itens."
 
-#: planning/proposals.py:94
+#: planning/proposals.py:112
 msgid "Expected an object."
 msgstr "Era esperado um objeto."
 
-#: planning/proposals.py:98
+#: planning/proposals.py:116
 msgid "Choose create or update."
 msgstr "Escolha create ou update."
 
-#: planning/proposals.py:105
+#: planning/proposals.py:123
 msgid "Unexpected or missing operation fields."
 msgstr "Campos da operação inesperados ou ausentes."
 
-#: planning/proposals.py:116
+#: planning/proposals.py:134
 msgid "Unknown, foreign or repeated routine ID."
 msgstr "ID de rotina desconhecido, de outra conta ou repetido."
 
-#: planning/proposals.py:131
+#: planning/proposals.py:149
 msgid "A superset needs at least two exercises."
 msgstr "Um superset precisa de pelo menos dois exercícios."
 
-#: planning/proposals.py:134
+#: planning/proposals.py:152
 msgid "A routine exceeds 64 KB."
 msgstr "Uma rotina excede 64 KB."
 
-#: planning/proposals.py:185
+#: planning/proposals.py:203
 msgid "This confirmation has already been consumed."
 msgstr "Esta confirmação já foi consumida."
 
@@ -1292,46 +1360,46 @@ msgstr ""
 "A gravação local falhou. Consulte o estado da proposta antes de realizar "
 "outra ação."
 
-#: templates/accounts/login.html:1 templates/accounts/signup.html:1
-#: templates/pages/landing.html:1 templates/partials/navbar_public.html:2
+#: templates/accounts/login.html:5 templates/accounts/login.html:12
+#: templates/accounts/signup.html:16 templates/partials/navbar_public.html:19
 msgid "Sign in"
 msgstr "Entrar"
 
-#: templates/accounts/login.html:1 templates/accounts/signup.html:1
+#: templates/accounts/login.html:7 templates/accounts/signup.html:7
 msgid "Registration is disabled for this installation."
 msgstr "Novos cadastros estão desativados nesta instalação."
 
-#: templates/accounts/login.html:1 templates/accounts/signup.html:1
-#: templates/pages/landing.html:1 templates/partials/navbar_public.html:2
+#: templates/accounts/login.html:17 templates/accounts/signup.html:5
+#: templates/accounts/signup.html:12 templates/pages/landing.html:27
 msgid "Create account"
 msgstr "Criar conta"
 
-#: templates/accounts/settings.html:1 templates/partials/navbar.html:9
-#: templates/partials/navbar.html:11 templates/partials/navbar.html:14
+#: templates/accounts/settings.html:4 templates/partials/navbar.html:26
+#: templates/partials/navbar.html:51 templates/partials/navbar.html:77
 msgid "Settings"
 msgstr "Configurações"
 
-#: templates/accounts/settings.html:1 templates/partials/navbar.html:9
-#: templates/partials/navbar.html:11 templates/partials/navbar.html:14
-#: templates/planning/profile.html:1
+#: templates/accounts/settings.html:6 templates/partials/navbar.html:27
+#: templates/partials/navbar.html:52 templates/partials/navbar.html:78
+#: templates/planning/profile.html:6
 msgid "Training profile"
 msgstr "Perfil de treino"
 
-#: templates/accounts/settings.html:1 templates/integrations/sync.html:1
-#: templates/partials/navbar.html:9 templates/partials/navbar.html:14
-#: templates/partials/navbar.html:16
+#: templates/accounts/settings.html:7 templates/integrations/sync.html:4
+#: templates/partials/navbar.html:28 templates/partials/navbar.html:79
+#: templates/partials/navbar.html:88
 msgid "Hevy connection"
 msgstr "Conexão Hevy"
 
-#: templates/accounts/settings.html:1 templates/dashboard/reports.html:10
+#: templates/accounts/settings.html:12 templates/dashboard/reports.html:117
 msgid "Save preferences"
 msgstr "Salvar preferências"
 
-#: templates/accounts/settings.html:1
+#: templates/accounts/settings.html:15 templates/accounts/settings.html:29
 msgid "Remove local training data"
 msgstr "Remover dados locais de treino"
 
-#: templates/accounts/settings.html:1
+#: templates/accounts/settings.html:17
 msgid ""
 "A verified backup is created first. This removes the local Hevy connection, "
 "workouts and routines. It does not delete anything in Hevy."
@@ -1339,44 +1407,40 @@ msgstr ""
 "Um backup verificado é criado primeiro. A conexão Hevy, os treinos e as "
 "rotinas locais serão removidos. Nada será excluído no Hevy."
 
-#: templates/accounts/settings.html:1
+#: templates/accounts/settings.html:22
 msgid "Type DELETE to confirm"
 msgstr "Digite DELETE para confirmar"
 
-#: templates/base.html:9
+#: templates/base.html:11
 msgid "Local, private analysis of your training history."
 msgstr "Análises locais e privadas do seu histórico de treino."
 
-#: templates/base.html:33
-msgid "Your data, at your pace."
-msgstr "Seus dados, no seu ritmo."
-
-#: templates/dashboard/_overview_results.html:1
+#: templates/dashboard/_overview_results.html:7
 msgid "Comparison"
 msgstr "Comparação"
 
-#: templates/dashboard/_overview_results.html:1
-#: templates/dashboard/reports.html:7
+#: templates/dashboard/_overview_results.html:7
+#: templates/dashboard/reports.html:54
 msgid "Change"
 msgstr "Variação"
 
-#: templates/dashboard/_overview_results.html:1
+#: templates/dashboard/_overview_results.html:27
 msgid "Total duration"
 msgstr "Duração total"
 
-#: templates/dashboard/_overview_results.html:1
+#: templates/dashboard/_overview_results.html:43
 msgid "Recent workouts"
 msgstr "Treinos recentes"
 
-#: templates/dashboard/_overview_results.html:1
+#: templates/dashboard/_overview_results.html:54
 msgid "No workouts recorded."
 msgstr "Nenhum treino registrado."
 
-#: templates/dashboard/_overview_results.html:1
+#: templates/dashboard/_overview_results.html:60
 msgid "Connect your Hevy account"
 msgstr "Conecte sua conta Hevy"
 
-#: templates/dashboard/_overview_results.html:1
+#: templates/dashboard/_overview_results.html:62
 msgid ""
 "Your history, routines and exercise catalogue will be available after "
 "synchronization."
@@ -1384,94 +1448,130 @@ msgstr ""
 "Seu histórico, suas rotinas e seu catálogo de exercícios estarão disponíveis"
 " após a sincronização."
 
-#: templates/dashboard/_overview_results.html:1
-#: templates/integrations/sync.html:1
+#: templates/dashboard/_overview_results.html:64
+#: templates/integrations/sync.html:21
 msgid "Connect Hevy"
 msgstr "Conectar Hevy"
 
-#: templates/dashboard/chart.html:6
+#: templates/dashboard/chart.html:11
+msgid "Weekly target"
+msgstr "Meta semanal"
+
+#: templates/dashboard/chart.html:17
+msgid "No eligible observations in this period."
+msgstr "Nenhuma observação elegível neste período."
+
+#: templates/dashboard/chart.html:25
+msgid "Previous observations"
+msgstr "Observações anteriores"
+
+#: templates/dashboard/chart.html:30
+msgid "Next observations"
+msgstr "Observações seguintes"
+
+#: templates/dashboard/chart.html:35
 msgid "Data table and definition"
 msgstr "Tabela de dados e definição"
 
-#: templates/dashboard/chart.html:6
+#: templates/dashboard/chart.html:57
 msgid "Formula"
 msgstr "Fórmula"
 
-#: templates/dashboard/chart.html:6
+#: templates/dashboard/chart.html:57
 msgid "Source sets"
 msgstr "Séries de origem"
 
-#: templates/dashboard/chart.html:6
+#: templates/dashboard/chart.html:57
 msgid "Missing values"
 msgstr "Valores ausentes"
 
-#: templates/dashboard/index.html:1
+#: templates/dashboard/index.html:7
 msgid "Your training at a glance"
 msgstr "Seu treino em perspectiva"
 
-#: templates/dashboard/index.html:1 templates/partials/nav_links.html:2
+#: templates/dashboard/index.html:8 templates/partials/nav_links.html:4
 msgid "Overview"
 msgstr "Visão geral"
 
-#: templates/dashboard/index.html:1
+#: templates/dashboard/index.html:10
 msgid "Explore analysis"
 msgstr "Explorar análises"
 
-#: templates/dashboard/index.html:1 templates/dashboard/reports.html:4
-#: templates/training/exercises.html:1 templates/training/history.html:1
+#: templates/dashboard/index.html:16 templates/dashboard/reports.html:24
+#: templates/training/exercises.html:55 templates/training/history.html:62
 msgid "Apply filters"
 msgstr "Aplicar filtros"
 
-#: templates/dashboard/reports.html:2
+#: templates/dashboard/reports.html:5
 msgid "Explore your training"
 msgstr "Explore seu treino"
 
-#: templates/dashboard/reports.html:2 templates/partials/nav_links.html:3
+#: templates/dashboard/reports.html:6 templates/partials/nav_links.html:7
 msgid "Analysis"
 msgstr "Análises"
 
-#: templates/dashboard/reports.html:2
+#: templates/dashboard/reports.html:7
 msgid "Choose a topic, then refine the observations behind each chart."
 msgstr "Escolha um tema e refine as observações de cada gráfico."
 
-#: templates/dashboard/reports.html:3
+#: templates/dashboard/reports.html:9
 msgid "Analysis topics"
 msgstr "Temas de análise"
 
-#: templates/dashboard/reports.html:3
+#: templates/dashboard/reports.html:15
 msgid "Select visible panels in Customize."
 msgstr "Selecione os painéis visíveis em Personalizar."
 
-#: templates/dashboard/reports.html:5
+#: templates/dashboard/reports.html:36
 msgid "Save these filters"
 msgstr "Salvar estes filtros"
 
-#: templates/dashboard/reports.html:6
+#: templates/dashboard/reports.html:42
 msgid "Select an exercise to compare its load, repetitions and progression."
 msgstr "Selecione um exercício para comparar carga, repetições e evolução."
 
-#: templates/dashboard/reports.html:7
-msgid "Sessions in the previous equivalent period"
-msgstr "Sessões no período equivalente anterior"
+#: templates/dashboard/reports.html:46
+msgid "Comparison with the previous equivalent period"
+msgstr "Comparação com o período equivalente anterior"
 
-#: templates/dashboard/reports.html:9
+#: templates/dashboard/reports.html:51
+msgid "Metric"
+msgstr "Indicador"
+
+#: templates/dashboard/reports.html:52
+msgid "Current"
+msgstr "Atual"
+
+#: templates/dashboard/reports.html:53 templates/partials/pagination.html:7
+msgid "Previous"
+msgstr "Anterior"
+
+#: templates/dashboard/reports.html:74
+msgid "Highest recorded values in this period"
+msgstr "Maiores valores registrados neste período"
+
+#: templates/dashboard/reports.html:92
+msgid "Working sets without recorded RPE"
+msgstr "Séries efetivas sem RPE registrado"
+
+#: templates/dashboard/reports.html:105
 msgid "Consecutive active weeks ending at the latest recorded week"
 msgstr "Semanas ativas consecutivas até a última semana registrada"
 
-#: templates/dashboard/reports.html:9
+#: templates/dashboard/reports.html:105
 msgid "Consecutive completed target weeks"
 msgstr "Semanas completas consecutivas com meta cumprida"
 
-#: templates/dashboard/reports.html:10
+#: templates/dashboard/reports.html:113
 msgid "Customize panels and favorites"
 msgstr "Personalizar painéis e favoritos"
 
-#: templates/integrations/full_refresh_confirm.html:1
-#: templates/integrations/sync.html:1
+#: templates/integrations/full_refresh_confirm.html:5
+#: templates/integrations/sync.html:67
 msgid "Complete synchronization"
 msgstr "Sincronização completa"
 
-#: templates/integrations/full_refresh_confirm.html:1
+#: templates/integrations/full_refresh_confirm.html:7
 msgid ""
 "Fetch all catalogue pages, routines and workouts. Locally missing records "
 "are marked inactive only after a complete successful collection."
@@ -1479,23 +1579,23 @@ msgstr ""
 "Busca todas as páginas do catálogo, rotinas e treinos. Registros ausentes "
 "são marcados como inativos somente após uma coleta completa bem-sucedida."
 
-#: templates/integrations/full_refresh_confirm.html:1
+#: templates/integrations/full_refresh_confirm.html:12
 msgid "Start synchronization"
 msgstr "Iniciar sincronização"
 
-#: templates/integrations/run_detail.html:1
+#: templates/integrations/run_detail.html:4
 msgid "Synchronization result"
 msgstr "Resultado da sincronização"
 
-#: templates/integrations/run_detail.html:1
+#: templates/integrations/run_detail.html:12
 msgid "Back to connection"
 msgstr "Voltar à conexão"
 
-#: templates/integrations/run_detail.html:1
+#: templates/integrations/run_detail.html:20
 msgid "Retry synchronization"
 msgstr "Repetir sincronização"
 
-#: templates/integrations/sync.html:1
+#: templates/integrations/sync.html:6
 msgid ""
 "Connect once. Your key is encrypted in this installation and used only by "
 "the backend."
@@ -1503,29 +1603,29 @@ msgstr ""
 "Conecte uma vez. Sua chave fica criptografada nesta instalação e é usada "
 "somente pelo backend."
 
-#: templates/integrations/sync.html:1
+#: templates/integrations/sync.html:19
 msgid "Update connection"
 msgstr "Atualizar conexão"
 
-#: templates/integrations/sync.html:1
+#: templates/integrations/sync.html:24
 msgid "Hevy Pro is required. Obtain your key in Hevy Settings → Developer."
 msgstr ""
 "É necessário o Hevy Pro. Obtenha sua chave em Configurações do Hevy → "
 "Desenvolvedor."
 
-#: templates/integrations/sync.html:1
+#: templates/integrations/sync.html:30
 msgid "Validate and save connection"
 msgstr "Validar e salvar conexão"
 
-#: templates/integrations/sync.html:1
+#: templates/integrations/sync.html:38
 msgid "Disconnect and keep local history"
 msgstr "Desconectar e manter o histórico local"
 
-#: templates/integrations/sync.html:1
+#: templates/integrations/sync.html:43
 msgid "Synchronization"
 msgstr "Sincronização"
 
-#: templates/integrations/sync.html:1
+#: templates/integrations/sync.html:45
 msgid ""
 "Workouts and routines refresh after 15 minutes when you access the app. The "
 "catalogue refreshes daily. Local records stay available when Hevy is "
@@ -1535,220 +1635,205 @@ msgstr ""
 "catálogo é atualizado diariamente. Os registros locais permanecem "
 "disponíveis quando o Hevy está indisponível."
 
-#: templates/integrations/sync.html:1 templates/partials/navbar.html:17
+#: templates/integrations/sync.html:50 templates/partials/navbar.html:104
 msgid "Last synchronized"
 msgstr "Última sincronização"
 
-#: templates/integrations/sync.html:1
+#: templates/integrations/sync.html:59
 msgid "Update workouts"
 msgstr "Atualizar treinos"
 
-#: templates/integrations/sync.html:1
+#: templates/integrations/sync.html:65
 msgid "Refresh catalogue and routines"
 msgstr "Atualizar catálogo e rotinas"
 
-#: templates/integrations/sync.html:1
+#: templates/integrations/sync.html:73
 msgid "Recent synchronization runs"
 msgstr "Sincronizações recentes"
 
-#: templates/integrations/sync.html:1
+#: templates/integrations/sync.html:84
 msgid "No synchronization runs yet."
 msgstr "Nenhuma sincronização realizada."
 
-#: templates/pages/landing.html:1
-msgid "The Tuxedo family"
-msgstr "A família Tuxedo"
-
-#: templates/pages/landing.html:1
-msgid "Understand your training. Plan your next step."
-msgstr "Entenda seu treino. Planeje seu próximo passo."
-
-#: templates/pages/landing.html:1
+#: templates/pages/landing.html:11
 msgid ""
-"Your Hevy history, detailed local analysis and complete prompts for the LLM "
-"you choose. Your data stays in your installation until you choose to share "
-"it."
+"A local application to explore your Hevy training history, analyze exercises"
+" and generate prompts for training planning."
 msgstr ""
-"Seu histórico Hevy, análises locais detalhadas e prompts completos para a "
-"LLM que você escolher. Seus dados ficam na sua instalação até você decidir "
-"compartilhá-los."
+"Uma aplicação local para consultar seu histórico do Hevy, analisar "
+"exercícios e gerar prompts para planejar seus treinos."
 
-#: templates/pages/landing.html:1
+#: templates/pages/landing.html:17
 msgid "Open dashboard"
 msgstr "Abrir visão geral"
 
-#: templates/pages/landing.html:1
-msgid "Interface preview"
-msgstr "Prévia da interface"
+#: templates/pages/landing.html:22
+msgid "Log in"
+msgstr "Entrar"
 
-#: templates/pages/landing.html:1
+#: templates/pages/landing.html:43
 msgid "Tuxedo Fitness emblem"
 msgstr "Emblema do Tuxedo Fitness"
 
-#: templates/pages/landing.html:1
-msgid "A clear training history"
-msgstr "Um histórico de treino claro"
+#: templates/pages/landing.html:49
+msgid "Features"
+msgstr "Funcionalidades"
 
-#: templates/pages/landing.html:1
+#: templates/pages/landing.html:54
 msgid ""
-"Review sessions, exercises and sets with original measurements and notes."
+"Review completed workouts, exercises and sets, and export your original "
+"records."
 msgstr ""
-"Consulte sessões, exercícios e séries com as medidas e notas originais."
+"Consulte treinos concluídos, exercícios e séries e exporte seus registros "
+"originais."
 
-#: templates/pages/landing.html:1
-msgid "Analysis that answers your questions"
-msgstr "Análises que respondem às suas perguntas"
-
-#: templates/pages/landing.html:1
+#: templates/pages/landing.html:60
 msgid ""
-"Explore frequency, effort, load, volume and distribution through "
-"configurable panels."
-msgstr ""
-"Explore frequência, esforço, carga, volume e distribuição em painéis "
-"configuráveis."
-
-#: templates/pages/landing.html:1
-msgid "Routines with context"
-msgstr "Rotinas com contexto"
-
-#: templates/pages/landing.html:1
-msgid ""
-"View current prescriptions and review JSON changes before applying them in "
+"Browse your routines and review proposed changes before applying them in "
 "Hevy."
 msgstr ""
-"Consulte as prescrições atuais e confira as mudanças do JSON antes de "
-"aplicá-las no Hevy."
+"Consulte suas rotinas e confira as mudanças propostas antes de aplicá-las no"
+" Hevy."
 
-#: templates/pages/landing.html:1
-msgid "Your exercise catalogue"
-msgstr "Seu catálogo de exercícios"
-
-#: templates/pages/landing.html:1
-msgid ""
-"Find exercises by muscle, equipment or modality, with reviewed Portuguese "
-"display names where available."
-msgstr ""
-"Encontre exercícios por músculo, equipamento ou modalidade, com nomes em "
-"português revisados quando disponíveis."
-
-#: templates/pages/landing.html:1
-msgid "A complete analysis prompt"
-msgstr "Um prompt completo para análise"
-
-#: templates/pages/landing.html:1
-msgid ""
-"Combine personal context, original routines and selected history in a saved,"
-" reusable generation."
-msgstr ""
-"Combine contexto pessoal, rotinas originais e histórico selecionado em uma "
-"geração salva e reutilizável."
-
-#: templates/pages/landing.html:1
-msgid "Local ownership"
-msgstr "Controle local"
-
-#: templates/pages/landing.html:1
-msgid ""
-"Native accounts, encrypted Hevy credentials, exports and an owner-controlled"
-" SQLite database."
-msgstr ""
-"Contas nativas, credenciais Hevy criptografadas, exportações e banco SQLite "
-"sob seu controle."
-
-#: templates/partials/fields.html:2
-msgid "Check the highlighted fields."
-msgstr "Confira os campos destacados."
-
-#: templates/partials/language_selector.html:4
-msgid "Language"
-msgstr "Idioma"
-
-#: templates/partials/language_selector.html:7
-msgid "Apply"
-msgstr "Aplicar"
-
-#: templates/partials/nav_links.html:4
-msgid "History"
-msgstr "Histórico"
-
-#: templates/partials/nav_links.html:6 templates/training/exercises.html:1
+#: templates/pages/landing.html:64 templates/partials/nav_links.html:16
+#: templates/training/exercises.html:6
 msgid "Exercises"
 msgstr "Exercícios"
 
-#: templates/partials/nav_links.html:7 templates/planning/generate.html:2
-#: templates/planning/generations.html:1
-#: templates/training/routine_detail.html:1 templates/training/routines.html:1
+#: templates/pages/landing.html:66
+msgid ""
+"Search your exercise catalogue by name, muscle, equipment and modality."
+msgstr ""
+"Pesquise seu catálogo de exercícios por nome, músculo, equipamento e "
+"modalidade."
+
+#: templates/pages/landing.html:70
+msgid "Training analysis"
+msgstr "Análise de treinos"
+
+#: templates/pages/landing.html:72
+msgid ""
+"Compare periods, track exercise records and review weekly training "
+"distribution."
+msgstr ""
+"Compare períodos, acompanhe recordes por exercício e consulte a distribuição"
+" semanal dos treinos."
+
+#: templates/pages/landing.html:76
+msgid "Prompt generation"
+msgstr "Geração de prompts"
+
+#: templates/pages/landing.html:78
+msgid ""
+"Combine your profile, routines and history into a reusable prompt for your "
+"chosen LLM."
+msgstr ""
+"Combine seu perfil, rotinas e histórico em um prompt reutilizável para a LLM"
+" de sua escolha."
+
+#: templates/pages/landing.html:82
+msgid "Local data"
+msgstr "Dados locais"
+
+#: templates/pages/landing.html:84
+msgid ""
+"Keep your records in your installation, with encrypted Hevy credentials and "
+"CSV/JSON exports."
+msgstr ""
+"Mantenha seus registros na sua instalação, com credenciais Hevy "
+"criptografadas e exportações CSV/JSON."
+
+#: templates/partials/fields.html:5
+msgid "Check the highlighted fields."
+msgstr "Confira os campos destacados."
+
+#: templates/partials/language_selector.html:9
+msgid "Language"
+msgstr "Idioma"
+
+#: templates/partials/language_selector.html:18
+msgid "Apply"
+msgstr "Aplicar"
+
+#: templates/partials/nav_links.html:10
+msgid "History"
+msgstr "Histórico"
+
+#: templates/partials/nav_links.html:19 templates/planning/generate.html:7
+#: templates/planning/generations.html:6
+#: templates/training/routine_detail.html:10
+#: templates/training/routines.html:9
 msgid "Generate prompt"
 msgstr "Gerar prompt"
 
-#: templates/partials/navbar.html:2
+#: templates/partials/navbar.html:4
 msgid "Skip to content"
 msgstr "Ir para o conteúdo"
 
-#: templates/partials/navbar.html:4 templates/partials/navbar_public.html:2
+#: templates/partials/navbar.html:8 templates/partials/navbar_public.html:4
 msgid "Main navigation"
 msgstr "Navegação principal"
 
-#: templates/partials/navbar.html:9 templates/partials/navbar.html:11
-#: templates/partials/navbar.html:14 templates/planning/generate.html:2
-#: templates/planning/generations.html:1
+#: templates/partials/navbar.html:29 templates/partials/navbar.html:53
+#: templates/partials/navbar.html:80 templates/planning/generate.html:10
+#: templates/planning/generations.html:5
 msgid "Saved prompts"
 msgstr "Prompts salvos"
 
-#: templates/partials/navbar.html:10 templates/partials/navbar.html:11
-#: templates/partials/navbar.html:14
+#: templates/partials/navbar.html:32 templates/partials/navbar.html:56
+#: templates/partials/navbar.html:83
 msgid "Sign out"
 msgstr "Sair"
 
-#: templates/partials/navbar.html:11
+#: templates/partials/navbar.html:43
 msgid "Open menu"
 msgstr "Abrir menu"
 
-#: templates/partials/navbar.html:11
+#: templates/partials/navbar.html:49
 msgid "Navigation without JavaScript"
 msgstr "Navegação sem JavaScript"
 
-#: templates/partials/navbar.html:13
+#: templates/partials/navbar.html:68
 msgid "Navigation"
 msgstr "Navegação"
 
-#: templates/partials/navbar.html:13
+#: templates/partials/navbar.html:73
 msgid "Close"
 msgstr "Fechar"
 
-#: templates/partials/navbar.html:17
+#: templates/partials/navbar.html:96
 msgid "Sync now"
 msgstr "Sincronizar agora"
 
-#: templates/partials/navbar.html:17
+#: templates/partials/navbar.html:100
 msgid "Data updated"
 msgstr "Dados atualizados"
 
-#: templates/partials/pagination.html:2
+#: templates/partials/navbar_public.html:22
+msgid "Sign up"
+msgstr "Cadastre-se"
+
+#: templates/partials/pagination.html:4
 msgid "Pagination"
 msgstr "Paginação"
 
-#: templates/partials/pagination.html:2
-msgid "Previous"
-msgstr "Anterior"
-
-#: templates/partials/pagination.html:2
+#: templates/partials/pagination.html:11
 msgid "Page"
 msgstr "Página"
 
-#: templates/partials/pagination.html:2
+#: templates/partials/pagination.html:14
 msgid "Next"
 msgstr "Próxima"
 
-#: templates/partials/theme_toggle.html:2
+#: templates/partials/theme_toggle.html:4
 msgid "Toggle color theme"
 msgstr "Alternar tema de cores"
 
-#: templates/planning/delete.html:1 templates/planning/generation.html:1
+#: templates/planning/delete.html:5 templates/planning/generation.html:28
 msgid "Delete generation"
 msgstr "Excluir geração"
 
-#: templates/planning/delete.html:1
+#: templates/planning/delete.html:7
 msgid ""
 "Remove this saved prompt and its comments? Training records and your "
 "reusable profile are preserved."
@@ -1756,35 +1841,35 @@ msgstr ""
 "Remover este prompt salvo e seus comentários? Os registros de treino e seu "
 "perfil reutilizável serão preservados."
 
-#: templates/planning/delete.html:1
+#: templates/planning/delete.html:11
 msgid "Confirm deletion"
 msgstr "Confirmar exclusão"
 
-#: templates/planning/delete.html:1
+#: templates/planning/delete.html:13
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: templates/planning/generate.html:2
+#: templates/planning/generate.html:6
 msgid "Plan your next step"
 msgstr "Planeje seu próximo passo"
 
-#: templates/planning/generate.html:2
+#: templates/planning/generate.html:8
 msgid "Bring your training context to the LLM of your choice."
 msgstr "Leve o contexto do seu treino para a LLM que preferir."
 
-#: templates/planning/generate.html:4 templates/planning/profile.html:1
+#: templates/planning/generate.html:17 templates/planning/profile.html:5
 msgid "Your context"
 msgstr "Seu contexto"
 
-#: templates/planning/generate.html:4
+#: templates/planning/generate.html:20
 msgid "Optional training profile"
 msgstr "Perfil de treino opcional"
 
-#: templates/planning/generate.html:4
+#: templates/planning/generate.html:22
 msgid "Edit reusable profile"
 msgstr "Editar perfil reutilizável"
 
-#: templates/planning/generate.html:5
+#: templates/planning/generate.html:41
 msgid ""
 "Current routines and the allowed exercise catalogue are included "
 "automatically. Nothing is sent to an LLM by Fitness."
@@ -1792,23 +1877,23 @@ msgstr ""
 "As rotinas atuais e o catálogo de exercícios permitidos são incluídos "
 "automaticamente. O Fitness não envia nada a uma LLM."
 
-#: templates/planning/generate.html:5
+#: templates/planning/generate.html:46
 msgid "Preview complete prompt"
 msgstr "Conferir prompt completo"
 
-#: templates/planning/generate.html:6
+#: templates/planning/generate.html:50
 msgid "Review the complete context"
 msgstr "Confira o contexto completo"
 
-#: templates/planning/generate.html:6
+#: templates/planning/generate.html:53
 msgid "routines"
 msgstr "rotinas"
 
-#: templates/planning/generate.html:6
+#: templates/planning/generate.html:55
 msgid "estimated tokens"
 msgstr "tokens estimados"
 
-#: templates/planning/generate.html:6
+#: templates/planning/generate.html:59
 msgid ""
 "Estimates vary by model. The complete selection is preserved; no workouts "
 "were silently omitted."
@@ -1816,31 +1901,31 @@ msgstr ""
 "As estimativas variam por modelo. A seleção completa é preservada; nenhum "
 "treino foi omitido silenciosamente."
 
-#: templates/planning/generate.html:6
+#: templates/planning/generate.html:64
 msgid "Prompt preview"
 msgstr "Prévia do prompt"
 
-#: templates/planning/generate.html:6
+#: templates/planning/generate.html:66
 msgid "Save this generation"
 msgstr "Salvar esta geração"
 
-#: templates/planning/generate.html:7
+#: templates/planning/generate.html:71
 msgid "Suggested model"
 msgstr "Modelo sugerido"
 
-#: templates/planning/generate.html:7
+#: templates/planning/generate.html:74
 msgid "Recommendation reviewed"
 msgstr "Recomendação revisada"
 
-#: templates/planning/generate.html:7
+#: templates/planning/generate.html:74
 msgid "Use extended reasoning when available."
 msgstr "Use raciocínio ampliado quando disponível."
 
-#: templates/planning/generation.html:1
+#: templates/planning/generation.html:5
 msgid "Saved training prompt"
 msgstr "Prompt de treino salvo"
 
-#: templates/planning/generation.html:1
+#: templates/planning/generation.html:7
 msgid ""
 "This generation preserves the context used at creation. Later "
 "synchronization does not change it."
@@ -1848,40 +1933,41 @@ msgstr ""
 "Esta geração preserva o contexto usado na criação. Sincronizações "
 "posteriores não a alteram."
 
-#: templates/planning/generation.html:1
+#: templates/planning/generation.html:13
 msgid "Copied"
 msgstr "Copiado"
 
-#: templates/planning/generation.html:1
+#: templates/planning/generation.html:13
 msgid "Copy prompt"
 msgstr "Copiar prompt"
 
-#: templates/planning/generation.html:1
+#: templates/planning/generation.html:14
 msgid "Download Markdown"
 msgstr "Baixar Markdown"
 
-#: templates/planning/generation.html:1
+#: templates/planning/generation.html:17
 msgid "Reuse options with current data"
 msgstr "Reutilizar opções com dados atuais"
 
-#: templates/planning/generation.html:1 templates/planning/import.html:1
-#: templates/training/routine_detail.html:1 templates/training/routines.html:1
+#: templates/planning/generation.html:19 templates/planning/import.html:6
+#: templates/training/routine_detail.html:11
+#: templates/training/routines.html:8
 msgid "Import routine JSON"
 msgstr "Importar JSON de rotinas"
 
-#: templates/planning/generation.html:1
+#: templates/planning/generation.html:25
 msgid "Saved prompt"
 msgstr "Prompt salvo"
 
-#: templates/planning/generations.html:1
+#: templates/planning/generations.html:16
 msgid "Your saved generations will appear here."
 msgstr "Suas gerações salvas aparecerão aqui."
 
-#: templates/planning/import.html:1
+#: templates/planning/import.html:5
 msgid "Review before applying"
 msgstr "Confira antes de aplicar"
 
-#: templates/planning/import.html:1
+#: templates/planning/import.html:8
 msgid ""
 "Paste the JSON block returned by your LLM. Fitness validates all operations "
 "and shows a comparison before any Hevy changes."
@@ -1889,7 +1975,7 @@ msgstr ""
 "Cole o bloco JSON retornado pela sua LLM. O Fitness valida todas as "
 "operações e mostra uma comparação antes de alterar o Hevy."
 
-#: templates/planning/import.html:1
+#: templates/planning/import.html:17
 msgid ""
 "Keep the literal API key placeholder. Your saved connection is used only by "
 "the backend."
@@ -1897,11 +1983,11 @@ msgstr ""
 "Mantenha o placeholder literal da chave de API. Sua conexão salva é usada "
 "somente pelo backend."
 
-#: templates/planning/import.html:1
+#: templates/planning/import.html:19
 msgid "Validate and compare"
 msgstr "Validar e comparar"
 
-#: templates/planning/profile.html:1
+#: templates/planning/profile.html:8
 msgid ""
 "Optional information reused when generating prompts. You can adjust it for "
 "each analysis."
@@ -1909,27 +1995,27 @@ msgstr ""
 "Informações opcionais reutilizadas na geração de prompts. Você pode ajustá-"
 "las para cada análise."
 
-#: templates/planning/profile.html:1
+#: templates/planning/profile.html:13
 msgid "Save profile"
 msgstr "Salvar perfil"
 
-#: templates/planning/proposal.html:1
+#: templates/planning/proposal.html:4
 msgid "Routine changes"
 msgstr "Alterações de rotinas"
 
-#: templates/planning/proposal.html:1
+#: templates/planning/proposal.html:5
 msgid "Review proposal"
 msgstr "Revisar proposta"
 
-#: templates/planning/proposal.html:1
+#: templates/planning/proposal.html:7
 msgid "Status"
 msgstr "Estado"
 
-#: templates/planning/proposal.html:1
+#: templates/planning/proposal.html:7
 msgid "Preview expires"
 msgstr "Validade da prévia"
 
-#: templates/planning/proposal.html:2
+#: templates/planning/proposal.html:11
 msgid ""
 "Applied in Hevy; local refresh is pending. Do not repeat successful "
 "operations."
@@ -1937,7 +2023,7 @@ msgstr ""
 "Aplicado no Hevy; atualização local pendente. Não repita as operações "
 "concluídas."
 
-#: templates/planning/proposal.html:3
+#: templates/planning/proposal.html:16
 msgid ""
 "Hevy did not confirm the outcome. Check your routines in Hevy and "
 "synchronize before preparing another proposal. This operation will not be "
@@ -1947,7 +2033,7 @@ msgstr ""
 "antes de preparar outra proposta. Esta operação não será repetida "
 "automaticamente."
 
-#: templates/planning/proposal.html:3
+#: templates/planning/proposal.html:20
 msgid ""
 "The routine changed after the preview. Import the JSON again to review "
 "current data."
@@ -1955,7 +2041,7 @@ msgstr ""
 "A rotina mudou após a prévia. Importe o JSON novamente para conferir os "
 "dados atuais."
 
-#: templates/planning/proposal.html:4
+#: templates/planning/proposal.html:29
 msgid ""
 "The left side is the original API response, including read-only metadata. "
 "The right side is the complete proposed prescription; omitted exercises and "
@@ -1965,19 +2051,19 @@ msgstr ""
 "À direita está a prescrição completa proposta; exercícios e séries omitidos "
 "serão removidos dessa rotina."
 
-#: templates/planning/proposal.html:4
+#: templates/planning/proposal.html:33
 msgid "Current Hevy response"
 msgstr "Resposta atual do Hevy"
 
-#: templates/planning/proposal.html:4
+#: templates/planning/proposal.html:37
 msgid "Proposed prescription"
 msgstr "Prescrição proposta"
 
-#: templates/planning/proposal.html:4
+#: templates/planning/proposal.html:42
 msgid "Detailed changes"
 msgstr "Alterações detalhadas"
 
-#: templates/planning/proposal.html:5
+#: templates/planning/proposal.html:52
 msgid ""
 "Confirm these changes in your Hevy account. Operations run in order; a "
 "failure stops the remaining operations. There is no automatic remote "
@@ -1986,43 +2072,43 @@ msgstr ""
 "Confirme estas alterações na sua conta Hevy. As operações são executadas em "
 "ordem; uma falha interrompe as seguintes. Não há reversão remota automática."
 
-#: templates/planning/proposal.html:5
+#: templates/planning/proposal.html:54
 msgid "Confirm and apply in Hevy"
 msgstr "Confirmar e aplicar no Hevy"
 
-#: templates/planning/proposal.html:5
+#: templates/planning/proposal.html:58
 msgid "Results by operation"
 msgstr "Resultados por operação"
 
-#: templates/planning/proposal.html:5
+#: templates/planning/proposal.html:65
 msgid "View routines"
 msgstr "Ver rotinas"
 
-#: templates/planning/proposal.html:5
+#: templates/planning/proposal.html:66
 msgid "Prepare another proposal"
 msgstr "Preparar outra proposta"
 
-#: templates/training/exercise_detail.html:1
+#: templates/training/exercise_detail.html:10
 msgid "Explore progression"
 msgstr "Explorar evolução"
 
-#: templates/training/exercise_detail.html:1
+#: templates/training/exercise_detail.html:12
 msgid "Customize favorites"
 msgstr "Personalizar favoritos"
 
-#: templates/training/exercise_detail.html:1
+#: templates/training/exercise_detail.html:15
 msgid "View workout history"
 msgstr "Ver histórico de treino"
 
-#: templates/training/exercise_detail.html:1
+#: templates/training/exercise_detail.html:19
 msgid "Exercise information"
 msgstr "Informações do exercício"
 
-#: templates/training/exercise_detail.html:1
+#: templates/training/exercise_detail.html:41
 msgid "Load estimates do not apply to this modality."
 msgstr "Estimativas de carga não se aplicam a esta modalidade."
 
-#: templates/training/exercise_detail.html:1
+#: templates/training/exercise_detail.html:45
 msgid ""
 "Records use the last 28 days. Open progression to choose another period. 1RM"
 " is an estimate for eligible external-load sets only."
@@ -2031,11 +2117,11 @@ msgstr ""
 "período. O 1RM é uma estimativa apenas para séries elegíveis com carga "
 "externa."
 
-#: templates/training/exercises.html:1
+#: templates/training/exercises.html:5
 msgid "Hevy catalogue"
 msgstr "Catálogo Hevy"
 
-#: templates/training/exercises.html:1
+#: templates/training/exercises.html:8
 msgid ""
 "Search by original or translated name. Translations are local and never "
 "change Hevy."
@@ -2043,118 +2129,119 @@ msgstr ""
 "Busque pelo nome original ou traduzido. As traduções são locais e nunca "
 "alteram o Hevy."
 
-#: templates/training/exercises.html:1 templates/training/history.html:1
+#: templates/training/exercises.html:13 templates/training/history.html:11
 msgid "Search"
 msgstr "Buscar"
 
-#: templates/training/exercises.html:1
+#: templates/training/exercises.html:37
 msgid "Modality"
 msgstr "Modalidade"
 
-#: templates/training/exercises.html:1
+#: templates/training/exercises.html:53
 msgid "Favorites only"
 msgstr "Somente favoritos"
 
-#: templates/training/exercises.html:1 templates/training/routines.html:1
+#: templates/training/exercises.html:58 templates/training/routines.html:12
 msgid "Export JSON"
 msgstr "Exportar JSON"
 
-#: templates/training/exercises.html:1 templates/training/history.html:1
-#: templates/training/routines.html:1
+#: templates/training/exercises.html:61 templates/training/history.html:66
+#: templates/training/routines.html:15
 msgid "Export CSV"
 msgstr "Exportar CSV"
 
-#: templates/training/exercises.html:1
+#: templates/training/exercises.html:76
 msgid "No exercises match this selection."
 msgstr "Nenhum exercício corresponde a esta seleção."
 
-#: templates/training/history.html:1
+#: templates/training/history.html:5
 msgid "Completed sessions"
 msgstr "Sessões concluídas"
 
-#: templates/training/history.html:1
+#: templates/training/history.html:7
 msgid "All history by default. Your most recent sessions appear first."
 msgstr ""
 "Todo o histórico por padrão. As sessões mais recentes aparecem primeiro."
 
-#: templates/training/history.html:1
+#: templates/training/history.html:63
 msgid "All history"
 msgstr "Todo o histórico"
 
-#: templates/training/history.html:1
+#: templates/training/history.html:69
 msgid "Export complete JSON"
 msgstr "Exportar JSON completo"
 
-#: templates/training/history.html:1 templates/training/routines.html:1
+#: templates/training/history.html:82 templates/training/routines.html:25
+#: templates/training/routines.html:38
 msgid "exercises"
 msgstr "exercícios"
 
-#: templates/training/history.html:1
+#: templates/training/history.html:85
 msgid "No workouts match this selection."
 msgstr "Nenhum treino corresponde a esta seleção."
 
-#: templates/training/routine_detail.html:1
+#: templates/training/routine_detail.html:5
 msgid "Current prescription"
 msgstr "Prescrição atual"
 
-#: templates/training/routine_detail.html:1
+#: templates/training/routine_detail.html:8
 msgid "A routine is a plan. A workout is a completed session."
 msgstr "Uma rotina é um planejamento. Um treino é uma sessão concluída."
 
-#: templates/training/routine_detail.html:1
+#: templates/training/routine_detail.html:20
 msgid "Rest"
 msgstr "Descanso"
 
-#: templates/training/routine_detail.html:1
-#: templates/training/workout_detail.html:1
+#: templates/training/routine_detail.html:20
+#: templates/training/workout_detail.html:14
 msgid "Superset"
 msgstr "Superset"
 
-#: templates/training/routine_detail.html:1
+#: templates/training/routine_detail.html:27
 msgid "Original Hevy JSON"
 msgstr "JSON original do Hevy"
 
-#: templates/training/routines.html:1
+#: templates/training/routines.html:5
 msgid "Your training plans"
 msgstr "Seus planos de treino"
 
-#: templates/training/routines.html:1
+#: templates/training/routines.html:28
 msgid "No routines in this folder."
 msgstr "Nenhuma rotina nesta pasta."
 
-#: templates/training/routines.html:1
+#: templates/training/routines.html:43
 msgid "No synchronized routines yet."
 msgstr "Nenhuma rotina sincronizada."
 
-#: templates/training/sets.html:2
+#: templates/training/sets.html:5
 msgid "Exercise sets"
 msgstr "Séries do exercício"
 
-#: templates/training/sets.html:2
+#: templates/training/sets.html:9
 msgid "Set"
 msgstr "Série"
 
-#: templates/training/sets.html:2
+#: templates/training/sets.html:10
 msgid "Load"
 msgstr "Carga"
 
-#: templates/training/sets.html:2
+#: templates/training/sets.html:11
 msgid "Repetitions"
 msgstr "Repetições"
 
-#: templates/training/sets.html:2
+#: templates/training/sets.html:12
 msgid "Distance"
 msgstr "Distância"
 
-#: templates/training/sets.html:2
+#: templates/training/sets.html:16
 msgid "Rep range"
 msgstr "Faixa de repetições"
 
-#: templates/training/workout_detail.html:1
+#: templates/training/workout_detail.html:5
 msgid "Completed session"
 msgstr "Sessão concluída"
 
-#: templates/training/workout_detail.html:1
+#: templates/training/workout_detail.html:19
 msgid "No exercises recorded."
 msgstr "Nenhum exercício registrado."
 
@@ -2305,22 +2392,3 @@ msgstr "Corpo inteiro"
 #: training/models.py:291
 msgid "Dropset"
 msgstr "Drop set"
-
-#~ msgid "Previewed"
-#~ msgstr "Prévia validada"
-
-#~ msgid "Submitting"
-#~ msgstr "Enviando"
-
-#~ msgid "Expired"
-#~ msgstr "Expirada"
-
-msgid "Choose each panel only once in the order."
-msgstr "Escolha cada painel apenas uma vez na ordenação."
-
-#, python-format
-msgid "Panel position %(number)s"
-msgstr "Posição do painel: %(number)s"
-
-msgid "Automatic order"
-msgstr "Ordem automática"

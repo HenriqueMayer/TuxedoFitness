@@ -1,1 +1,19 @@
-{% extends 'base.html' %}{% load i18n %}{% block content %}<section class="panel mx-auto max-w-md"><h1 class="page-title mb-6">{% translate 'Create account' %}</h1>{% if signup_disabled %}<p>{% translate 'Registration is disabled for this installation.' %}</p>{% else %}<form method="post" hx-boost="false">{% csrf_token %}{% include 'partials/fields.html' %}<button class="btn w-full">{% translate 'Create account' %}</button></form>{% endif %}<div class="mt-6"><a class="muted underline" href="{% url 'accounts:login' %}">{% translate "Sign in" %}</a></div></section>{% endblock %}
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <section class="panel mx-auto max-w-md">
+        <h1 class="page-title mb-6">{% translate "Create account" %}</h1>
+        {% if signup_disabled %}
+            <p>{% translate "Registration is disabled for this installation." %}</p>
+        {% else %}
+            <form method="post" hx-boost="false">
+                {% csrf_token %}
+                {% include "partials/fields.html" %}
+                <button class="btn w-full">{% translate "Create account" %}</button>
+            </form>
+        {% endif %}
+        <div class="mt-6">
+            <a class="muted underline" href="{% url 'accounts:login' %}">{% translate "Sign in" %}</a>
+        </div>
+    </section>
+{% endblock %}

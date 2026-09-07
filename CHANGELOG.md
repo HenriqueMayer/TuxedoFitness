@@ -6,7 +6,18 @@ follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-No additional changes.
+- Correct stale frontend assets in already-open tabs with content versions and
+  safe HTMX navigation; align the public header with Finance.
+- Replace duplicate chart SVGs with one responsive presentation, native-size
+  labels, explicit transparent interactions and keyboard observation navigation.
+
+- Align bilingual READMEs and the factual landing page with the Tuxedo family.
+- Remove archived research, legacy documentation and unused artwork from the product tree.
+- Highlight every primary navigation section and its detail pages.
+- Complete the 451-exercise standard PT-BR catalogue and add an idempotent local refresh command.
+- Add line and horizontal charts, 60-observation windows, dated records, per-metric comparisons and weekly target/muscle views.
+- Update development to Node 24 and modernize Pages/CI actions.
+
 
 ## [0.2.0] - 2026-09-05
 

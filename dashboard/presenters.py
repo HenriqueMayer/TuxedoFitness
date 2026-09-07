@@ -1,241 +1,280 @@
-"""Presentation-only helpers for the server-rendered dashboard."""
+"""Localized SVG geometry and bounded observation windows; no metric formulas."""
 
-from __future__ import annotations
-
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
-from typing import Any, TypedDict
+from math import ceil, floor, log10
 
 from django.utils import formats
 from django.utils.translation import gettext as _
 
-from analytics.services import LocalPeriod
+from accounts.presentation import date_label
 
-MAX_PLOT_POINTS = 2_000
-SVG_WIDTH = 720
-SVG_HEIGHT = 280
-SVG_MARGIN = {'top': 20, 'right': 16, 'bottom': 54, 'left': 48}
+MAX_PLOT_POINTS = 60
 
 
-class BarViewModel(TypedDict):
-    x: float
-    y: float
-    width: float
-    height: float
-    label: str
-    value: Any
-    show_label: bool
-
-
-class AxisTickViewModel(TypedDict):
-    y: float
-    label: str
-
-
-class ChartViewModel(TypedDict):
-    dom_id: str
-    title: str
-    aria_label: str
-    summary: str
-    has_data: bool
-    view_box: str
-    bars: list[BarViewModel]
-    axis_ticks: list[AxisTickViewModel]
-    table_headers: list[str]
-    table_rows: list[dict[str, str]]
-    unit: str
-
-
-def _period_bucket(period: LocalPeriod) -> str:
-    return 'week' if period.days <= 365 else 'month'
-
-
-def _bucket_start(value: date, bucket: str) -> date:
-    if bucket == 'month':
-        return value.replace(day=1)
-    return value - timedelta(days=value.weekday())
-
-
-def _localized_date(value: date, *, include_year: bool, preference=None) -> str:
-    pattern = '%m/%d' if getattr(preference, 'date_format', 'DMY') == 'MDY' else '%d/%m'
-    return value.strftime(pattern + ('/%Y' if include_year else ''))
-
-
-def _localized_number(value: Any) -> str:
+def _localized_number(value):
     if value is None:
-        return ''
-    return formats.number_format(Decimal(str(value)).quantize(Decimal('0.01')).normalize(), force_grouping=False)
+        return "—"
+    return formats.number_format(
+        Decimal(str(value)).quantize(Decimal("0.01")).normalize(), force_grouping=False
+    )
 
 
-def _axis_ticks(maximum: float, chart_height: float) -> list[AxisTickViewModel]:
-    top = SVG_MARGIN['top']
-    baseline = top + chart_height
+def _axis_scale(maximum):
+    """Use readable steps (1, 2, 2.5, 5, 10), keeping zero as the baseline."""
+    rough = max(maximum, 1) / 4
+    magnitude = 10 ** floor(log10(rough))
+    steps = (1, 2, 5, 10) if maximum == int(maximum) else (1, 2, 2.5, 5, 10)
+    step = next(n for n in steps if n >= rough / magnitude) * magnitude
     if maximum == int(maximum):
-        values = list(range(int(maximum) + 1)) if maximum <= 4 else list(dict.fromkeys(round(maximum * index / 4) for index in range(5)))
-    else:
-        values = [maximum * index / 4 for index in range(5)]
-    return [
+        step = max(1, ceil(step))
+    count = ceil(maximum / step)
+    limit = count * step
+    ticks = [
         {
-            'y': round(baseline - chart_height * value / maximum, 2),
-            'label': _localized_number(value),
+            "y": round(16 + 208 * (1 - index / count), 2),
+            "label": _localized_number(Decimal(str(step)) * index),
         }
-        for value in values
+        for index in range(count + 1)
     ]
+    return limit, ticks
 
 
 class DashboardPresenter:
-    """Turn analytics read models into localized SVG and table payloads."""
-
-    def __init__(self, preference=None):
+    def __init__(self, preference=None, query=None):
         self.preference = preference
+        self.query = query or {}
 
-    def _activity_series(
-        self, period: LocalPeriod, buckets: dict[date, int | None] | None
-    ) -> tuple[str, list[tuple[date, int | None]]]:
-        values = {
-            _bucket_start(key, _period_bucket(period)): value
-            for key, value in (buckets or {}).items()
-        }
-        bucket = _period_bucket(period)
-        first = _bucket_start(period.start, bucket)
-        last = _bucket_start(period.end, bucket)
-        points: list[tuple[date, int | None]] = []
-        cursor = first
-        while cursor <= last:
+    def label(self, key):
+        if isinstance(key, tuple):
+            key = key[
+                0
+            ]  # Session identity remains internal, including duplicate times.
+        if isinstance(key, (date, datetime)):
+            return date_label(
+                key, self.preference, include_time=isinstance(key, datetime)
+            )
+        if isinstance(key, (int, float, Decimal)):
+            return _localized_number(key)
+        return str(key)
+
+    def _activity_series(self, period, buckets):
+        bucket = "week" if period.days <= 365 else "month"
+
+        def start(day):
+            return (
+                day.replace(day=1)
+                if bucket == "month"
+                else day - timedelta(days=day.weekday())
+            )
+
+        values = {}
+        for day, count in (buckets or {}).items():
+            key = start(day)
+            values[key] = values.get(key, 0) + (count or 0)
+        points, cursor = [], start(period.start)
+        while cursor <= start(period.end):
             points.append((cursor, values.get(cursor, 0)))
-            if bucket == 'month':
-                cursor = (cursor.replace(day=28) + timedelta(days=4)).replace(day=1)
-            else:
-                cursor += timedelta(days=7)
+            cursor = (
+                (cursor.replace(day=28) + timedelta(days=4)).replace(day=1)
+                if bucket == "month"
+                else cursor + timedelta(days=7)
+            )
+        return bucket, points
 
-        if len(points) <= MAX_PLOT_POINTS:
-            return bucket, points
-
-        monthly: dict[date, int] = {}
-        for key, value in points:
-            month = key.replace(day=1)
-            monthly[month] = monthly.get(month, 0) + (value or 0)
-        return 'month', sorted(monthly.items())[:MAX_PLOT_POINTS]
-
-    def _activity_chart(
-        self, period: LocalPeriod, buckets: dict[date, int | None]
-    ) -> ChartViewModel:
+    def _activity_chart(self, period, buckets):
         bucket, points = self._activity_series(period, buckets)
-        include_year = period.days > 365
-        labels = [_localized_date(key, include_year=include_year, preference=self.preference) for key, _ in points]
-        values = [int(value or 0) for _, value in points]
-        total = sum(values)
-        has_data = any(value > 0 for value in values)
-        bucket_label = _('week') if bucket == 'week' else _('month')
-        title = _('Workouts per week') if bucket == 'week' else _('Workouts per month')
-        summary = _('%(count)s workouts grouped by %(bucket)s.') % {'count': total, 'bucket': bucket_label} if has_data else _('No workouts recorded in the selected period.')
-
-        chart_width = SVG_WIDTH - SVG_MARGIN['left'] - SVG_MARGIN['right']
-        chart_height = SVG_HEIGHT - SVG_MARGIN['top'] - SVG_MARGIN['bottom']
-        slot_width = chart_width / max(len(values), 1)
-        bar_width = max(1.0, slot_width * 0.64)
-        maximum = max(max(values, default=0), 1)
-        label_step = max(1, (len(labels) + 7) // 8)
-        bars: list[BarViewModel] = []
-        for index, (label, value) in enumerate(zip(labels, values, strict=True)):
-            height = chart_height * value / maximum
-            bars.append({
-                'x': round(SVG_MARGIN['left'] + index * slot_width + (slot_width - bar_width) / 2, 2),
-                'y': round(SVG_MARGIN['top'] + chart_height - height, 2),
-                'width': round(bar_width, 2),
-                'height': round(height, 2),
-                'label': label,
-                'value': value,
-                'show_label': index % label_step == 0 or index == len(labels) - 1,
-            })
-
-        return {
-            'dom_id': 'activity-chart',
-            'title': title,
-            'aria_label': f'{title}: {summary}',
-            'summary': summary,
-            'has_data': has_data,
-            'view_box': f'0 0 {SVG_WIDTH} {SVG_HEIGHT}',
-            'bars': bars,
-            'axis_ticks': _axis_ticks(maximum, chart_height),
-            'table_headers': [_('Period'), _('Workouts')],
-            'table_rows': [
-                {'label': label, 'value': _localized_number(value)}
-                for label, value in zip(labels, values, strict=True)
+        chart = self._categorical_chart(
+            dom_id="activity-chart",
+            title=_("Workouts per week")
+            if bucket == "week"
+            else _("Workouts per month"),
+            values=dict(points),
+            partial_keys=[
+                day
+                for day, _ in points
+                if day < period.start
+                or (
+                    (day.replace(day=28) + timedelta(days=4)).replace(day=1)
+                    - timedelta(days=1)
+                    if bucket == "month"
+                    else day + timedelta(days=6)
+                )
+                > period.end
             ],
-            'unit': _('workouts'),
-        }
+            first_header=_("Period"),
+            unit=_("workouts"),
+            temporal=True,
+            target=getattr(self.preference, "weekly_session_target", None)
+            if bucket == "week"
+            else None,
+        )
+        chart["summary"] = _(
+            "Sessions by local calendar period. Boundary periods may be incomplete."
+        )
+        chart["has_data"] = any(count for _, count in points)
+        return chart
 
     def _categorical_chart(
-        self, *, dom_id, title, values, first_header, unit,
-        summarize_points=False,
-    ) -> ChartViewModel:
-        labels = list(values)
-        numeric = [float(values[label]) for label in labels]
-        has_data = bool(labels)
-        summary = _('%(count)s observations in %(unit)s.') % {'count': len(labels), 'unit': unit} if has_data else _('No eligible observations in this period.')
-        chart_width = SVG_WIDTH - SVG_MARGIN['left'] - SVG_MARGIN['right']
-        chart_height = SVG_HEIGHT - SVG_MARGIN['top'] - SVG_MARGIN['bottom']
-        slot_width = chart_width / max(len(numeric), 1)
-        bar_width = max(1.0, slot_width * 0.64)
-        maximum = max(max(numeric, default=0), 1)
-        bars: list[BarViewModel] = []
-        for index, (label, value) in enumerate(zip(labels, numeric, strict=True)):
-            height = chart_height * value / maximum
-            bars.append({
-                'x': round(SVG_MARGIN['left'] + index * slot_width + (slot_width - bar_width) / 2, 2),
-                'y': round(SVG_MARGIN['top'] + chart_height - height, 2),
-                'width': round(bar_width, 2),
-                'height': round(height, 2),
-                'label': label,
-                'value': _localized_number(values[label]),
-                'show_label': index % max(1, (len(labels) + 5) // 6) == 0,
-            })
+        self,
+        *,
+        dom_id,
+        title,
+        values,
+        first_header,
+        unit,
+        kind="bar",
+        temporal=False,
+        target=None,
+        partial_keys=(),
+    ):
+        items = list(values.items())
+        total = len(items)
+        pages = max(1, (total + MAX_PLOT_POINTS - 1) // MAX_PLOT_POINTS)
+        try:
+            page = max(1, min(pages, int(self.query.get("chart_page_" + dom_id, 1))))
+        except (ValueError, TypeError):
+            page = 1
+        end = max(0, total - (page - 1) * MAX_PLOT_POINTS)
+        start = max(0, end - MAX_PLOT_POINTS)
+        items = items[start:end]
+        numeric = [float(value) for _, value in items if value is not None]
+        maximum, ticks = _axis_scale(max([1, *numeric, float(target or 0)]))
+        horizontal = kind == "horizontal"
+        singular_unit = {
+            _("sets"): _("set"),
+            _("workouts"): _("workout"),
+            _("repetitions"): _("repetition"),
+        }.get(str(unit), unit)
+        # SVG only stretches marks along x. All text is HTML at its native size.
+        slot = 1000 / max(len(items), 1)
+        bar_width = min(72, slot * 0.55)
+        bars, segments, segment = [], [], []
+        for index, (key, value) in enumerate(items):
+            ratio = 0 if value is None else float(value) / maximum
+            x = slot * (index + 0.5)
+            y = 224 - ratio * 208
+            label = self.label(key)
+            if key in partial_keys:
+                label += " · " + _("Partial")
+            date_key = key[0] if isinstance(key, tuple) else key
+            short = (
+                date_label(date_key, self.preference)
+                if isinstance(date_key, (date, datetime))
+                else self.label(key)
+            )
+            if key in partial_keys:
+                short += " *"
+            bars.append(
+                {
+                    "x": round(x - bar_width / 2, 2),
+                    "cx": round(x, 2),
+                    "y": round(y, 2),
+                    "width": round(bar_width, 2),
+                    "height": round(224 - y, 2),
+                    "rank_width": round(ratio * 1000, 2),
+                    "label": label,
+                    "tick_label": short,
+                    "value": _localized_number(value),
+                    "unit": singular_unit if value == 1 else unit,
+                    "missing": value is None,
+                    "hit_x": round(x - slot / 2, 2),
+                    "hit_width": round(slot, 2),
+                }
+            )
+            if value is None:
+                if segment:
+                    segments.append(" ".join(segment))
+                    segment = []
+            else:
+                segment.append(f"{x:.2f},{y:.2f}")
+        if segment:
+            segments.append(" ".join(segment))
+        label_indexes = sorted({0, (len(bars) - 1) // 2, len(bars) - 1}) if bars else []
+        if not temporal and kind != "line" and len(bars) <= 12:
+            label_indexes = list(range(len(bars)))
+        latest = next((bar for bar in reversed(bars) if not bar["missing"]), None)
         return {
-            'dom_id': dom_id,
-            'title': title,
-            'aria_label': f'{title}: {summary}',
-            'summary': summary,
-            'has_data': has_data,
-            'view_box': f'0 0 {SVG_WIDTH} {SVG_HEIGHT}',
-            'bars': bars,
-            'axis_ticks': _axis_ticks(maximum, chart_height),
-            'table_headers': [first_header, unit],
-            'table_rows': [
-                {'label': label, 'value': _localized_number(values[label])}
-                for label in labels
+            "dom_id": dom_id,
+            "title": title,
+            "kind": kind,
+            "unit": unit,
+            "summary": _("Recorded observations in the selected period."),
+            "has_data": bool(numeric),
+            "view_box": "0 0 1000 240",
+            "bars": bars,
+            "segments": segments,
+            "axis_ticks": [] if horizontal else ticks,
+            "x_labels": [
+                b["tick_label"] if i in label_indexes else ""
+                for i, b in enumerate(bars)
             ],
-            'unit': unit,
+            "dense_labels": len(bars) > 6,
+            "table_headers": [first_header, unit],
+            "table_rows": [{"label": b["label"], "value": b["value"]} for b in bars],
+            "initial_readout": f"{latest['label']}: {latest['value']} {latest['unit']}"
+            if latest and not horizontal
+            else _("Select a point to inspect its value."),
+            "target": {
+                "y": round(224 - float(target) / maximum * 208, 2),
+                "value": target,
+            }
+            if target
+            else None,
+            "page": page,
+            "pages": pages,
+            "total": total,
+            "start": start + 1 if total else 0,
+            "end": end,
+            "older": page + 1 if page < pages else None,
+            "newer": page - 1 if page > 1 else None,
+            "temporal": temporal or kind == "line",
+            "has_partial": any(key in partial_keys for key, _ in items),
         }
 
-    def present_overview(
-        self, overview: dict[str, Any], *, activity_buckets=None, prepared=None
-    ) -> dict[str, Any]:
-        """Return presentation metadata without recalculating analytics."""
-
-        period = overview['period']
+    def present_overview(self, overview, *, activity_buckets=None, prepared=None):
         if activity_buckets is None:
-            metric = overview.get('metrics', {}).get('activity_buckets')
-            activity_buckets = getattr(metric, 'value', metric) or {}
+            metric = overview.get("metrics", {}).get("activity_buckets")
+            activity_buckets = getattr(metric, "value", metric) or {}
         prepared = prepared or {}
-        charts = [self._activity_chart(period, activity_buckets)]
-        charts.append(self._categorical_chart(
-            dom_id='set-types-chart', title=_('Sets by type'),
-            values=prepared.get('set_type_counts', {}), first_header=_('Type'), unit=_('sets'),
-        ))
-        charts.append(self._categorical_chart(
-            dom_id='rpe-chart', title=_('RPE distribution'),
-            values=prepared.get('rpe_distribution', {}), first_header='RPE', unit=_('sets'),
-        ))
-        if prepared.get('exercise_evolution_title'):
-            charts.append(self._categorical_chart(
-                dom_id='exercise-evolution-chart',
-                title=_("Progression") + " · " + prepared["exercise_evolution_title"],
-                values=prepared.get('exercise_evolution', {}),
-                first_header=_('Date'), unit=prepared.get('exercise_evolution_unit', _('value')),
-                summarize_points=True,
-            ))
-        return {
-            'charts': charts,
-            'max_plot_points': MAX_PLOT_POINTS,
-        }
+        charts = [self._activity_chart(overview["period"], activity_buckets)]
+        for identifier, title, values, unit, kind in [
+            (
+                "set-types-chart",
+                _("Sets by type"),
+                prepared.get("set_type_counts", {}),
+                _("sets"),
+                "horizontal",
+            ),
+            (
+                "rpe-chart",
+                _("RPE distribution"),
+                prepared.get("rpe_distribution", {}),
+                _("sets"),
+                "bar",
+            ),
+        ]:
+            charts.append(
+                self._categorical_chart(
+                    dom_id=identifier,
+                    title=title,
+                    values=values,
+                    first_header=_("Observation"),
+                    unit=unit,
+                    kind=kind,
+                )
+            )
+        if prepared.get("exercise_evolution_title"):
+            charts.append(
+                self._categorical_chart(
+                    dom_id="exercise-evolution-chart",
+                    title=_("Progression")
+                    + " · "
+                    + prepared["exercise_evolution_title"],
+                    values=prepared.get("exercise_evolution", {}),
+                    first_header=_("Date"),
+                    unit=prepared.get("exercise_evolution_unit", _("value")),
+                    kind="line",
+                )
+            )
+        return {"charts": charts, "max_plot_points": MAX_PLOT_POINTS}

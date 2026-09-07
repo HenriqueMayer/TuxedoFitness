@@ -11,13 +11,15 @@ from accounts.templatetags.fitness_units import METERS_PER_MILE, POUNDS_PER_KILO
 def convert_series(values, unit, preference=None):
     if unit in {"kg", "kg·rep"} and getattr(preference, "mass_unit", "kg") == "lb":
         return {
-            key: Decimal(value) * POUNDS_PER_KILOGRAM for key, value in values.items()
+            key: None if value is None else Decimal(value) * POUNDS_PER_KILOGRAM
+            for key, value in values.items()
         }, unit.replace("kg", "lb")
     if unit == "m":
         miles = getattr(preference, "distance_unit", "km") == "mi"
         divisor = METERS_PER_MILE if miles else Decimal(1000)
         return {
-            key: Decimal(value) / divisor for key, value in values.items()
+            key: None if value is None else Decimal(value) / divisor
+            for key, value in values.items()
         }, "mi" if miles else "km"
     return values, unit
 

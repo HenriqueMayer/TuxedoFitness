@@ -9,7 +9,9 @@ class LandingPageTests(TestCase):
         response = self.client.get(reverse('pages:landing'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Understand your training.')
+        self.assertContains(response, 'Tuxedo Fitness')
+        self.assertNotContains(response, 'Understand your training.')
+        self.assertNotContains(response, 'Your data, at your pace.')
         self.assertContains(response, reverse('accounts:signup'))
         self.assertContains(response, reverse('accounts:login'))
 

@@ -1,1 +1,22 @@
-{% extends 'base.html' %}{% load i18n %}{% block content %}<div class="mx-auto max-w-4xl"><p class="eyebrow">{% translate "Review before applying" %}</p><h1 class="page-title mt-3">{% translate "Import routine JSON" %}</h1><p class="muted my-5">{% translate "Paste the JSON block returned by your LLM. Fitness validates all operations and shows a comparison before any Hevy changes." %}</p><form method="post" enctype="multipart/form-data" hx-boost="false" class="panel">{% csrf_token %}{% include 'partials/fields.html' %}<p class="muted mb-5">{% translate "Keep the literal API key placeholder. Your saved connection is used only by the backend." %}</p><button class="btn">{% translate "Validate and compare" %}</button></form></div>{% endblock %}
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <div class="mx-auto max-w-4xl">
+        <p class="eyebrow">{% translate "Review before applying" %}</p>
+        <h1 class="page-title mt-3">{% translate "Import routine JSON" %}</h1>
+        <p class="muted my-5">
+            {% translate "Paste the JSON block returned by your LLM. Fitness validates all operations and shows a comparison before any Hevy changes." %}
+        </p>
+        <form method="post"
+              enctype="multipart/form-data"
+              hx-boost="false"
+              class="panel">
+            {% csrf_token %}
+            {% include "partials/fields.html" %}
+            <p class="muted mb-5">
+                {% translate "Keep the literal API key placeholder. Your saved connection is used only by the backend." %}
+            </p>
+            <button class="btn">{% translate "Validate and compare" %}</button>
+        </form>
+    </div>
+{% endblock %}

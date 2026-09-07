@@ -1,1 +1,81 @@
-{% extends 'base.html' %}{% load i18n fitness_ui %}{% block content %}<div data-read-surface><p class="eyebrow">{% translate "Hevy catalogue" %}</p><h1 class="page-title mt-3">{% translate "Exercises" %}</h1><p class="muted mt-3">{% translate "Search by original or translated name. Translations are local and never change Hevy." %}</p><form method="get" class="panel my-6"><div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><div><label for="catalog-query">{% translate "Search" %}</label><input id="catalog-query" class="input" name="q" value="{{ query }}"></div><div><label for="catalog-muscle">{% translate "Primary muscle" %}</label><select id="catalog-muscle" class="input" name="muscle"><option value="">{% translate "All" %}</option>{% for key,label in muscles %}<option value="{{ key }}" {% if request.GET.muscle == key %}selected{% endif %}>{{ label|translated }}</option>{% endfor %}</select></div><div><label for="catalog-equipment">{% translate "Equipment" %}</label><select id="catalog-equipment" class="input" name="equipment"><option value="">{% translate "All" %}</option>{% for key,label in equipment %}<option value="{{ key }}" {% if request.GET.equipment == key %}selected{% endif %}>{{ label|translated }}</option>{% endfor %}</select></div><div><label for="catalog-type">{% translate "Modality" %}</label><select id="catalog-type" class="input" name="type"><option value="">{% translate "All" %}</option>{% for key,label in types %}<option value="{{ key }}" {% if request.GET.type == key %}selected{% endif %}>{{ label|translated }}</option>{% endfor %}</select></div></div><div class="mt-5 flex flex-wrap items-center gap-4"><label><input type="checkbox" name="favorites" value="1" {% if request.GET.favorites %}checked{% endif %}> {% translate "Favorites only" %}</label><button class="btn">{% translate "Apply filters" %}</button><a class="btn-secondary" hx-boost="false" href="{% url 'integrations:local-export' 'exercises' 'json' %}">{% translate "Export JSON" %}</a><a class="btn-secondary" hx-boost="false" href="{% url 'integrations:local-export' 'exercises' 'csv' %}">{% translate "Export CSV" %}</a></div></form><section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{% for exercise in page_obj %}<a class="panel block" href="{% url 'training:exercise-detail' exercise.pk %}"><p class="eyebrow">{{ exercise.get_exercise_type_display|translated }}</p><h2 class="mt-2 text-lg font-semibold">{{ exercise|exercise_name }}</h2><p class="muted mt-2">{{ exercise.title }}</p><p class="muted mt-3">{{ exercise.get_primary_muscle_display|translated }} · {{ exercise.get_equipment_category_display|translated }}</p></a>{% empty %}<p class="panel muted">{% translate "No exercises match this selection." %}</p>{% endfor %}</section>{% include 'partials/pagination.html' %}</div>{% endblock %}
+{% extends "base.html" %}
+{% load i18n fitness_ui %}
+{% block content %}
+    <div data-read-surface>
+        <p class="eyebrow">{% translate "Hevy catalogue" %}</p>
+        <h1 class="page-title mt-3">{% translate "Exercises" %}</h1>
+        <p class="muted mt-3">
+            {% translate "Search by original or translated name. Translations are local and never change Hevy." %}
+        </p>
+        <form method="get" class="panel my-6">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div>
+                    <label for="catalog-query">{% translate "Search" %}</label>
+                    <input id="catalog-query" class="input" name="q" value="{{ query }}">
+                </div>
+                <div>
+                    <label for="catalog-muscle">{% translate "Primary muscle" %}</label>
+                    <select id="catalog-muscle" class="input" name="muscle">
+                        <option value="">{% translate "All" %}</option>
+                        {% for key,label in muscles %}
+                            <option value="{{ key }}"
+                                    {% if request.GET.muscle == key %}selected{% endif %}>{{ label|translated }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="catalog-equipment">{% translate "Equipment" %}</label>
+                    <select id="catalog-equipment" class="input" name="equipment">
+                        <option value="">{% translate "All" %}</option>
+                        {% for key,label in equipment %}
+                            <option value="{{ key }}"
+                                    {% if request.GET.equipment == key %}selected{% endif %}>{{ label|translated }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="catalog-type">{% translate "Modality" %}</label>
+                    <select id="catalog-type" class="input" name="type">
+                        <option value="">{% translate "All" %}</option>
+                        {% for key,label in types %}
+                            <option value="{{ key }}"
+                                    {% if request.GET.type == key %}selected{% endif %}>{{ label|translated }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="mt-5 flex flex-wrap items-center gap-4">
+                <label>
+                    <input type="checkbox"
+                           name="favorites"
+                           value="1"
+                           {% if request.GET.favorites %}checked{% endif %}>
+                    {% translate "Favorites only" %}
+                </label>
+                <button class="btn">{% translate "Apply filters" %}</button>
+                <a class="btn-secondary"
+                   hx-boost="false"
+                   href="{% url 'integrations:local-export' 'exercises' 'json' %}">{% translate "Export JSON" %}</a>
+                <a class="btn-secondary"
+                   hx-boost="false"
+                   href="{% url 'integrations:local-export' 'exercises' 'csv' %}">{% translate "Export CSV" %}</a>
+            </div>
+        </form>
+        <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% for exercise in page_obj %}
+                <a class="panel block"
+                   href="{% url 'training:exercise-detail' exercise.pk %}">
+                    <p class="eyebrow">{{ exercise.get_exercise_type_display|translated }}</p>
+                    <h2 class="mt-2 text-lg font-semibold">{{ exercise|exercise_name }}</h2>
+                    {% if LANGUAGE_CODE == 'pt-br' and exercise.title_pt_br and not exercise.is_custom %}
+                        <p class="muted mt-2">{{ exercise.title }}</p>
+                    {% endif %}
+                    <p class="muted mt-3">{{ exercise.get_primary_muscle_display|translated }} · {{ exercise.get_equipment_category_display|translated }}</p>
+                </a>
+            {% empty %}
+                <p class="panel muted">{% translate "No exercises match this selection." %}</p>
+            {% endfor %}
+        </section>
+        {% include "partials/pagination.html" %}
+    </div>
+{% endblock %}

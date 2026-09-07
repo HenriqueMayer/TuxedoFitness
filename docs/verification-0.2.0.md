@@ -31,3 +31,7 @@ PT-BR exercise names use the reviewed local vocabulary bound to provider IDs dur
 ## Reproduction
 
 Use the commands in [CONTRIBUTING](../CONTRIBUTING.md), [testing](testing.md), [operations](operations.md) and [preview maintenance](../.github/preview/README.md). Runtime installation uses committed CSS, fonts, HTMX and compiled translations and does not require Node. Node and gettext are development/build tools.
+
+Subsequent repository/interface work is recorded in the
+[2026-09-07 revision audit](repository-audit.md); the dated evidence above remains
+the original 0.2.0 verification snapshot.

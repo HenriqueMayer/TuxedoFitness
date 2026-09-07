@@ -1,0 +1,73 @@
+{% load l10n %}
+{% if chart.kind == "horizontal" %}
+    <ul class="chart-ranks" data-chart-plot>
+        {% for bar in chart.bars %}
+            <li>
+                <button type="button"
+                        class="chart-category"
+                        data-chart-value="{{ bar.label }}: {{ bar.value }} {{ bar.unit }}">
+                    <span class="chart-category-heading"><span>{{ bar.label }}</span><strong>{{ bar.value }} <span class="chart-unit">{{ bar.unit }}</span></strong></span>
+                    <svg width="100%"
+                         height="10"
+                         viewBox="0 0 1000 10"
+                         preserveAspectRatio="none"
+                         aria-hidden="true">
+                        <rect width="1000" height="10" rx="5" fill="#b88a591a" class="chart-track" />
+                        <rect width="{{ bar.rank_width|unlocalize }}" height="10" rx="5" fill="#9c6938" class="chart-mark" />
+                    </svg>
+                </button>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <div class="chart-coordinate-system" data-chart-plot>
+        <div class="chart-axis-y"
+             aria-hidden="true">{% for tick in chart.axis_ticks %}<span>{{ tick.label }}</span>{% endfor %}</div>
+        <div class="chart-canvas">
+            <svg class="chart-plot"
+                 width="100%"
+                 height="240"
+                 viewBox="{{ chart.view_box }}"
+                 preserveAspectRatio="none"
+                 role="img"
+                 aria-labelledby="{{ chart.dom_id }}-title {{ chart.dom_id }}-desc">
+                <title id="{{ chart.dom_id }}-title">{{ chart.title }}</title>
+                <desc id="{{ chart.dom_id }}-desc">{{ chart.definition|default:chart.summary }} · {{ chart.unit }}</desc>
+                <g data-chart-layer="marks">
+                {% for tick in chart.axis_ticks %}
+                    <line x1="0" x2="1000" y1="{{ tick.y|unlocalize }}" y2="{{ tick.y|unlocalize }}" stroke="#1a2e2620" vector-effect="non-scaling-stroke" class="chart-grid" />
+                {% endfor %}
+                {% if chart.target %}
+                    <line x1="0" x2="1000" y1="{{ chart.target.y|unlocalize }}" y2="{{ chart.target.y|unlocalize }}" stroke="#52605a" stroke-dasharray="7 5" vector-effect="non-scaling-stroke" class="chart-target" />
+                {% endif %}
+                {% if chart.kind == "line" %}
+                    {% for segment in chart.segments %}
+                        <polyline points="{{ segment }}" fill="none" stroke="#9c6938" stroke-width="2.5" vector-effect="non-scaling-stroke" class="chart-line" />
+                    {% endfor %}
+                {% endif %}
+                {% for bar in chart.bars %}
+                    {% if not bar.missing %}
+                        {% if chart.kind == "line" %}
+                            <path d="M{{ bar.cx|unlocalize }} {{ bar.y|unlocalize }} h0.01" stroke="#9c6938" stroke-width="6" stroke-linecap="round" vector-effect="non-scaling-stroke" class="chart-dot" />
+                        {% else %}
+                            <rect x="{{ bar.x|unlocalize }}" y="{{ bar.y|unlocalize }}" width="{{ bar.width|unlocalize }}" height="{{ bar.height|unlocalize }}" rx="5" fill="#9c6938" class="chart-mark" />
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                </g>
+                <g data-chart-layer="interactions">
+                {% for bar in chart.bars %}
+                    <g tabindex="0" role="img" class="chart-point" aria-label="{{ bar.label }}: {{ bar.value }} {{ bar.unit }}" data-chart-value="{{ bar.label }}: {{ bar.value }} {{ bar.unit }}">
+                    <title>{{ bar.label }}: {{ bar.value }} {{ bar.unit }}</title>
+                    <rect x="{{ bar.hit_x|unlocalize }}" y="0" width="{{ bar.hit_width|unlocalize }}" height="240" fill="transparent" stroke="none" class="chart-hit" />
+                    <line x1="{{ bar.cx|unlocalize }}" x2="{{ bar.cx|unlocalize }}" y1="8" y2="232" stroke="none" vector-effect="non-scaling-stroke" class="chart-crosshair" />
+                    </g>
+                {% endfor %}
+                </g>
+            </svg>
+            <div class="chart-axis-x"
+                 {% if chart.dense_labels %}data-dense{% endif %}
+                 aria-hidden="true">{% for label in chart.x_labels %}<span>{% if label %}<span class="chart-tick-label">{{ label }}</span>{% endif %}</span>{% endfor %}</div>
+        </div>
+    </div>
+{% endif %}

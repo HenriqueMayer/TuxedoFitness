@@ -28,11 +28,5 @@ node_modules/
 playwright-report/
 test-results/
 
-# Reproducible research downloads. These files are retrieved from their
-# original publishers with scripts/research/fetch_priority_datasets.py.
-research/datasets/raw/**/*.xpt
-research/datasets/raw/**/*.zip
-research/datasets/raw/**/*.csv
-research/datasets/raw/**/*.xlsx
-research/datasets/raw/**/*.mat
-research/datasets/raw/**/*.part
+# Archived research files are no longer part of the product.
+/research/

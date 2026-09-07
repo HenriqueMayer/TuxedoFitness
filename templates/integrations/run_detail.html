@@ -1,1 +1,25 @@
-{% extends 'base.html' %}{% load i18n fitness_ui %}{% block content %}<h1 class="page-title">{% translate "Synchronization result" %}</h1><section class="panel mt-6"><h2 class="text-xl font-semibold">{{ run.get_state_display|translated }}</h2><p class="muted mt-3">{{ run.get_mode_display|translated }} · {% fitness_datetime run.created_at %}</p>{% if run.error_code %}<p role="alert" class="mt-4">{{ run.error_code }}: {{ run.sanitized_error }}</p>{% endif %}<pre class="mt-5 text-sm">{{ run.item_counts|pretty_json }}</pre><a class="btn-secondary mt-6" href="{% url 'integrations:sync' %}">{% translate "Back to connection" %}</a>{% if run.mode == 'incremental' %}{% if run.state == 'failed' or run.state == 'partial' %}<form method="post" action="{% url 'integrations:retry' run.pk %}" hx-boost="false" class="mt-4">{% csrf_token %}<button class="btn">{% translate "Retry synchronization" %}</button></form>{% endif %}{% endif %}</section>{% endblock %}
+{% extends "base.html" %}
+{% load i18n fitness_ui %}
+{% block content %}
+    <h1 class="page-title">{% translate "Synchronization result" %}</h1>
+    <section class="panel mt-6">
+        <h2 class="text-xl font-semibold">{{ run.get_state_display|translated }}</h2>
+        <p class="muted mt-3">{{ run.get_mode_display|translated }} · {% fitness_datetime run.created_at %}</p>
+        {% if run.error_code %}
+            <p role="alert" class="mt-4">{{ run.error_code }}: {{ run.sanitized_error }}</p>
+        {% endif %}
+        <pre class="mt-5 text-sm">{{ run.item_counts|pretty_json }}</pre>
+        <a class="btn-secondary mt-6" href="{% url 'integrations:sync' %}">{% translate "Back to connection" %}</a>
+        {% if run.mode == "incremental" %}
+            {% if run.state == "failed" or run.state == "partial" %}
+                <form method="post"
+                      action="{% url 'integrations:retry' run.pk %}"
+                      hx-boost="false"
+                      class="mt-4">
+                    {% csrf_token %}
+                    <button class="btn">{% translate "Retry synchronization" %}</button>
+                </form>
+            {% endif %}
+        {% endif %}
+    </section>
+{% endblock %}

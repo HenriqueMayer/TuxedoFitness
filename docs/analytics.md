@@ -61,3 +61,35 @@ Frequency charts include empty weeks and label boundary weeks as potentially inc
 Progression requires a selected exercise. Load, repetitions at exact load, eligible volume and Epley estimates remain exercise-specific. Assistance remains assistance; larger values are not labelled positive. Distance, time and custom metrics retain distinct units. Presentation converts kg/lb and m/km/mi only after calculation; CSV/JSON retains canonical API units.
 
 Every chart has a definition, unit, observation provenance and table. Empty/missing data stays explicit. Default overview/report period is 28 local dates; history defaults to all active records. Comparisons use the immediately preceding equally long period.
+
+
+## Report presentation and comparisons (September 2026 revision)
+
+`analytics/reporting.py` owns filtered report data and canonical-unit comparisons;
+`dashboard/reports.py` handles forms and presentation conversion. The additive
+report contract is `fitness-2.1`; existing base metrics retain `fitness-2.0`.
+
+Time series show chronological observations in windows of 60, newest window
+first. Equal spacing denotes observations, not elapsed time. Navigation is
+server-backed and retains filters; records, summaries and comparisons always
+use the entire selected period. The table shows the same window as the chart.
+Missing measurements break a line; missing activity weeks are zero counts.
+
+Frequency includes ordered weekdays and an explicit weekly target line when a
+target exists. Distribution includes weekly working-set counts for all primary
+muscles or the selected muscle; each set contributes exactly once. These are
+recorded distributions, not a diagnosis of muscular balance or target volume.
+
+Comparisons show sessions/frequency plus relevant topic indicators: maximum
+exercise load/repetitions/eligible estimated 1RM, total compatible exercise or
+session volume, mean RPE, working sets by primary muscle, and duration total/mean.
+The same filters apply to both adjacent equal-length periods. Missing measures
+remain null and a zero/null previous value has no percentage change. Display
+conversions happen after calculation. Highest recorded values use the selected
+period, carry the originating session date, and keep the earliest session on ties.
+
+Repetition trends at an exact load require at least two sessions at that load.
+A single observation remains in the original history and contributes to the
+main exercise series/records, but does not create an additional trend chart.
+Display scales start at zero and use rounded tick steps; count axes use integer
+steps. Total duration is presented in hours/minutes/seconds in the overview.

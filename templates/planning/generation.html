@@ -1,1 +1,30 @@
-{% extends 'base.html' %}{% load i18n fitness_ui %}{% block content %}<p class="eyebrow">{% fitness_datetime generation.created_at %} · {{ generation.template_version }}</p><h1 class="page-title mt-3">{% translate "Saved training prompt" %}</h1><p class="muted my-5">{% translate "This generation preserves the context used at creation. Later synchronization does not change it." %}</p><div class="mb-6 flex flex-wrap gap-3"><button class="btn" type="button" data-copy="saved-prompt" data-copied="{% translate 'Copied' %}">{% translate "Copy prompt" %}</button><a class="btn-secondary" href="?download=1" hx-boost="false">{% translate "Download Markdown" %}</a><a class="btn-secondary" href="{% url 'planning:generate' %}?duplicate={{ generation.pk }}">{% translate "Reuse options with current data" %}</a><a class="btn-secondary" href="{% url 'planning:import' %}">{% translate "Import routine JSON" %}</a></div><textarea id="saved-prompt" readonly rows="25" class="input font-mono text-sm" aria-label="{% translate 'Saved prompt' %}">{{ generation.text }}</textarea><form method="post" hx-boost="false" class="mt-6">{% csrf_token %}<button class="btn-secondary text-negative dark:text-negative-light">{% translate "Delete generation" %}</button></form>{% endblock %}
+{% extends "base.html" %}
+{% load i18n fitness_ui %}
+{% block content %}
+    <p class="eyebrow">{% fitness_datetime generation.created_at %} · {{ generation.template_version }}</p>
+    <h1 class="page-title mt-3">{% translate "Saved training prompt" %}</h1>
+    <p class="muted my-5">
+        {% translate "This generation preserves the context used at creation. Later synchronization does not change it." %}
+    </p>
+    <div class="mb-6 flex flex-wrap gap-3">
+        <button class="btn"
+                type="button"
+                data-copy="saved-prompt"
+                data-copied="{% translate 'Copied' %}">{% translate "Copy prompt" %}</button>
+        <a class="btn-secondary" href="?download=1" hx-boost="false">{% translate "Download Markdown" %}</a>
+        <a class="btn-secondary"
+           href="{% url 'planning:generate' %}?duplicate={{ generation.pk }}">
+            {% translate "Reuse options with current data" %}
+        </a>
+        <a class="btn-secondary" href="{% url 'planning:import' %}">{% translate "Import routine JSON" %}</a>
+    </div>
+    <textarea id="saved-prompt"
+              readonly
+              rows="25"
+              class="input font-mono text-sm"
+              aria-label="{% translate 'Saved prompt' %}">{{ generation.text }}</textarea>
+    <form method="post" hx-boost="false" class="mt-6">
+        {% csrf_token %}
+        <button class="btn-secondary text-negative dark:text-negative-light">{% translate "Delete generation" %}</button>
+    </form>
+{% endblock %}

@@ -7,9 +7,10 @@ from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 from django.utils import timezone
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from training.models import ExerciseTemplate, Workout
+from training.translations import display_name
 
 SET_LABELS = {
     "warmup": _("Warmup"),
@@ -44,7 +45,7 @@ class HistoryPreparationService:
                 for item in exercise.sets.all():
                     set_types[SET_LABELS.get(item.set_type, item.set_type)] += 1
                     if item.set_type != "warmup" and item.rpe is not None:
-                        rpe[str(item.rpe.normalize())] += 1
+                        rpe[item.rpe.normalize()] += 1
                     if self.exercise is not None and template.pk == self.exercise.pk:
                         value = self._evolution_value(template, item)
                         if item.set_type != "warmup" and value is not None:
@@ -66,7 +67,9 @@ class HistoryPreparationService:
                 sorted(rpe.items(), key=lambda pair: Decimal(pair[0]))
             ),
             "exercise_evolution": values,
-            "exercise_evolution_title": self.exercise.title if self.exercise else "",
+            "exercise_evolution_title": display_name(self.exercise)
+            if self.exercise
+            else "",
             "exercise_evolution_unit": unit,
         }
 

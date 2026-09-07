@@ -1,1 +1,89 @@
-{% extends 'base.html' %}{% load static i18n %}{% block content %}<section class="grid items-center gap-12 py-10 lg:grid-cols-2 lg:py-20"><div><p class="eyebrow">{% translate "The Tuxedo family" %}</p><h1 class="mt-5 text-5xl font-semibold leading-tight tracking-tight sm:text-6xl">{% translate "Understand your training. Plan your next step." %}</h1><p class="muted mt-6 max-w-xl text-base">{% translate "Your Hevy history, detailed local analysis and complete prompts for the LLM you choose. Your data stays in your installation until you choose to share it." %}</p><div class="mt-8 flex flex-wrap gap-3">{% if request.user.is_authenticated %}<a class="btn" href="{% url 'dashboard:index' %}">{% translate "Open dashboard" %}</a>{% else %}<a class="btn" href="{% url 'accounts:login' %}">{% translate "Sign in" %}</a>{% if signup_available %}<a class="btn-secondary" href="{% url 'accounts:signup' %}">{% translate "Create account" %}</a>{% endif %}{% endif %}<a class="btn-secondary" href="https://henriquemayer.github.io/TuxedoFitness/">{% translate "Interface preview" %}</a></div></div><div class="rounded-[2.5rem] border border-caramel/30 bg-white/50 p-5 dark:bg-night-surface"><div class="flex min-h-80 items-center justify-center rounded-3xl border border-caramel/20 bg-cream p-10 dark:bg-night"><img src="{% static 'brand/tuxedo-fitness-emblem-128.png' %}" alt="{% translate 'Tuxedo Fitness emblem' %}" class="h-48 w-48 rounded-3xl"></div></div></section><section class="divide-y divide-forest/15 dark:divide-cream/15"><article class="grid gap-3 py-7 sm:grid-cols-2"><h2 class="text-xl font-semibold">{% translate "A clear training history" %}</h2><p class="muted">{% translate "Review sessions, exercises and sets with original measurements and notes." %}</p></article><article class="grid gap-3 py-7 sm:grid-cols-2"><h2 class="text-xl font-semibold">{% translate "Analysis that answers your questions" %}</h2><p class="muted">{% translate "Explore frequency, effort, load, volume and distribution through configurable panels." %}</p></article><article class="grid gap-3 py-7 sm:grid-cols-2"><h2 class="text-xl font-semibold">{% translate "Routines with context" %}</h2><p class="muted">{% translate "View current prescriptions and review JSON changes before applying them in Hevy." %}</p></article><article class="grid gap-3 py-7 sm:grid-cols-2"><h2 class="text-xl font-semibold">{% translate "Your exercise catalogue" %}</h2><p class="muted">{% translate "Find exercises by muscle, equipment or modality, with reviewed Portuguese display names where available." %}</p></article><article class="grid gap-3 py-7 sm:grid-cols-2"><h2 class="text-xl font-semibold">{% translate "A complete analysis prompt" %}</h2><p class="muted">{% translate "Combine personal context, original routines and selected history in a saved, reusable generation." %}</p></article><article class="grid gap-3 py-7 sm:grid-cols-2"><h2 class="text-xl font-semibold">{% translate "Local ownership" %}</h2><p class="muted">{% translate "Native accounts, encrypted Hevy credentials, exports and an owner-controlled SQLite database." %}</p></article></section>{% endblock %}
+{% extends "base.html" %}
+{% load i18n static %}
+{% block title %}Tuxedo Fitness{% endblock %}
+{% block content %}
+    <section aria-labelledby="landing-title"
+             class="grid items-center gap-10 py-6 sm:gap-12 sm:py-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-20 lg:py-12">
+        <div class="max-w-xl">
+            <h1 id="landing-title"
+                class="text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl">Tuxedo Fitness</h1>
+            <p class="mt-6 text-base leading-relaxed text-forest/70 dark:text-night-muted sm:text-lg">
+                {% translate "A local application to explore your Hevy training history, analyze exercises and generate prompts for training planning." %}
+            </p>
+            <div class="mt-8 flex flex-wrap items-center gap-3">
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'dashboard:index' %}"
+                       class="inline-flex items-center rounded-full bg-caramel px-6 py-3 text-sm font-medium text-forest-deep transition-colors hover:bg-caramel-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-caramel-ink">
+                        {% translate "Open dashboard" %}
+                    </a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}"
+                       class="inline-flex items-center rounded-full bg-caramel px-6 py-3 text-sm font-medium text-forest-deep transition-colors hover:bg-caramel-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-caramel-ink">
+                        {% translate "Log in" %}
+                    </a>
+                    {% if signup_available %}
+                        <a href="{% url 'accounts:signup' %}"
+                           class="inline-flex items-center rounded-full border border-forest px-6 py-3 text-sm font-medium transition-colors hover:bg-forest hover:text-cream focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-caramel-ink dark:border-cream/50 dark:hover:bg-cream dark:hover:text-night">
+                            {% translate "Create account" %}
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="group relative isolate mx-auto w-full max-w-2xl lg:justify-self-end">
+            <div aria-hidden="true"
+                 class="pointer-events-none absolute inset-4 -z-10 rounded-full bg-caramel/15 blur-3xl"></div>
+            <div class="rounded-3xl border border-forest/10 bg-white/40 p-2 backdrop-blur-sm dark:border-cream/10 dark:bg-cream/5 sm:p-3">
+                <div class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl border border-forest/10 bg-cream/60 p-2 dark:border-cream/10 dark:bg-night/60 sm:aspect-[16/10] sm:p-3">
+                    <img src="{% static 'brand/tuxedo-fitness-emblem.png' %}"
+                         width="1254"
+                         height="1254"
+                         fetchpriority="high"
+                         class="h-auto w-full max-h-full rounded-xl object-contain transition-transform duration-500 motion-safe:group-hover:scale-[1.02] motion-reduce:transition-none"
+                         alt="{% translate 'Tuxedo Fitness emblem' %}">
+                </div>
+            </div>
+        </div>
+    </section>
+    <section aria-labelledby="features-title" class="pb-8 pt-10 sm:pb-12 sm:pt-14">
+        <h2 id="features-title" class="text-2xl font-semibold tracking-tight">{% translate "Features" %}</h2>
+        <dl class="mt-6 border-t border-forest/15 dark:border-cream/15">
+            <div class="grid gap-2 border-b border-forest/15 py-5 dark:border-cream/15 sm:grid-cols-[15rem_1fr] sm:gap-8">
+                <dt class="font-medium">{% translate "Training history" %}</dt>
+                <dd class="text-sm leading-relaxed text-forest/70 dark:text-night-muted">
+                    {% translate "Review completed workouts, exercises and sets, and export your original records." %}
+                </dd>
+            </div>
+            <div class="grid gap-2 border-b border-forest/15 py-5 dark:border-cream/15 sm:grid-cols-[15rem_1fr] sm:gap-8">
+                <dt class="font-medium">{% translate "Routines" %}</dt>
+                <dd class="text-sm leading-relaxed text-forest/70 dark:text-night-muted">
+                    {% translate "Browse your routines and review proposed changes before applying them in Hevy." %}
+                </dd>
+            </div>
+            <div class="grid gap-2 border-b border-forest/15 py-5 dark:border-cream/15 sm:grid-cols-[15rem_1fr] sm:gap-8">
+                <dt class="font-medium">{% translate "Exercises" %}</dt>
+                <dd class="text-sm leading-relaxed text-forest/70 dark:text-night-muted">
+                    {% translate "Search your exercise catalogue by name, muscle, equipment and modality." %}
+                </dd>
+            </div>
+            <div class="grid gap-2 border-b border-forest/15 py-5 dark:border-cream/15 sm:grid-cols-[15rem_1fr] sm:gap-8">
+                <dt class="font-medium">{% translate "Training analysis" %}</dt>
+                <dd class="text-sm leading-relaxed text-forest/70 dark:text-night-muted">
+                    {% translate "Compare periods, track exercise records and review weekly training distribution." %}
+                </dd>
+            </div>
+            <div class="grid gap-2 border-b border-forest/15 py-5 dark:border-cream/15 sm:grid-cols-[15rem_1fr] sm:gap-8">
+                <dt class="font-medium">{% translate "Prompt generation" %}</dt>
+                <dd class="text-sm leading-relaxed text-forest/70 dark:text-night-muted">
+                    {% translate "Combine your profile, routines and history into a reusable prompt for your chosen LLM." %}
+                </dd>
+            </div>
+            <div class="grid gap-2 border-b border-forest/15 py-5 dark:border-cream/15 sm:grid-cols-[15rem_1fr] sm:gap-8">
+                <dt class="font-medium">{% translate "Local data" %}</dt>
+                <dd class="text-sm leading-relaxed text-forest/70 dark:text-night-muted">
+                    {% translate "Keep your records in your installation, with encrypted Hevy credentials and CSV/JSON exports." %}
+                </dd>
+            </div>
+        </dl>
+    </section>
+{% endblock %}

@@ -1,1 +1,20 @@
-{% extends 'base.html' %}{% load i18n fitness_ui %}{% block content %}<div class="mb-8 flex flex-wrap items-center justify-between gap-4"><h1 class="page-title">{% translate "Saved prompts" %}</h1><a class="btn" href="{% url 'planning:generate' %}">{% translate "Generate prompt" %}</a></div><div class="grid gap-4">{% for generation in page_obj %}<a class="panel block" href="{% url 'planning:generation' generation.pk %}"><h2 class="font-semibold">{% fitness_datetime generation.created_at %}</h2><p class="muted mt-2">{{ generation.manifest.workout_count }} {% translate "workouts" %} · {{ generation.manifest.start }} → {{ generation.manifest.end }} · {{ generation.template_version }}</p></a>{% empty %}<p class="panel muted">{% translate "Your saved generations will appear here." %}</p>{% endfor %}</div>{% include 'partials/pagination.html' %}{% endblock %}
+{% extends "base.html" %}
+{% load i18n fitness_ui %}
+{% block content %}
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <h1 class="page-title">{% translate "Saved prompts" %}</h1>
+        <a class="btn" href="{% url 'planning:generate' %}">{% translate "Generate prompt" %}</a>
+    </div>
+    <div class="grid gap-4">
+        {% for generation in page_obj %}
+            <a class="panel block"
+               href="{% url 'planning:generation' generation.pk %}">
+                <h2 class="font-semibold">{% fitness_datetime generation.created_at %}</h2>
+                <p class="muted mt-2">{{ generation.manifest.workout_count }} {% translate "workouts" %} · {{ generation.manifest.start }} → {{ generation.manifest.end }} · {{ generation.template_version }}</p>
+            </a>
+        {% empty %}
+            <p class="panel muted">{% translate "Your saved generations will appear here." %}</p>
+        {% endfor %}
+    </div>
+    {% include "partials/pagination.html" %}
+{% endblock %}

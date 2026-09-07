@@ -18,6 +18,7 @@ def main():
     from integrations.dtos import payload_hash
     from integrations.models import ProviderSnapshot
     from planning.models import TrainingProfile
+    from training.models import RPE_CHOICES
     from training.tests.factories import (
         create_account,
         create_routine,
@@ -48,12 +49,25 @@ def main():
         equipment="Barbell, dumbbells, cable",
     )
     templates = []
-    for index, title in enumerate(list(REVIEWED_TITLES)[:60]):
+    examples = {
+        "Bench Press (Barbell)": "chest",
+        "Squat (Barbell)": "quadriceps",
+        "Bent Over Row (Barbell)": "upper_back",
+        "Shoulder Press (Dumbbell)": "shoulders",
+        "Bicep Curl (Barbell)": "biceps",
+        "Lying Leg Curl (Machine)": "hamstrings",
+    }
+    titles = [
+        *examples,
+        *(title for title in REVIEWED_TITLES if title not in examples),
+    ][:60]
+    for index, title in enumerate(titles):
         templates.append(
             create_template(
                 account,
                 external_id=f"synthetic-exercise-{index}",
                 title=title,
+                primary_muscle=examples.get(title, "chest"),
                 title_pt_br=REVIEWED_TITLES[title],
                 translation_version=CATALOG_VERSION,
             )
@@ -102,7 +116,7 @@ def main():
     now = timezone.now()
     for index in range(56):
         start = now - timedelta(days=index * 2, hours=1)
-        template = templates[index % 3]
+        template = templates[index % 6]
         raw = {
             "id": f"synthetic-workout-{index}",
             "title": f"Strength session {56 - index:02d}",
@@ -120,10 +134,16 @@ def main():
                     "sets": [
                         {
                             "index": 0,
-                            "type": "normal",
+                            "type": "warmup"
+                            if index % 5 == 1
+                            else "failure"
+                            if index % 5 == 3
+                            else "normal",
                             "weight_kg": 40 + index % 8 * 2.5,
-                            "reps": 8,
-                            "rpe": None if index % 4 == 0 else 8,
+                            "reps": 6 + index % 3 * 2,
+                            "rpe": None
+                            if index % 4 == 0 or index % 5 == 1
+                            else float(RPE_CHOICES[index % len(RPE_CHOICES)][0]),
                         }
                     ],
                 }
@@ -141,6 +161,8 @@ def main():
             source_payload_hash=payload_hash(raw),
         )
         training_set = workout.exercises.get().sets.get()
+        training_set.set_type = raw["exercises"][0]["sets"][0]["type"]
+        training_set.reps = raw["exercises"][0]["sets"][0]["reps"]
         training_set.weight_kg = raw["exercises"][0]["sets"][0]["weight_kg"]
         training_set.rpe = raw["exercises"][0]["sets"][0]["rpe"]
         training_set.save()

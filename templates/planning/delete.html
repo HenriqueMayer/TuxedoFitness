@@ -1,1 +1,16 @@
-{% extends 'base.html' %}{% load i18n %}{% block content %}<section class="panel mx-auto max-w-xl"><h1 class="page-title">{% translate "Delete generation" %}</h1><p class="muted my-5">{% translate "Remove this saved prompt and its comments? Training records and your reusable profile are preserved." %}</p><form method="post" hx-boost="false">{% csrf_token %}<button class="btn" name="confirm" value="delete">{% translate "Confirm deletion" %}</button><a class="btn-secondary" href="{% url 'planning:generation' generation.pk %}">{% translate "Cancel" %}</a></form></section>{% endblock %}
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <section class="panel mx-auto max-w-xl">
+        <h1 class="page-title">{% translate "Delete generation" %}</h1>
+        <p class="muted my-5">
+            {% translate "Remove this saved prompt and its comments? Training records and your reusable profile are preserved." %}
+        </p>
+        <form method="post" hx-boost="false">
+            {% csrf_token %}
+            <button class="btn" name="confirm" value="delete">{% translate "Confirm deletion" %}</button>
+            <a class="btn-secondary"
+               href="{% url 'planning:generation' generation.pk %}">{% translate "Cancel" %}</a>
+        </form>
+    </section>
+{% endblock %}

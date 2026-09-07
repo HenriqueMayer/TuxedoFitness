@@ -1,1 +1,67 @@
-{% load i18n fitness_units fitness_ui %}<div id="overview-results">{% if overview %}<p class="muted mb-5">{% fitness_date period.start %} – {% fitness_date period.end %}</p>{% if comparison %}<p class="panel mb-5">{% translate "Comparison" %}: {{ comparison.current }} / {{ comparison.previous }} · {% translate "Change" %}: {{ comparison.absolute|default_if_none:'—' }}</p>{% endif %}<section class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{% for key,metric in overview.metrics.items %}{% if key == 'workouts' or key == 'training_days' or key == 'working_sets' or key == 'average_frequency' %}<a class="panel block" href="{% url 'dashboard:reports' %}"><h2 class="muted">{{ metric.name|translated }}</h2><p class="my-3 text-3xl font-semibold">{{ metric.value|metric_value }}</p><p class="muted">{{ metric.unit|translated }}</p></a>{% endif %}{% endfor %}</section><div class="grid gap-6 lg:grid-cols-2">{% for chart in presentation.charts %}{% include 'dashboard/chart.html' %}{% endfor %}</div><section class="mt-6 grid gap-5 sm:grid-cols-3"><article class="panel"><h2 class="muted">{% translate "Total duration" %}</h2><p class="mt-3 text-2xl">{{ overview.metrics.duration.value.total_seconds }} s</p></article><article class="panel"><h2 class="muted">{% translate "External-load volume" %}</h2><p class="mt-3 text-2xl">{% if overview.metrics.external_load_volume.is_valid %}{{ overview.metrics.external_load_volume.value|display_volume:presentation_mass_unit }}{% else %}—{% endif %}</p></article><article class="panel"><h2 class="muted">{% translate "Mean RPE" %}</h2><p class="mt-3 text-2xl">{{ overview.metrics.rpe.mean.value|default_if_none:'—' }}</p><p class="muted mt-2">{% translate "Missing RPE" %}: {{ overview.metrics.rpe.missing.value.count }}</p></article></section><section class="panel mt-6"><h2 class="text-xl font-semibold">{% translate "Recent workouts" %}</h2><ul class="mt-3 divide-y divide-forest/10 dark:divide-cream/10">{% for workout in recent_workouts %}<li><a class="flex justify-between gap-4 py-4" href="{% url 'training:workout-detail' workout.pk %}"><span>{{ workout.title }}</span><span class="muted">{% fitness_date workout.start_time %} →</span></a></li>{% empty %}<li class="muted py-4">{% translate "No workouts recorded." %}</li>{% endfor %}</ul></section>{% else %}<section class="panel"><h2 class="text-xl font-semibold">{% translate "Connect your Hevy account" %}</h2><p class="muted my-4">{% translate "Your history, routines and exercise catalogue will be available after synchronization." %}</p><a class="btn" href="{% url 'integrations:sync' %}">{% translate "Connect Hevy" %}</a></section>{% endif %}</div>
+{% load i18n fitness_units fitness_ui %}
+<div id="overview-results">
+    {% if overview %}
+        <p class="muted mb-5">{% fitness_date period.start %} – {% fitness_date period.end %}</p>
+        {% if comparison %}
+            <p class="panel mb-5">
+            {% translate "Comparison" %}: {{ comparison.current }} / {{ comparison.previous }} · {% translate "Change" %}: {{ comparison.absolute|default_if_none:'—' }}</p>
+        {% endif %}
+        <section class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {% for key,metric in overview.metrics.items %}
+                {% if key == "workouts" or key == "training_days" or key == "working_sets" or key == "average_frequency" %}
+                    <a class="panel block" href="{% url 'dashboard:reports' %}">
+                        <h2 class="muted">{{ metric.name|translated }}</h2>
+                        <p class="my-3 text-3xl font-semibold">{{ metric.value|metric_value }}</p>
+                        <p class="muted">{{ metric.unit|translated }}</p>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </section>
+        <div class="grid gap-6 lg:grid-cols-2">
+            {% for chart in presentation.charts %}
+                {% include "dashboard/chart.html" %}
+            {% endfor %}
+        </div>
+        <section class="mt-6 grid gap-5 sm:grid-cols-3">
+            <article class="panel">
+                <h2 class="muted">{% translate "Total duration" %}</h2>
+                <p class="mt-3 text-2xl">{{ overview.metrics.duration.value.total_seconds|display_duration }}</p>
+            </article>
+            <article class="panel">
+                <h2 class="muted">{% translate "External-load volume" %}</h2>
+                <p class="mt-3 text-2xl">
+                    {% if overview.metrics.external_load_volume.is_valid %}{{ overview.metrics.external_load_volume.value|display_volume:presentation_mass_unit }}{% else %}—{% endif %}
+                </p>
+            </article>
+            <article class="panel">
+                <h2 class="muted">{% translate "Mean RPE" %}</h2>
+                <p class="mt-3 text-2xl">{{ overview.metrics.rpe.mean.value|metric_value }}</p>
+                <p class="muted mt-2">{% translate "Missing RPE" %}: {{ overview.metrics.rpe.missing.value.count }}</p>
+            </article>
+        </section>
+        <section class="panel mt-6">
+            <h2 class="text-xl font-semibold">{% translate "Recent workouts" %}</h2>
+            <ul class="mt-3 divide-y divide-forest/10 dark:divide-cream/10">
+                {% for workout in recent_workouts %}
+                    <li>
+                        <a class="flex justify-between gap-4 py-4"
+                           href="{% url 'training:workout-detail' workout.pk %}">
+                            <span>{{ workout.title }}</span>
+                            <span class="muted">{% fitness_date workout.start_time %} →</span>
+                        </a>
+                    </li>
+                {% empty %}
+                    <li class="muted py-4">{% translate "No workouts recorded." %}</li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% else %}
+        <section class="panel">
+            <h2 class="text-xl font-semibold">{% translate "Connect your Hevy account" %}</h2>
+            <p class="muted my-4">
+                {% translate "Your history, routines and exercise catalogue will be available after synchronization." %}
+            </p>
+            <a class="btn" href="{% url 'integrations:sync' %}">{% translate "Connect Hevy" %}</a>
+        </section>
+    {% endif %}
+</div>

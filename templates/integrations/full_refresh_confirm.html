@@ -1,1 +1,15 @@
-{% extends 'base.html' %}{% load i18n %}{% block content %}<section class="panel mx-auto max-w-xl"><h1 class="page-title">{% translate "Complete synchronization" %}</h1><p class="muted my-5">{% translate "Fetch all catalogue pages, routines and workouts. Locally missing records are marked inactive only after a complete successful collection." %}</p><form method="post" hx-boost="false">{% csrf_token %}{% include 'partials/fields.html' %}<button class="btn">{% translate "Start synchronization" %}</button></form></section>{% endblock %}
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <section class="panel mx-auto max-w-xl">
+        <h1 class="page-title">{% translate "Complete synchronization" %}</h1>
+        <p class="muted my-5">
+            {% translate "Fetch all catalogue pages, routines and workouts. Locally missing records are marked inactive only after a complete successful collection." %}
+        </p>
+        <form method="post" hx-boost="false">
+            {% csrf_token %}
+            {% include "partials/fields.html" %}
+            <button class="btn">{% translate "Start synchronization" %}</button>
+        </form>
+    </section>
+{% endblock %}

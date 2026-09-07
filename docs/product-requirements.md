@@ -35,3 +35,15 @@ Routine batches use schema_version 1 and the literal `{{HEVY_API_KEY}}` placehol
 The five delivery layers are foundation; integration; local consultation/analytics; planning; confirmed writes/operations. Validate all-page contracts/aliases/events, encrypted credentials/rotation/isolation, manual metric examples/nulls/timezones, raw prompt fidelity/immutability, write failures/conflicts, responsive/bilingual/theme/keyboard/no-JS paths, clean migrations/backups and compiled assets.
 
 Deliver version 0.2.0 with EN/PT-BR README, canonical English technical docs, changelog, self-contained synthetic preview and Finance-aligned CI. Keep the Fitness 80% line/branch floor. Repeat the 10,000-workout/200,000-set corpus: local list p95 ≤1 s, dashboard/report p95 ≤1.5 s; report network separately. Synthetic write tests are not evidence of live provider writes.
+
+
+## September 2026 refinement
+
+The product repository excludes archived research and legacy requirements.
+The public landing page and bilingual README follow Finance's factual layout
+while retaining Fitness branding. Every primary navigation section includes
+its detail routes. The reviewed standard catalogue has 451 PT-BR display names
+and an offline idempotent refresh command; custom/original records are preserved.
+Analysis adds topic-specific period comparisons, dated period records, weekly
+sessions versus target and weekly primary-muscle working sets. Charts use lines
+or bars according to the data and bounded server-side observation windows.

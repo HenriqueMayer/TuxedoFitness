@@ -1,1 +1,88 @@
-{% extends 'base.html' %}{% load i18n fitness_ui %}{% block content %}<h1 class="page-title">{% translate "Hevy connection" %}</h1><p class="muted my-4">{% translate "Connect once. Your key is encrypted in this installation and used only by the backend." %}</p><p class="my-4">{% if session_connected %}{% translate "Connected" %}{% else %}{% translate "Disconnected" %}{% endif %}</p><div class="grid gap-6 lg:grid-cols-2"><section class="panel"><h2 class="text-xl font-semibold">{% if session_connected %}{% translate "Update connection" %}{% else %}{% translate "Connect Hevy" %}{% endif %}</h2><p class="muted my-4">{% translate "Hevy Pro is required. Obtain your key in Hevy Settings → Developer." %}</p><form method="post" action="{% url 'integrations:validate' %}" hx-boost="false">{% csrf_token %}{% include 'partials/fields.html' with form=connection_form %}<button class="btn">{% translate "Validate and save connection" %}</button></form>{% if session_connected %}<form method="post" action="{% url 'integrations:disconnect' %}" hx-boost="false" class="mt-5">{% csrf_token %}<button class="btn-secondary">{% translate "Disconnect and keep local history" %}</button></form>{% endif %}</section><section class="panel"><h2 class="text-xl font-semibold">{% translate "Synchronization" %}</h2><p class="muted my-4">{% translate "Workouts and routines refresh after 15 minutes when you access the app. The catalogue refreshes daily. Local records stay available when Hevy is unavailable." %}</p>{% if account %}<p class="mb-4 font-medium">{{ account.display_name }}</p>{% if integration_state.last_success_at %}<p class="muted mb-4">{% translate "Last synchronized" %}: {% fitness_datetime integration_state.last_success_at %}</p>{% endif %}{% endif %}{% if session_connected %}<div class="flex flex-wrap gap-3"><form method="post" action="{% url 'integrations:incremental' %}" hx-boost="false">{% csrf_token %}<button class="btn-secondary">{% translate "Update workouts" %}</button></form><form method="post" action="{% url 'integrations:plan-refresh' %}" hx-boost="false">{% csrf_token %}<button class="btn-secondary">{% translate "Refresh catalogue and routines" %}</button></form><a class="btn-secondary" href="{% url 'integrations:full-refresh' %}">{% translate "Complete synchronization" %}</a></div>{% endif %}</section></div><section class="panel mt-6"><h2 class="text-xl font-semibold">{% translate "Recent synchronization runs" %}</h2><ul class="mt-4 divide-y divide-forest/10 dark:divide-cream/10">{% for run in sync_runs %}<li><a class="flex flex-wrap justify-between gap-3 py-3" href="{% url 'integrations:run-detail' run.pk %}"><span>{{ run.get_mode_display }} · {{ run.get_state_display }}</span><span class="muted">{% fitness_datetime run.created_at %}</span></a></li>{% empty %}<li class="muted">{% translate "No synchronization runs yet." %}</li>{% endfor %}</ul></section>{% endblock %}
+{% extends "base.html" %}
+{% load i18n fitness_ui %}
+{% block content %}
+    <h1 class="page-title">{% translate "Hevy connection" %}</h1>
+    <p class="muted my-4">
+        {% translate "Connect once. Your key is encrypted in this installation and used only by the backend." %}
+    </p>
+    <p class="my-4">
+        {% if session_connected %}
+            {% translate "Connected" %}
+        {% else %}
+            {% translate "Disconnected" %}
+        {% endif %}
+    </p>
+    <div class="grid gap-6 lg:grid-cols-2">
+        <section class="panel">
+            <h2 class="text-xl font-semibold">
+                {% if session_connected %}
+                    {% translate "Update connection" %}
+                {% else %}
+                    {% translate "Connect Hevy" %}
+                {% endif %}
+            </h2>
+            <p class="muted my-4">{% translate "Hevy Pro is required. Obtain your key in Hevy Settings → Developer." %}</p>
+            <form method="post"
+                  action="{% url 'integrations:validate' %}"
+                  hx-boost="false">
+                {% csrf_token %}
+                {% include "partials/fields.html" with form=connection_form %}
+                <button class="btn">{% translate "Validate and save connection" %}</button>
+            </form>
+            {% if session_connected %}
+                <form method="post"
+                      action="{% url 'integrations:disconnect' %}"
+                      hx-boost="false"
+                      class="mt-5">
+                    {% csrf_token %}
+                    <button class="btn-secondary">{% translate "Disconnect and keep local history" %}</button>
+                </form>
+            {% endif %}
+        </section>
+        <section class="panel">
+            <h2 class="text-xl font-semibold">{% translate "Synchronization" %}</h2>
+            <p class="muted my-4">
+                {% translate "Workouts and routines refresh after 15 minutes when you access the app. The catalogue refreshes daily. Local records stay available when Hevy is unavailable." %}
+            </p>
+            {% if account %}
+                <p class="mb-4 font-medium">{{ account.display_name }}</p>
+                {% if integration_state.last_success_at %}
+                    <p class="muted mb-4">{% translate "Last synchronized" %}: {% fitness_datetime integration_state.last_success_at %}</p>
+                {% endif %}
+            {% endif %}
+            {% if session_connected %}
+                <div class="flex flex-wrap gap-3">
+                    <form method="post"
+                          action="{% url 'integrations:incremental' %}"
+                          hx-boost="false">
+                        {% csrf_token %}
+                        <button class="btn-secondary">{% translate "Update workouts" %}</button>
+                    </form>
+                    <form method="post"
+                          action="{% url 'integrations:plan-refresh' %}"
+                          hx-boost="false">
+                        {% csrf_token %}
+                        <button class="btn-secondary">{% translate "Refresh catalogue and routines" %}</button>
+                    </form>
+                    <a class="btn-secondary" href="{% url 'integrations:full-refresh' %}">{% translate "Complete synchronization" %}</a>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+    <section class="panel mt-6">
+        <h2 class="text-xl font-semibold">{% translate "Recent synchronization runs" %}</h2>
+        <ul class="mt-4 divide-y divide-forest/10 dark:divide-cream/10">
+            {% for run in sync_runs %}
+                <li>
+                    <a class="flex flex-wrap justify-between gap-3 py-3"
+                       href="{% url 'integrations:run-detail' run.pk %}">
+                        <span>{{ run.get_mode_display }} · {{ run.get_state_display }}</span>
+                        <span class="muted">{% fitness_datetime run.created_at %}</span>
+                    </a>
+                </li>
+            {% empty %}
+                <li class="muted">{% translate "No synchronization runs yet." %}</li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endblock %}

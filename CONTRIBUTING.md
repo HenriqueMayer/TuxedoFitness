@@ -24,7 +24,7 @@ Python tests live alongside apps; browser tests in tests/e2e; static preview tes
 
 ## Frontend and isolated browsers
 
-Node 20 builds the versioned CSS and local fonts; runtime installation requires neither npm nor Node. `npm ci` uses the root lockfile. Rebuild assets after template/class changes. Do not use inline scripts or remote fonts/libraries.
+Node 24 builds the versioned CSS and local fonts; runtime installation requires neither npm nor Node. `npm ci` uses the root lockfile. Rebuild assets after template/class changes. Do not use inline scripts or remote fonts/libraries.
 
 ```bash
 npx playwright install --with-deps chrome
@@ -47,3 +47,8 @@ Review PO entries and commit both PO and MO. Exercise translations are display-o
 ## Dependencies and release
 
 Use lockfiles. Audit Python with pip-audit against `uv export --locked --no-dev`; run `npm audit --audit-level=high`. Re-run local corpus performance after query/presenter changes. Update READMEs, changelog, docs and parity reference together. Version 0.2.0 requires a fresh database; do not imply compatibility with legacy data. Publishing a release or real provider changes requires an explicit task instruction.
+
+Exercise catalogue updates live in `training/data/exercises.pt-br.json`. Preserve
+standard provider ID/title pairs and do not include custom exercises. Run
+`uv run python manage.py translate_exercises --check` against the intended local
+installation after applying catalogue changes.

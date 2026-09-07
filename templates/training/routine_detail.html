@@ -1,1 +1,30 @@
-{% extends 'base.html' %}{% load i18n fitness_ui %}{% block content %}<a class="muted underline" href="{% url 'training:routines' %}">← {% translate "Routines" %}</a><p class="eyebrow mt-6">{% translate "Current prescription" %}</p><h1 class="page-title mt-3">{{ routine.title }}</h1><p class="muted mt-3">{{ routine.notes }}</p><p class="muted mt-3">{% translate "A routine is a plan. A workout is a completed session." %}</p><div class="my-6 flex flex-wrap gap-3"><a class="btn" href="{% url 'planning:generate' %}">{% translate "Generate prompt" %}</a><a class="btn-secondary" href="{% url 'planning:import' %}">{% translate "Import routine JSON" %}</a></div><section class="space-y-5">{% for exercise in routine.exercises.all %}<article class="panel"><h2 class="text-xl font-semibold">{{ exercise.position|add:1 }}. {{ exercise.exercise_template|exercise_name }}</h2><p class="muted mt-3">{{ exercise.notes }}</p><div class="muted mt-3">{% if exercise.rest_seconds != None %}{% translate "Rest" %}: {{ exercise.rest_seconds }} s{% endif %} {% if exercise.superset_group != None %} · {% translate "Superset" %} {{ exercise.superset_group }}{% endif %}</div>{% include 'training/sets.html' with planned=True %}</article>{% endfor %}</section><details class="panel mt-6"><summary>{% translate "Original Hevy JSON" %}</summary><pre class="mt-4 text-xs">{{ routine.raw_payload|pretty_json }}</pre></details>{% endblock %}
+{% extends "base.html" %}
+{% load i18n fitness_ui %}
+{% block content %}
+    <a class="muted underline" href="{% url 'training:routines' %}">← {% translate "Routines" %}</a>
+    <p class="eyebrow mt-6">{% translate "Current prescription" %}</p>
+    <h1 class="page-title mt-3">{{ routine.title }}</h1>
+    <p class="muted mt-3">{{ routine.notes }}</p>
+    <p class="muted mt-3">{% translate "A routine is a plan. A workout is a completed session." %}</p>
+    <div class="my-6 flex flex-wrap gap-3">
+        <a class="btn" href="{% url 'planning:generate' %}">{% translate "Generate prompt" %}</a>
+        <a class="btn-secondary" href="{% url 'planning:import' %}">{% translate "Import routine JSON" %}</a>
+    </div>
+    <section class="space-y-5">
+        {% for exercise in routine.exercises.all %}
+            <article class="panel">
+                <h2 class="text-xl font-semibold">{{ exercise.position|add:1 }}. {{ exercise.exercise_template|exercise_name }}</h2>
+                <p class="muted mt-3">{{ exercise.notes }}</p>
+                <div class="muted mt-3">
+                    {% if exercise.rest_seconds != None %}
+                        {% translate "Rest" %}: {{ exercise.rest_seconds }} s{% endif %} {% if exercise.superset_group != None %} · {% translate "Superset" %} {{ exercise.superset_group }}{% endif %}
+                </div>
+                {% include "training/sets.html" with planned=True %}
+            </article>
+        {% endfor %}
+    </section>
+    <details class="panel mt-6">
+        <summary>{% translate "Original Hevy JSON" %}</summary>
+        <pre class="mt-4 text-xs">{{ routine.raw_payload|pretty_json }}</pre>
+    </details>
+{% endblock %}

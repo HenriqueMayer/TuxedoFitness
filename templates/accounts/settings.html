@@ -1,1 +1,33 @@
-{% extends 'base.html' %}{% load i18n %}{% block content %}<h1 class="page-title">{% translate "Settings" %}</h1><div class="my-6 flex flex-wrap gap-3"><a class="btn-secondary" href="{% url 'planning:profile' %}">{% translate "Training profile" %}</a><a class="btn-secondary" href="{% url 'integrations:sync' %}">{% translate "Hevy connection" %}</a></div><form method="post" hx-boost="false" class="panel max-w-3xl">{% csrf_token %}{% include 'partials/fields.html' %}<button class="btn">{% translate "Save preferences" %}</button></form><section class="panel mt-8 max-w-3xl"><h2 class="text-xl font-semibold">{% translate "Remove local training data" %}</h2><p class="muted my-4">{% translate "A verified backup is created first. This removes the local Hevy connection, workouts and routines. It does not delete anything in Hevy." %}</p><form method="post" hx-boost="false">{% csrf_token %}<input type="hidden" name="action" value="delete_data"><label for="delete-confirmation">{% translate "Type DELETE to confirm" %}</label><input id="delete-confirmation" class="input" name="confirmation" autocomplete="off" required><button class="btn-secondary mt-4 text-negative dark:text-negative-light">{% translate "Remove local training data" %}</button></form></section>{% endblock %}
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <h1 class="page-title">{% translate "Settings" %}</h1>
+    <div class="my-6 flex flex-wrap gap-3">
+        <a class="btn-secondary" href="{% url 'planning:profile' %}">{% translate "Training profile" %}</a>
+        <a class="btn-secondary" href="{% url 'integrations:sync' %}">{% translate "Hevy connection" %}</a>
+    </div>
+    <form method="post" hx-boost="false" class="panel max-w-3xl">
+        {% csrf_token %}
+        {% include "partials/fields.html" %}
+        <button class="btn">{% translate "Save preferences" %}</button>
+    </form>
+    <section class="panel mt-8 max-w-3xl">
+        <h2 class="text-xl font-semibold">{% translate "Remove local training data" %}</h2>
+        <p class="muted my-4">
+            {% translate "A verified backup is created first. This removes the local Hevy connection, workouts and routines. It does not delete anything in Hevy." %}
+        </p>
+        <form method="post" hx-boost="false">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_data">
+            <label for="delete-confirmation">{% translate "Type DELETE to confirm" %}</label>
+            <input id="delete-confirmation"
+                   class="input"
+                   name="confirmation"
+                   autocomplete="off"
+                   required>
+            <button class="btn-secondary mt-4 text-negative dark:text-negative-light">
+                {% translate "Remove local training data" %}
+            </button>
+        </form>
+    </section>
+{% endblock %}

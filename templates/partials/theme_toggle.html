@@ -1,9 +1,22 @@
 {% load i18n %}
-<button type="button" data-theme-toggle aria-label="{% translate 'Toggle color theme' %}" class="flex h-10 w-10 items-center justify-center rounded-full border border-current transition-colors hover:opacity-75">
-    <svg class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+<button type="button"
+        data-theme-toggle
+        aria-label="{% translate 'Toggle color theme' %}"
+        class="flex h-10 w-10 items-center justify-center rounded-full border border-current transition-colors hover:opacity-75">
+    <svg class="h-5 w-5 dark:hidden"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="1.75"
+         aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 15A9.7 9.7 0 0 1 18 15.75 9.75 9.75 0 0 1 9 2.25 9.75 9.75 0 1 0 21.75 15Z" />
     </svg>
-    <svg class="hidden h-5 w-5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+    <svg class="hidden h-5 w-5 dark:block"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="1.75"
+         aria-hidden="true">
         <circle cx="12" cy="12" r="3.75" />
         <path stroke-linecap="round" d="M12 3v2.25M12 18.75V21M3 12h2.25M18.75 12H21M5.64 5.64l1.59 1.59M16.77 16.77l1.59 1.59M18.36 5.64l-1.59 1.59M7.23 16.77l-1.59 1.59" />
     </svg>

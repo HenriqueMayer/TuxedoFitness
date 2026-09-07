@@ -1,1 +1,21 @@
-{% extends 'base.html' %}{% load i18n %}{% block content %}<section class="panel mx-auto max-w-md"><h1 class="page-title mb-6">{% translate 'Sign in' %}</h1>{% if signup_disabled %}<p>{% translate 'Registration is disabled for this installation.' %}</p>{% else %}<form method="post" hx-boost="false">{% csrf_token %}{% include 'partials/fields.html' %}<button class="btn w-full">{% translate 'Sign in' %}</button></form>{% endif %}<div class="mt-6">{% if signup_available %}<a class="muted underline" href="{% url 'accounts:signup' %}">{% translate "Create account" %}</a>{% endif %}</div></section>{% endblock %}
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <section class="panel mx-auto max-w-md">
+        <h1 class="page-title mb-6">{% translate "Sign in" %}</h1>
+        {% if signup_disabled %}
+            <p>{% translate "Registration is disabled for this installation." %}</p>
+        {% else %}
+            <form method="post" hx-boost="false">
+                {% csrf_token %}
+                {% include "partials/fields.html" %}
+                <button class="btn w-full">{% translate "Sign in" %}</button>
+            </form>
+        {% endif %}
+        <div class="mt-6">
+            {% if signup_available %}
+                <a class="muted underline" href="{% url 'accounts:signup' %}">{% translate "Create account" %}</a>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

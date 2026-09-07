@@ -7,6 +7,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from analytics.services import local_period
+from core.assets import frontend_version, versioned_static
 from dashboard.presenters import DashboardPresenter
 from training.tests.factories import create_account, create_template, create_workout
 
@@ -51,7 +52,7 @@ class ProtectedShellTests(TestCase):
         html = response.content.decode()
         policy = response.headers["Content-Security-Policy"]
 
-        self.assertIn("/static/css/app.css?v=020", html)
+        self.assertIn(versioned_static("css/app.css"), html)
         self.assertIn("/static/brand/tuxedo-fitness-emblem-128.png", html)
         self.assertIn("/static/js/htmx-2.0.10.min.js", html)
         self.assertIn("/static/js/navigation.js", html)
@@ -158,6 +159,7 @@ class ProtectedShellTests(TestCase):
         response = self.client.get(
             reverse("dashboard:index"),
             HTTP_HX_REQUEST="true",
+            HTTP_X_FRONTEND_VERSION=frontend_version(),
             HTTP_HX_TARGET="overview-results",
         )
 
@@ -175,6 +177,7 @@ class ProtectedShellTests(TestCase):
         response = self.client.get(
             reverse("dashboard:index"),
             HTTP_HX_REQUEST="true",
+            HTTP_X_FRONTEND_VERSION=frontend_version(),
             HTTP_HX_TARGET="body",
         )
 
@@ -195,9 +198,9 @@ class ProtectedShellTests(TestCase):
         )
 
         chart = presentation["charts"][0]
-        self.assertLessEqual(len(chart["table_rows"]), 2_000)
-        self.assertEqual(chart["table_rows"][0]["label"], "01/01/2000")
-        self.assertEqual(chart["view_box"], "0 0 720 280")
+        self.assertLessEqual(len(chart["table_rows"]), 60)
+        self.assertEqual(chart["table_rows"][0]["label"], "01/01/2026")
+        self.assertEqual(chart["view_box"], "0 0 1000 240")
         self.assertLessEqual(len(chart["axis_ticks"]), 5)
         self.assertEqual(
             len({tick["label"] for tick in chart["axis_ticks"]}),
@@ -215,5 +218,126 @@ class FractionalChartTests(TestCase):
             first_header="Session",
             unit="RPE",
         )
-        self.assertEqual(chart["axis_ticks"][-1]["label"], "8.5")
-        self.assertEqual(chart["axis_ticks"][-1]["y"], chart["bars"][0]["y"])
+        self.assertEqual(chart["axis_ticks"][-1]["label"], "10")
+        self.assertAlmostEqual(chart["bars"][0]["y"], 224 - 208 * 0.85)
+        count_chart = DashboardPresenter()._categorical_chart(
+            dom_id="count",
+            title="Sets",
+            values={"A": 10},
+            first_header="Type",
+            unit="sets",
+        )
+        self.assertEqual(
+            [tick["label"] for tick in count_chart["axis_ticks"]], ["0", "5", "10"]
+        )
+        self.assertLessEqual(count_chart["bars"][0]["width"], 72)
+        categories = DashboardPresenter()._categorical_chart(
+            dom_id="rpe",
+            title="RPE",
+            values={7: 1, 7.5: 2, 8: 1, 9: 2, 10: 1},
+            first_header="RPE",
+            unit="sets",
+        )
+        self.assertEqual(categories["x_labels"], ["7", "7.5", "8", "9", "10"])
+        self.assertEqual(categories["bars"][0]["unit"], "set")
+        self.assertEqual(categories["initial_readout"], "10: 1 set")
+
+
+class ChartWindowTests(TestCase):
+    def test_window_navigation_keeps_all_observations_and_handles_bad_pages(self):
+        data = {str(i): i for i in range(125)}
+
+        def chart(page):
+            return DashboardPresenter(
+                query={"chart_page_test": page}
+            )._categorical_chart(
+                dom_id="test",
+                title="Test",
+                values=data,
+                first_header="Date",
+                unit="kg",
+                kind="line",
+            )
+
+        latest, middle, first = chart(1), chart(2), chart(3)
+        self.assertEqual(
+            [row["label"] for row in latest["table_rows"]],
+            [str(i) for i in range(65, 125)],
+        )
+        self.assertEqual(
+            [row["label"] for row in middle["table_rows"]],
+            [str(i) for i in range(5, 65)],
+        )
+        self.assertEqual(len(first["table_rows"]), 5)
+        self.assertEqual(chart("invalid")["page"], 1)
+        self.assertEqual(chart(-1)["page"], 1)
+        self.assertEqual(chart(999)["page"], 3)
+        self.assertEqual(chart(None)["page"], 1)
+
+    def test_missing_observations_break_lines_and_target_controls_axis(self):
+        chart = DashboardPresenter()._categorical_chart(
+            dom_id="missing",
+            title="Missing",
+            values={"A": 2, "B": None, "C": 0},
+            first_header="Date",
+            unit="sets",
+            kind="line",
+            target=4,
+        )
+        self.assertEqual(len(chart["segments"]), 2)
+        self.assertEqual(chart["table_rows"][1]["value"], "—")
+        self.assertEqual(chart["table_rows"][2]["value"], "0")
+        self.assertEqual(chart["axis_ticks"][-1]["label"], "4")
+        self.assertEqual(chart["target"]["y"], 16)
+
+    def test_navigation_maps_namespaces_and_details(self):
+        from types import SimpleNamespace
+
+        from django.contrib.auth.models import AnonymousUser
+        from django.urls import resolve
+
+        from accounts.context_processors import application_state
+
+        routes = {
+            "/dashboard/": "overview",
+            "/dashboard/reports/": "analysis",
+            "/history/": "history",
+            "/history/1/": "history",
+            "/routines/": "routines",
+            "/routines/1/": "routines",
+            "/exercises/": "exercises",
+            "/exercises/1/": "exercises",
+            "/planning/": "prompt",
+            "/planning/generations/": "prompt",
+            "/planning/routines/import/": "routines",
+            "/accounts/settings/": "",
+        }
+        for path, expected in routes.items():
+            with self.subTest(path=path):
+                context = application_state(
+                    SimpleNamespace(user=AnonymousUser(), resolver_match=resolve(path))
+                )
+                self.assertEqual(context["active_section"], expected)
+
+
+class SavedReportNavigationTests(TestCase):
+    def test_window_links_retain_saved_filters_when_initial_url_is_empty(self):
+        from dashboard.models import DashboardPreference
+
+        account = create_account()
+        create_workout(account, create_template(account))
+        DashboardPreference.objects.create(
+            user=account.user,
+            panels=["frequency"],
+            filters={
+                "start": "2020-01-01",
+                "end": "2026-08-31",
+                "compare": "on",
+            },
+        )
+        self.client.force_login(account.user)
+        response = self.client.get(reverse("dashboard:reports"))
+        self.assertContains(response, "chart_page_frequency-weeks=2")
+        self.assertContains(response, "start=2020-01-01")
+        self.assertContains(response, "end=2026-08-31")
+        self.assertContains(response, "compare=on")

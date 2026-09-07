@@ -11,7 +11,7 @@ test('capture every synthetic surface before publishing the static tour',async({
     for(const [name,route] of [['overview','/dashboard/'],['analysis','/dashboard/reports/?panel=effort'],['history','/history/'],['routines','/routines/'],['exercises','/exercises/'],['prompt','/planning/']]){
       await page.goto(route);await expect(page.locator('h1')).toBeVisible();
       await page.evaluate(()=>document.fonts.ready);
-      await page.screenshot({path:path.join(process.env.FITNESS_CAPTURE_DIR,`${lang}-${name}.png`),fullPage:false});
+      await page.screenshot({path:path.join(process.env.FITNESS_CAPTURE_DIR,`${lang}-${name}.png`),fullPage:true});
     }
   }
 });

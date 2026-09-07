@@ -2,6 +2,13 @@
 (function () {
     'use strict';
     var view = null;
+    var revision = document.querySelector('meta[name="frontend-version"]').content;
+    document.addEventListener('htmx:configRequest', function (event) {
+        event.detail.headers['X-Frontend-Version'] = revision;
+    });
+    document.addEventListener('htmx:historyRestore', function () {
+        if (document.body.dataset.frontendVersion !== revision) location.reload();
+    });
     function focusSelector(element) {
         if (!element || element === document.body) return null;
         var parts = [];

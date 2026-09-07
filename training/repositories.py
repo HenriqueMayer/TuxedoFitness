@@ -51,7 +51,7 @@ class TrainingRepository:
                 defaults={
                     'title': dto.title,
                     'exercise_type': dto.exercise_type,
-                    'title_pt_br': translated_title(dto.title, dto.is_custom),
+                    'title_pt_br': translated_title(dto.title, dto.is_custom, dto.external_id),
                     'translation_version': CATALOG_VERSION,
                     'equipment_category': dto.equipment_category,
                     'primary_muscle': dto.primary_muscle,

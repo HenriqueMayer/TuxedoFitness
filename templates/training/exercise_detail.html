@@ -1,1 +1,48 @@
-{% extends 'base.html' %}{% load i18n fitness_ui fitness_units %}{% block content %}<p class="eyebrow">{{ exercise_template.external_id }}</p><h1 class="page-title mt-3">{{ exercise_template|exercise_name }}</h1><p class="muted mt-3">{{ exercise_template.title }} · {{ exercise_template.get_exercise_type_display|translated }}</p><div class="my-6 flex flex-wrap gap-3"><a class="btn" href="{% url 'dashboard:reports' %}?panel=progression&amp;exercise={{ exercise_template.pk }}">{% translate "Explore progression" %}</a><a class="btn-secondary" href="{% url 'dashboard:reports' %}">{% translate "Customize favorites" %}</a><a class="btn-secondary" href="{% url 'training:history' %}?exercise={{ exercise_template.pk }}">{% translate "View workout history" %}</a></div><section class="panel"><h2 class="text-xl font-semibold">{% translate "Exercise information" %}</h2><dl class="mt-5 grid gap-5 sm:grid-cols-3"><div><dt class="muted">{% translate "Primary muscle" %}</dt><dd>{{ exercise_template.get_primary_muscle_display|translated }}</dd></div><div><dt class="muted">{% translate "Equipment" %}</dt><dd>{{ exercise_template.get_equipment_category_display|translated }}</dd></div>{% if exercise_template.exercise_type == 'weight_reps' %}<div><dt class="muted">{% translate "Estimated 1RM" %}</dt><dd>{{ records.estimated_1rm|display_mass:presentation_mass_unit }}</dd></div>{% else %}<p>{% translate "Load estimates do not apply to this modality." %}</p>{% endif %}</dl><p class="muted mt-5">{% translate "Records use the last 28 days. Open progression to choose another period. 1RM is an estimate for eligible external-load sets only." %}</p></section>{% endblock %}
+{% extends "base.html" %}
+{% load i18n fitness_ui fitness_units %}
+{% block content %}
+    <p class="eyebrow">{{ exercise_template.external_id }}</p>
+    <h1 class="page-title mt-3">{{ exercise_template|exercise_name }}</h1>
+    <p class="muted mt-3">{% if LANGUAGE_CODE == 'pt-br' and exercise_template.title_pt_br and not exercise_template.is_custom %}{{ exercise_template.title }} · {% endif %}{{ exercise_template.get_exercise_type_display|translated }}</p>
+    <div class="my-6 flex flex-wrap gap-3">
+        <a class="btn"
+           href="{% url 'dashboard:reports' %}?panel=progression&amp;exercise={{ exercise_template.pk }}">
+            {% translate "Explore progression" %}
+        </a>
+        <a class="btn-secondary" href="{% url 'dashboard:reports' %}">{% translate "Customize favorites" %}</a>
+        <a class="btn-secondary"
+           href="{% url 'training:history' %}?exercise={{ exercise_template.pk }}">
+            {% translate "View workout history" %}
+        </a>
+    </div>
+    <section class="panel">
+        <h2 class="text-xl font-semibold">{% translate "Exercise information" %}</h2>
+        <dl class="mt-5 grid gap-5 sm:grid-cols-3">
+            <div>
+                <dt class="muted">{% translate "Primary muscle" %}</dt>
+                <dd>
+                    {{ exercise_template.get_primary_muscle_display|translated }}
+                </dd>
+            </div>
+            <div>
+                <dt class="muted">{% translate "Equipment" %}</dt>
+                <dd>
+                    {{ exercise_template.get_equipment_category_display|translated }}
+                </dd>
+            </div>
+            {% if exercise_template.exercise_type == "weight_reps" %}
+                <div>
+                    <dt class="muted">{% translate "Estimated 1RM" %}</dt>
+                    <dd>
+                        {{ records.estimated_1rm|display_mass:presentation_mass_unit }}
+                    </dd>
+                </div>
+            {% else %}
+                <p>{% translate "Load estimates do not apply to this modality." %}</p>
+            {% endif %}
+        </dl>
+        <p class="muted mt-5">
+            {% translate "Records use the last 28 days. Open progression to choose another period. 1RM is an estimate for eligible external-load sets only." %}
+        </p>
+    </section>
+{% endblock %}

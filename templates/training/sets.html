@@ -1,2 +1,41 @@
 {% load i18n fitness_units fitness_ui %}
-<div class="overflow-x-auto"><table class="mt-4 w-full text-left text-sm"><caption class="sr-only">{% translate "Exercise sets" %}</caption><thead><tr><th class="p-3">{% translate "Set" %}</th><th class="p-3">{% translate "Load" %}</th><th class="p-3">{% translate "Repetitions" %}</th><th class="p-3">{% translate "Distance" %}</th><th class="p-3">{% translate "Duration" %}</th><th class="p-3">{% if planned %}{% translate "Rep range" %}{% else %}RPE{% endif %}</th><th class="p-3">{% translate "Custom metric" %}</th></tr></thead><tbody>{% for set in exercise.sets.all %}<tr class="border-t border-forest/10 dark:border-cream/10"><th scope="row" class="p-3 font-normal">{{ set.position|add:1 }} · {{ set.get_set_type_display|translated }}</th><td class="p-3">{{ set.weight_kg|display_mass:presentation_mass_unit }}</td><td class="p-3">{{ set.reps|default_if_none:'—' }}</td><td class="p-3">{{ set.distance_meters|display_distance:presentation_distance_unit }}</td><td class="p-3">{{ set.duration_seconds|default_if_none:'—' }} s</td><td class="p-3">{% if planned %}{% if set.rep_range_start != None %}{{ set.rep_range_start }}–{{ set.rep_range_end }}{% else %}—{% endif %}{% else %}{{ set.rpe|default_if_none:'—' }}{% endif %}</td><td class="p-3">{{ set.custom_metric|default_if_none:'—' }}</td></tr>{% endfor %}</tbody></table></div>
+<div class="overflow-x-auto">
+    <table class="mt-4 w-full text-left text-sm">
+        <caption class="sr-only">
+            {% translate "Exercise sets" %}
+        </caption>
+        <thead>
+            <tr>
+                <th class="p-3">{% translate "Set" %}</th>
+                <th class="p-3">{% translate "Load" %}</th>
+                <th class="p-3">{% translate "Repetitions" %}</th>
+                <th class="p-3">{% translate "Distance" %}</th>
+                <th class="p-3">{% translate "Duration" %}</th>
+                <th class="p-3">
+                    {% if planned %}
+                        {% translate "Rep range" %}
+                    {% else %}RPE{% endif %}
+                </th>
+                <th class="p-3">{% translate "Custom metric" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for set in exercise.sets.all %}
+                <tr class="border-t border-forest/10 dark:border-cream/10">
+                    <th scope="row"
+                        class="p-3 font-normal">{{ set.position|add:1 }} · {{ set.get_set_type_display|translated }}</th>
+                    <td class="p-3">{{ set.weight_kg|display_mass:presentation_mass_unit }}</td>
+                    <td class="p-3">{{ set.reps|default_if_none:'—' }}</td>
+                    <td class="p-3">{{ set.distance_meters|display_distance:presentation_distance_unit }}</td>
+                    <td class="p-3">{{ set.duration_seconds|default_if_none:'—' }} s</td>
+                    <td class="p-3">
+                        {% if planned %}
+                            {% if set.rep_range_start != None %}{{ set.rep_range_start }}–{{ set.rep_range_end }}{% else %}—{% endif %}
+            {% else %}{{ set.rpe|default_if_none:'—' }}{% endif %}
+                </td>
+                <td class="p-3">{{ set.custom_metric|default_if_none:'—' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

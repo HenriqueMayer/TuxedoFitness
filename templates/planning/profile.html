@@ -1,1 +1,16 @@
-{% extends 'base.html' %}{% load i18n %}{% block content %}<div class="mx-auto max-w-3xl"><p class="eyebrow">{% translate "Your context" %}</p><h1 class="page-title mt-3">{% translate "Training profile" %}</h1><p class="muted my-5">{% translate "Optional information reused when generating prompts. You can adjust it for each analysis." %}</p><form method="post" class="panel" hx-boost="false">{% csrf_token %}{% include 'partials/fields.html' %}<button class="btn">{% translate "Save profile" %}</button></form></div>{% endblock %}
+{% extends "base.html" %}
+{% load i18n %}
+{% block content %}
+    <div class="mx-auto max-w-3xl">
+        <p class="eyebrow">{% translate "Your context" %}</p>
+        <h1 class="page-title mt-3">{% translate "Training profile" %}</h1>
+        <p class="muted my-5">
+            {% translate "Optional information reused when generating prompts. You can adjust it for each analysis." %}
+        </p>
+        <form method="post" class="panel" hx-boost="false">
+            {% csrf_token %}
+            {% include "partials/fields.html" %}
+            <button class="btn">{% translate "Save profile" %}</button>
+        </form>
+    </div>
+{% endblock %}

@@ -1,1 +1,90 @@
-{% extends 'base.html' %}{% load i18n fitness_ui %}{% block content %}<div data-read-surface><p class="eyebrow">{% translate "Completed sessions" %}</p><h1 class="page-title mt-3">{% translate "Training history" %}</h1><p class="muted mt-3">{% translate "All history by default. Your most recent sessions appear first." %}</p><form method="get" class="panel my-6"><div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><div><label for="history-query">{% translate "Search" %}</label><input id="history-query" class="input" name="q" value="{{ request.GET.q }}"></div><div><label for="history-start">{% translate "Start date" %}</label><input id="history-start" class="input" type="date" name="start" value="{{ request.GET.start }}"></div><div><label for="history-end">{% translate "End date" %}</label><input id="history-end" class="input" type="date" name="end" value="{{ request.GET.end }}"></div><div><label for="history-routine">{% translate "Routine" %}</label><select id="history-routine" name="routine" class="input"><option value="">{% translate "All" %}</option>{% for routine in routines %}<option value="{{ routine.pk }}" {% if request.GET.routine == routine.pk|stringformat:'s' %}selected{% endif %}>{{ routine.title }}</option>{% endfor %}</select></div><div><label for="history-exercise">{% translate "Exercise" %}</label><select class="input" id="history-exercise" name="exercise"><option value="">{% translate "All" %}</option>{% for exercise in exercise_templates %}<option value="{{ exercise.pk }}" {% if request.GET.exercise == exercise.pk|stringformat:'s' %}selected{% endif %}>{{ exercise|exercise_name }}</option>{% endfor %}</select></div><div><label for="history-type">{% translate "Set type" %}</label><select class="input" id="history-type" name="set_type"><option value="">{% translate "All" %}</option>{% for value,label in set_types %}<option value="{{ value }}" {% if request.GET.set_type == value %}selected{% endif %}>{{ label|translated }}</option>{% endfor %}</select></div></div><div class="mt-4 flex flex-wrap gap-3"><button class="btn">{% translate "Apply filters" %}</button><a class="btn-secondary" href="{% url 'training:history' %}">{% translate "All history" %}</a><a class="btn-secondary" href="{% url 'training:workout-export' %}?{{ request.GET.urlencode }}" hx-boost="false">{% translate "Export CSV" %}</a><a class="btn-secondary" href="{% url 'integrations:local-export' 'workouts' 'json' %}" hx-boost="false">{% translate "Export complete JSON" %}</a></div>{{ period_form.errors }}</form><div class="grid gap-4">{% for workout in page_obj %}<a class="panel flex flex-wrap items-center justify-between gap-3" href="{% url 'training:workout-detail' workout.pk %}"><div><p class="eyebrow">{% fitness_date workout.start_time %}</p><h2 class="mt-2 text-xl font-semibold">{{ workout.title }}</h2><p class="muted mt-2">{{ workout.routine.title|default:'' }}</p></div><span class="muted">{{ workout.exercises.count }} {% translate "exercises" %} →</span></a>{% empty %}<p class="panel muted">{% translate "No workouts match this selection." %}</p>{% endfor %}</div>{% include 'partials/pagination.html' %}</div>{% endblock %}
+{% extends "base.html" %}
+{% load i18n fitness_ui %}
+{% block content %}
+    <div data-read-surface>
+        <p class="eyebrow">{% translate "Completed sessions" %}</p>
+        <h1 class="page-title mt-3">{% translate "Training history" %}</h1>
+        <p class="muted mt-3">{% translate "All history by default. Your most recent sessions appear first." %}</p>
+        <form method="get" class="panel my-6">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div>
+                    <label for="history-query">{% translate "Search" %}</label>
+                    <input id="history-query" class="input" name="q" value="{{ request.GET.q }}">
+                </div>
+                <div>
+                    <label for="history-start">{% translate "Start date" %}</label>
+                    <input id="history-start"
+                           class="input"
+                           type="date"
+                           name="start"
+                           value="{{ request.GET.start }}">
+                </div>
+                <div>
+                    <label for="history-end">{% translate "End date" %}</label>
+                    <input id="history-end"
+                           class="input"
+                           type="date"
+                           name="end"
+                           value="{{ request.GET.end }}">
+                </div>
+                <div>
+                    <label for="history-routine">{% translate "Routine" %}</label>
+                    <select id="history-routine" name="routine" class="input">
+                        <option value="">{% translate "All" %}</option>
+                        {% for routine in routines %}
+                            <option value="{{ routine.pk }}"
+                                    {% if request.GET.routine == routine.pk|stringformat:'s' %}selected{% endif %}>{{ routine.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="history-exercise">{% translate "Exercise" %}</label>
+                    <select class="input" id="history-exercise" name="exercise">
+                        <option value="">{% translate "All" %}</option>
+                        {% for exercise in exercise_templates %}
+                            <option value="{{ exercise.pk }}"
+                                    {% if request.GET.exercise == exercise.pk|stringformat:'s' %}selected{% endif %}>{{ exercise|exercise_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="history-type">{% translate "Set type" %}</label>
+                    <select class="input" id="history-type" name="set_type">
+                        <option value="">{% translate "All" %}</option>
+                        {% for value,label in set_types %}
+                            <option value="{{ value }}"
+                                    {% if request.GET.set_type == value %}selected{% endif %}>{{ label|translated }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-3">
+                <button class="btn">{% translate "Apply filters" %}</button>
+                <a class="btn-secondary" href="{% url 'training:history' %}">{% translate "All history" %}</a>
+                <a class="btn-secondary"
+                   href="{% url 'training:workout-export' %}?{{ request.GET.urlencode }}"
+                   hx-boost="false">{% translate "Export CSV" %}</a>
+                <a class="btn-secondary"
+                   href="{% url 'integrations:local-export' 'workouts' 'json' %}"
+                   hx-boost="false">{% translate "Export complete JSON" %}</a>
+            </div>
+            {{ period_form.errors }}
+        </form>
+        <div class="grid gap-4">
+            {% for workout in page_obj %}
+                <a class="panel flex flex-wrap items-center justify-between gap-3"
+                   href="{% url 'training:workout-detail' workout.pk %}">
+                    <div>
+                        <p class="eyebrow">{% fitness_date workout.start_time %}</p>
+                        <h2 class="mt-2 text-xl font-semibold">{{ workout.title }}</h2>
+                        <p class="muted mt-2">{{ workout.routine.title|default:'' }}</p>
+                    </div>
+                    <span class="muted">{{ workout.exercises.count }} {% translate "exercises" %} →</span>
+                </a>
+            {% empty %}
+                <p class="panel muted">{% translate "No workouts match this selection." %}</p>
+            {% endfor %}
+        </div>
+        {% include "partials/pagination.html" %}
+    </div>
+{% endblock %}

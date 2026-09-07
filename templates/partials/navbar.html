@@ -1,17 +1,108 @@
 {% load fitness_ui static i18n %}
-<a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:z-[60] focus:bg-caramel focus:p-3">{% translate "Skip to content" %}</a>
+<a href="#main-content"
+   class="sr-only focus:not-sr-only focus:fixed focus:z-[60] focus:bg-caramel focus:p-3">
+    {% translate "Skip to content" %}
+</a>
 <header class="sticky top-0 z-40 border-b border-forest/10 bg-cream/95 backdrop-blur dark:border-cream/10 dark:bg-night/95">
-<nav class="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8" aria-label="{% translate 'Main navigation' %}">
-<a href="{% url 'pages:landing' %}" class="flex shrink-0 items-center gap-3"><img src="{% static 'brand/tuxedo-fitness-emblem-128.png' %}" alt="" class="h-10 w-10 rounded-xl"><span class="leading-tight"><span class="block text-sm font-medium uppercase tracking-[0.2em]">Tuxedo</span><span class="eyebrow mt-1 block">Fitness</span></span></a>
-<div class="hidden items-center gap-2 xl:flex">{% include 'partials/nav_links.html' %}</div>
-<div class="flex items-center gap-2">{% include 'partials/language_selector.html' %}{% include 'partials/theme_toggle.html' %}
-<details class="relative hidden xl:block"><summary class="cursor-pointer rounded-full border border-forest/20 px-4 py-2 text-sm dark:border-cream/25">{{ request.user.username }}</summary><div class="panel absolute right-0 z-50 mt-3 grid w-64 gap-3">
-<a href="{% url 'accounts:settings' %}">{% translate "Settings" %}</a><a href="{% url 'planning:profile' %}">{% translate "Training profile" %}</a><a href="{% url 'integrations:sync' %}">{% translate "Hevy connection" %}</a><a href="{% url 'planning:generations' %}">{% translate "Saved prompts" %}</a>
-<form method="post" action="{% url 'accounts:logout' %}" hx-boost="false">{% csrf_token %}<button>{% translate "Sign out" %}</button></form></div></details>
-<button type="button" id="menu-btn" data-js-only aria-controls="mobile-menu" aria-expanded="false" class="btn-secondary hidden xl:hidden"><span aria-hidden="true">☰</span><span class="sr-only">{% translate "Open menu" %}</span></button></div></nav><noscript><nav class="mx-auto flex max-w-7xl flex-wrap gap-3 px-4 pb-5 xl:hidden" aria-label="{% translate 'Navigation without JavaScript' %}">{% include 'partials/nav_links.html' %}<a class="nav-link" href="{% url 'accounts:settings' %}">{% translate "Settings" %}</a><a class="nav-link" href="{% url 'planning:profile' %}">{% translate "Training profile" %}</a><a class="nav-link" href="{% url 'planning:generations' %}">{% translate "Saved prompts" %}</a><form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn-secondary">{% translate "Sign out" %}</button></form></nav></noscript></header>
-<div id="mobile-menu" role="dialog" aria-modal="true" aria-labelledby="mobile-menu-title" aria-hidden="true" inert class="fixed inset-0 z-50 flex translate-x-full flex-col items-center justify-center overflow-y-auto bg-forest-deep text-cream transition-transform dark:bg-night">
-<h2 id="mobile-menu-title" class="sr-only">{% translate "Navigation" %}</h2><button type="button" id="close-menu-btn" aria-controls="mobile-menu" class="absolute right-6 top-6 rounded-full border border-cream/30 px-4 py-2">{% translate "Close" %}</button>
-<div class="flex flex-col items-center gap-3 [&_.nav-link]:text-cream">{% include 'partials/nav_links.html' %}<a class="mobile-link" href="{% url 'accounts:settings' %}">{% translate "Settings" %}</a><a class="mobile-link" href="{% url 'planning:profile' %}">{% translate "Training profile" %}</a><a class="mobile-link" href="{% url 'integrations:sync' %}">{% translate "Hevy connection" %}</a><a class="mobile-link" href="{% url 'planning:generations' %}">{% translate "Saved prompts" %}</a><form method="post" action="{% url 'accounts:logout' %}" hx-boost="false">{% csrf_token %}<button class="btn">{% translate "Sign out" %}</button></form></div></div>
+    <nav class="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8"
+         aria-label="{% translate 'Main navigation' %}">
+        <a href="{% url 'pages:landing' %}"
+           class="flex shrink-0 items-center gap-3">
+            <img src="{% static 'brand/tuxedo-fitness-emblem-128.png' %}"
+                 alt=""
+                 class="h-10 w-10 rounded-xl">
+            <span class="leading-tight">
+                <span class="block text-sm font-medium uppercase tracking-[0.2em]">Tuxedo</span>
+                <span class="eyebrow mt-1 block">Fitness</span>
+            </span>
+        </a>
+        <div class="hidden items-center gap-2 xl:flex">{% include "partials/nav_links.html" %}</div>
+        <div class="flex items-center gap-2">
+            {% include "partials/language_selector.html" %}
+            {% include "partials/theme_toggle.html" %}
+            <details class="relative hidden xl:block">
+                <summary class="cursor-pointer rounded-full border border-forest/20 px-4 py-2 text-sm dark:border-cream/25">{{ request.user.username }}</summary>
+                <div class="panel absolute right-0 z-50 mt-3 grid w-64 gap-3">
+                    <a href="{% url 'accounts:settings' %}">{% translate "Settings" %}</a>
+                    <a href="{% url 'planning:profile' %}">{% translate "Training profile" %}</a>
+                    <a href="{% url 'integrations:sync' %}">{% translate "Hevy connection" %}</a>
+                    <a href="{% url 'planning:generations' %}">{% translate "Saved prompts" %}</a>
+                    <form method="post" action="{% url 'accounts:logout' %}" hx-boost="false">
+                        {% csrf_token %}
+                        <button>{% translate "Sign out" %}</button>
+                    </form>
+                </div>
+            </details>
+            <button type="button"
+                    id="menu-btn"
+                    data-js-only
+                    aria-controls="mobile-menu"
+                    aria-expanded="false"
+                    class="btn-secondary hidden xl:hidden">
+                <span aria-hidden="true">☰</span>
+                <span class="sr-only">{% translate "Open menu" %}</span>
+            </button>
+        </div>
+    </nav>
+    <noscript>
+        <nav class="mx-auto flex max-w-7xl flex-wrap gap-3 px-4 pb-5 xl:hidden"
+             aria-label="{% translate 'Navigation without JavaScript' %}">
+            {% include "partials/nav_links.html" %}
+            <a class="nav-link" href="{% url 'accounts:settings' %}">{% translate "Settings" %}</a>
+            <a class="nav-link" href="{% url 'planning:profile' %}">{% translate "Training profile" %}</a>
+            <a class="nav-link" href="{% url 'planning:generations' %}">{% translate "Saved prompts" %}</a>
+            <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button class="btn-secondary">{% translate "Sign out" %}</button>
+            </form>
+        </nav>
+    </noscript>
+</header>
+<div id="mobile-menu"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="mobile-menu-title"
+     aria-hidden="true"
+     inert
+     class="fixed inset-0 z-50 flex translate-x-full flex-col items-center justify-center overflow-y-auto bg-forest-deep text-cream transition-transform dark:bg-night">
+    <h2 id="mobile-menu-title" class="sr-only">{% translate "Navigation" %}</h2>
+    <button type="button"
+            id="close-menu-btn"
+            aria-controls="mobile-menu"
+            class="absolute right-6 top-6 rounded-full border border-cream/30 px-4 py-2">
+        {% translate "Close" %}
+    </button>
+    <div class="flex flex-col items-center gap-3 [&_.nav-link]:text-cream">
+        {% include "partials/nav_links.html" %}
+        <a class="mobile-link" href="{% url 'accounts:settings' %}">{% translate "Settings" %}</a>
+        <a class="mobile-link" href="{% url 'planning:profile' %}">{% translate "Training profile" %}</a>
+        <a class="mobile-link" href="{% url 'integrations:sync' %}">{% translate "Hevy connection" %}</a>
+        <a class="mobile-link" href="{% url 'planning:generations' %}">{% translate "Saved prompts" %}</a>
+        <form method="post" action="{% url 'accounts:logout' %}" hx-boost="false">
+            {% csrf_token %}
+            <button class="btn">{% translate "Sign out" %}</button>
+        </form>
+    </div>
+</div>
 <div class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-end gap-3 px-4 pt-3 text-xs sm:px-6 lg:px-8">
-<a href="{% url 'integrations:sync' %}" class="muted">{% translate "Hevy connection" %}</a>
-{% if connected_account %}<form id="automatic-sync" action="{% url 'integrations:automatic' %}" method="post" hx-boost="false" data-autosync="true">{% csrf_token %}<button type="submit" class="underline underline-offset-4">{% translate "Sync now" %}</button></form><span id="sync-status" role="status" data-updated="{% translate 'Data updated' %}" data-failed="{% translate 'Hevy unavailable; showing local data' %}" class="muted">{% if data_freshness %}{% translate "Last synchronized" %}: {% fitness_datetime data_freshness %}{% endif %}</span>{% endif %}</div>
+    <a href="{% url 'integrations:sync' %}" class="muted">{% translate "Hevy connection" %}</a>
+    {% if connected_account %}
+        <form id="automatic-sync"
+              action="{% url 'integrations:automatic' %}"
+              method="post"
+              hx-boost="false"
+              data-autosync="true">
+            {% csrf_token %}
+            <button type="submit" class="underline underline-offset-4">{% translate "Sync now" %}</button>
+        </form>
+        <span id="sync-status"
+              role="status"
+              data-updated="{% translate 'Data updated' %}"
+              data-failed="{% translate 'Hevy unavailable; showing local data' %}"
+              class="muted">
+            {% if data_freshness %}
+                {% translate "Last synchronized" %}: {% fitness_datetime data_freshness %}
+            {% endif %}
+        </span>
+    {% endif %}
+</div>
