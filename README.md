@@ -5,7 +5,7 @@
 </p>
 <h1 align="center">Tuxedo Fitness</h1>
 <p align="center">
-  <a href="https://github.com/HenriqueMayer/TuxedoFitness/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/HenriqueMayer/TuxedoFitness/ci.yml?branch=main&amp;style=for-the-badge&amp;label=CI&amp;labelColor=101E18&amp;color=176B52" alt="CI status"></a>
+  <a href="https://github.com/HenriqueMayer/TuxedoFitness/actions/workflows/ci.yml"><img src="https://img.shields.io/badge/CI-GitHub%20Actions-1A2E26?style=for-the-badge&amp;labelColor=101E18" alt="View CI runs on GitHub Actions"></a>
   <img src="https://img.shields.io/badge/version-0.2.0-B88A59?style=for-the-badge&amp;labelColor=101E18" alt="Version 0.2.0">
   <img src="https://img.shields.io/badge/Python-3.12-176B52?style=for-the-badge&amp;labelColor=101E18" alt="Python 3.12">
   <img src="https://img.shields.io/badge/Django-6.0-1A2E26?style=for-the-badge&amp;labelColor=101E18" alt="Django 6.0">
@@ -20,11 +20,28 @@ never sends them to an LLM automatically. Hevy API access requires Hevy Pro.
 
 ## Interface preview
 
-<table><tr><td width="96" align="center"><img src="static/brand/tuxedo-fitness-emblem-128.png" width="72" alt="Fitness emblem"></td><td><strong>Explore the interface before installing.</strong><br>Overview, analysis, history, routines, exercises and prompt generation.<br><br><a href="preview/index.html"><strong>Open the English static tour →</strong></a> · <a href="preview/pt-br/index.html">Português</a></td></tr></table>
+<table>
+  <tr>
+    <td width="96" align="center">
+      <a href="https://henriquemayer.github.io/TuxedoFitness/">
+        <img src="static/brand/tuxedo-fitness-emblem-128.png" width="72" alt="Open the Tuxedo Fitness interface preview">
+      </a>
+    </td>
+    <td>
+      <strong>See Tuxedo Fitness before installing it.</strong><br>
+      Explore the bilingual tour across Overview, Analysis, History, Routines,
+      Exercises, and Prompt Generation, with light and dark Overview views.<br><br>
+      <a href="https://henriquemayer.github.io/TuxedoFitness/"><strong>Open the interface preview →</strong></a>
+    </td>
+  </tr>
+</table>
 
-The tour uses synthetic screenshots and works from local HTML files or a static
-server. It has no account, backend or persistence. See the
-[Pages setup](docs/operations.md#interface-preview-on-github-pages) for hosting.
+> The preview uses synthetic data and runs as a static tour. There is no login,
+> public backend, or persistence, and nothing is saved.
+
+The [local English tour](preview/index.html) and
+[Portuguese tour](preview/pt-br/index.html) also work offline. Hosting requires
+the one-time [Pages setup](docs/operations.md#interface-preview-on-github-pages).
 
 ## Quick start
 
