@@ -18,7 +18,7 @@ installation, with no database reset or public release.
 | Analytics | Period comparison showed only sessions. | Topic-specific comparisons, dated period records, weekly sessions/target and primary-muscle sets. Canonical calculations remain server-side. |
 | Performance | Translating categorical choices once per set inflated distribution time. | Resolve code labels once per request, then count observations. |
 | CI | Node 20 development contract and outdated Pages/Python actions. | Node 24; modern checkout/setup/configure/upload/deploy actions. |
-| Pages | Configuration could not be inspected through available access. | Local workflow fixed; administrative setup documented. Remote publication remains unverified. |
+| Pages | The site was disabled; the initial review could not inspect repository settings. | Enable GitHub Actions as the publishing source; deploy `main` and verify both languages and referenced assets. See the publication evidence below. |
 
 ## Data and compatibility
 
@@ -99,14 +99,23 @@ missing CSS, keyboard inspection and page history. Synthetic capture data now
 contains multiple set types, varying RPE and absent values. Verification files
 are retained locally under `var/private/verification-correction/`.
 
-## Remote publication limitation
+## Remote publication — verified 2026-09-07
 
-The available GitHub connector returns 404 for this repository. The in-app
-browser is signed out and the repository's Pages settings also return 404.
-This does not distinguish a private repository, missing access or an absent
-Pages site. No repository visibility or permissions were changed.
+The initial review could not inspect the repository through the available
+connector or unauthenticated browser. After administrator sign-in, the Pages
+settings confirmed that the site was disabled: the source was **Deploy from a
+branch**, with no branch selected. The repository is private.
 
-An authenticated repository administrator must set Pages Source to **GitHub
-Actions**, allow the `main` deployment environment and run the updated workflow.
-A successful job plus verification of its emitted URL are required to call the
-remote fix complete. See [the setup procedure](operations.md#interface-preview-on-github-pages).
+The publishing source was changed to **GitHub Actions** and the existing
+workflow was dispatched from `main` at `468e077`. Repository visibility was
+preserved; only the synthetic `preview/` artifact was published.
+[Deployment #3](https://github.com/HenriqueMayer/TuxedoFitness/actions/runs/34171846131)
+completed successfully. The [English preview](https://henriquemayer.github.io/TuxedoFitness/)
+and [Portuguese preview](https://henriquemayer.github.io/TuxedoFitness/pt-br/)
+returned HTTP 200, as did all 15 referenced assets.
+
+[CI #25](https://github.com/HenriqueMayer/TuxedoFitness/actions/runs/34170556293)
+also passed for the same `main` commit. The external badge could not query this
+private repository, so the README now links directly to workflow runs without
+embedding credentials or a static pass/fail claim. See
+[the setup procedure](operations.md#interface-preview-on-github-pages).

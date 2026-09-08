@@ -65,16 +65,33 @@ only standard provider IDs and titles, with no account or workout records.
 
 ## Interface preview on GitHub Pages
 
-An administrator must select **Settings → Pages → Build and deployment →
-Source: GitHub Actions**. The existing workflow publishes only `preview/` from
-`main`, or through its manual dispatch. Review the `github-pages` environment
-and permit deployments from `main`. A private repository requires an eligible
+The preview workflow requires a one-time repository configuration:
+
+1. Sign in with an administrator or maintainer account and open
+   [Settings → Pages](https://github.com/HenriqueMayer/TuxedoFitness/settings/pages).
+2. Under **Build and deployment**, select **Source: GitHub Actions**. The existing
+   workflow is already committed; no additional workflow template is needed.
+3. Review the `github-pages` environment and permit deployments from `main`.
+4. Open [Deploy interface preview](https://github.com/HenriqueMayer/TuxedoFitness/actions/workflows/pages.yml),
+   select **Run workflow**, choose `main`, and run it.
+
+The workflow publishes only `preview/`. A private repository requires an eligible
 GitHub plan; do not change repository visibility to work around permissions.
 
 `configure-pages` cannot create the site using the ordinary `GITHUB_TOKEN`.
 Do not add `enablement: true` without the administrative token it requires.
-An HTTP 404 may mean an absent site or insufficient access. Configure the site
-with an authenticated administrator before rerunning the workflow.
+`Get Pages site failed` with HTTP 404 may mean an absent site or insufficient
+access. Upgrading the action or increasing `pages: write` on the ordinary token
+does not replace this initial setup. If the Pages settings are unavailable,
+verify the signed-in account's repository access and plan before rerunning.
+
+See the official [publishing-source instructions](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
+and [`configure-pages` token requirements](https://github.com/actions/configure-pages/blob/v6/action.yml).
 
 After a successful run, verify the emitted Pages URL, both languages and all
 images. Do not consider local workflow edits evidence of a remote deployment.
+
+The README's CI badge is a link to the actual workflow runs, not a cached
+pass/fail claim. External badge services cannot read an access-controlled
+repository's workflow status; embedding an access token in a README or badge
+URL is not an appropriate workaround.

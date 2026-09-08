@@ -5,7 +5,7 @@
 </p>
 <h1 align="center">Tuxedo Fitness</h1>
 <p align="center">
-  <a href="https://github.com/HenriqueMayer/TuxedoFitness/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/HenriqueMayer/TuxedoFitness/ci.yml?branch=main&amp;style=for-the-badge&amp;label=CI&amp;labelColor=101E18&amp;color=176B52" alt="CI status"></a>
+  <a href="https://github.com/HenriqueMayer/TuxedoFitness/actions/workflows/ci.yml"><img src="https://img.shields.io/badge/CI-GitHub%20Actions-1A2E26?style=for-the-badge&amp;labelColor=101E18" alt="Consultar execuções de CI no GitHub Actions"></a>
   <img src="https://img.shields.io/badge/version-0.2.0-B88A59?style=for-the-badge&amp;labelColor=101E18" alt="Version 0.2.0">
   <img src="https://img.shields.io/badge/Python-3.12-176B52?style=for-the-badge&amp;labelColor=101E18" alt="Python 3.12">
   <img src="https://img.shields.io/badge/Django-6.0-1A2E26?style=for-the-badge&amp;labelColor=101E18" alt="Django 6.0">
@@ -21,11 +21,28 @@ do Hevy exige Hevy Pro.
 
 ## Prévia da interface
 
-<table><tr><td width="96" align="center"><img src="static/brand/tuxedo-fitness-emblem-128.png" width="72" alt="Emblema Fitness"></td><td><strong>Conheça a interface antes de instalar.</strong><br>Visão geral, análises, histórico, rotinas, exercícios e geração de prompts.<br><br><a href="preview/pt-br/index.html"><strong>Abrir a prévia em português →</strong></a> · <a href="preview/index.html">English</a></td></tr></table>
+<table>
+  <tr>
+    <td width="96" align="center">
+      <a href="https://henriquemayer.github.io/TuxedoFitness/pt-br/">
+        <img src="static/brand/tuxedo-fitness-emblem-128.png" width="72" alt="Abrir a prévia da interface do Tuxedo Fitness">
+      </a>
+    </td>
+    <td>
+      <strong>Conheça o Tuxedo Fitness antes de instalar.</strong><br>
+      Explore a apresentação bilíngue de Visão geral, Análises, Histórico, Rotinas,
+      Exercícios e Gerar prompt, com a Visão geral nos temas claro e escuro.<br><br>
+      <a href="https://henriquemayer.github.io/TuxedoFitness/pt-br/"><strong>Abrir a prévia da interface →</strong></a>
+    </td>
+  </tr>
+</table>
 
-A prévia usa capturas sintéticas e funciona por arquivos HTML locais ou servidor
-estático. Não possui conta, backend ou persistência. A hospedagem está descrita
-na [configuração do Pages](docs/operations.md#interface-preview-on-github-pages).
+> A prévia utiliza dados fictícios e funciona como uma apresentação estática.
+> Não há login, backend público ou persistência, e nenhum dado é salvo.
+
+A [prévia local em português](preview/pt-br/index.html) e a
+[prévia em inglês](preview/index.html) também funcionam offline. A hospedagem
+exige a [configuração inicial do Pages](docs/operations.md#interface-preview-on-github-pages).
 
 ## Instalação rápida
 
