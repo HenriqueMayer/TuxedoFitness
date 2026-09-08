@@ -8,7 +8,7 @@ follow [Semantic Versioning](https://semver.org/).
 
 - Match the bilingual README preview copy and linked emblem to Tuxedo Finance,
   retaining offline entrypoints; replace the inaccessible external CI status
-  badge with a link to workflow runs and clarify the one-time Pages setup.
+  badge with a link to workflow runs and record the verified Pages activation.
 
 - Correct stale frontend assets in already-open tabs with content versions and
   safe HTMX navigation; align the public header with Finance.
